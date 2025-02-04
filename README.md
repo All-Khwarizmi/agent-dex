@@ -1,80 +1,121 @@
-# 🏗 Scaffold-ETH 2
+# AgentDEX: AI-Powered Decentralized Exchange
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+## Overview
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+AgentDEX is a decentralized exchange that combines traditional DEX functionality with an AI agent interface for a more intuitive trading experience. Users can interact with the protocol through both a traditional swap interface and a conversational AI agent that helps manage trades and liquidity positions.
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
+## Features
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+### Core DEX Functionality
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+- Token swaps with automatic price calculation
+- Liquidity provision and fee collection
+- Intelligent forwarding to Uniswap V2 for optimal trade execution
+- Support for any ERC20 token pair
 
-## Requirements
+### AI Agent Interface
 
-Before you begin, you need to install the following tools:
+- Natural language interaction for trades and liquidity management
+- Conversational interface for managing positions
+- Trade suggestions based on pool analysis
+- Clear explanations of complex DeFi operations
 
-- [Node (>= v18.18)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+### Technical Architecture
 
-## Quickstart
+- Smart contract protocol built with Solidity
+- TheGraph integration for real-time analytics
+- React frontend with both traditional and chat interfaces
+- Automated testing suite
 
-To get started with Scaffold-ETH 2, follow the steps below:
+## Getting Started
 
-1. Install dependencies if it was skipped in CLI:
+### Prerequisites
 
-```
-cd my-dapp-example
-yarn install
-```
+- Node.js >= 16
+- MetaMask or other Web3 wallet
 
-2. Run a local network in the first terminal:
+### Installation
 
-```
-yarn chain
-```
-
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
-
-3. On a second terminal, deploy the test contract:
-
-```
-yarn deploy
+```bash
+git clone [repository-url]
+cd agent-dex
+npm install
 ```
 
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
+### Local Development
 
-4. On a third terminal, start your NextJS app:
+```bash
+# Start local hardhat node
+npx hardhat node
 
+# Deploy contracts
+npx hardhat run scripts/deploy.js --network localhost
+
+# Start frontend
+npm run dev
 ```
-yarn start
-```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+## Usage
 
-Run smart contract test with `yarn foundry:test`
+### Traditional Interface
 
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
+1. Connect your wallet
+2. Select tokens for swap
+3. Enter amount
+4. Confirm transaction
 
+### AI Agent Interface
 
-## Documentation
+1. Connect your wallet
+2. Open agent chat interface
+3. Type natural language commands like:
+   - "Swap 100 DAI for ETH"
+   - "Show my liquidity positions"
+   - "What's the best time to add liquidity?"
 
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
+## Protocol Design
 
-To know more about its features, check out our [website](https://scaffoldeth.io).
+### Smart Contracts
 
-## Contributing to Scaffold-ETH 2
+- Factory contract for pool creation and management
+- Pool contracts for individual token pairs
+- Uniswap V2 integration for trade forwarding
 
-We welcome contributions to Scaffold-ETH 2!
+### Events
 
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
+- Pool creation/modification events
+- Swap events
+- Liquidity addition/removal events
+
+## Security
+
+### Auditing
+
+- Built on proven DEX patterns
+- Comprehensive testing suite
+- Security-first development approach
+
+### Considerations
+
+- Price manipulation prevention
+- Front-running protection
+- Proper access controls
+
+## Contributing
+
+We welcome contributions! Please see our contributing guidelines.
+
+## License
+
+MIT
+
+## Contact
+
+[AgentDEX](https://agentdex.vercel.app)
+[swarecito](https://twitter.com/swarecito)
+
+## Acknowledgments
+
+- Uniswap V2 team for protocol inspiration
+- OpenZeppelin for security patterns
+- The Graph protocol for data indexing
