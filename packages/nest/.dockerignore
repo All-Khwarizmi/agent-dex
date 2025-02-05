@@ -1,0 +1,9 @@
+# apps/api/.dockerignore
+node_modules
+npm-debug.log
+dist
+coverage
+.git
+.env
+.env.*
+README.md
