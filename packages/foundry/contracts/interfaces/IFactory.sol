@@ -1,24 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-abstract contract IFactory {
-    address[] public tokenList;
-    mapping(address => address) tokenToPool;
-    mapping(address => address) poolToToken;
+interface IFactory {
+    event PairCreated(
+        address indexed token0,
+        address indexed token1,
+        address pair,
+        uint
+    );
 
-    function launchExchange(
-        address _token
-    ) public virtual returns (address pool);
+    function createPair(
+        address _tokenA,
+        address _tokenB
+    ) external returns (address pair);
 
-    function getPoolCount() public view virtual returns (uint poolCount);
-
-    function tokenToPoolLookup(
-        address _token
-    ) public view virtual returns (address pool);
-
-    function poolToTokenLookup(
-        address _pool
-    ) public view virtual returns (address token);
-
-    event PoolLaunch(address indexed pool, address indexed token);
+    function getPairCount() external view returns (uint pairCount);
 }
