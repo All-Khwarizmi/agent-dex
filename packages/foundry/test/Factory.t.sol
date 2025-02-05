@@ -21,6 +21,14 @@ contract FactoryTest is Test {
         assertEq(factory.getPair(tokenB, tokenA), pair);
     }
 
+    // function testCreatePairEmitsPairCreatedEvent() public {
+    //     address tokenA = address(0x1);
+    //     address tokenB = address(0x2);
+    //     vm.expectEmit(true, true, true, true);
+    //     emit IFactory.PairCreated(tokenA, tokenB, address(0), 0);
+    //     factory.createPair(tokenA, tokenB);
+    // }
+
     function testCreatePairFails() public {
         address tokenA = address(0x1);
         vm.expectRevert("IDENTICAL_ADDRESSES");
