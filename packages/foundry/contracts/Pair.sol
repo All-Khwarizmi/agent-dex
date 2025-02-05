@@ -14,7 +14,7 @@ contract Pair is ERC20 {
     uint256 private reserve0; // uses single storage slot, accessible via getReserves
     uint256 private reserve1; // uses single storage slot, accessible via getReserves
 
-    uint public constant MINIMUM_LIQUIDITY = 10 ** 3;
+    uint256 public constant MINIMUM_LIQUIDITY = 10 ** 3;
     bytes4 private constant SELECTOR =
         bytes4(keccak256(bytes("transfer(address,uint256)")));
     uint private unlocked = 1;
@@ -47,6 +47,8 @@ contract Pair is ERC20 {
     );
 
     constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") {
+        require(_token0 != address(0), "AgentDEX: ZERO_ADDRESS");
+        require(_token1 != address(0), "AgentDEX: ZERO_ADDRESS");
         token0 = _token0;
         token1 = _token1;
         factory = msg.sender;
@@ -75,11 +77,13 @@ contract Pair is ERC20 {
             // Initial LP tokens = sqrt(amount0 * amount1)
             // This formula ensures that the initial deposit sets the price
             // and subsequent deposits must match this ratio
-            uint liquidity = Math.sqrt(amount0 * amount1);
+            uint256 liquidity = Math.sqrt(amount0 * amount1);
 
-            // Lock minimum liquidity forever by burning to address(0)
+            // Lock minimum liquidity forever by burning it
             // This prevents the pool from being fully drained and price manipulation
-            _mint(address(0), MINIMUM_LIQUIDITY);
+            _mint(address(this), MINIMUM_LIQUIDITY); // Lock minimum liquidity forever by burning to address(0)
+            _burn(address(this), MINIMUM_LIQUIDITY);
+
             _mint(msg.sender, liquidity - MINIMUM_LIQUIDITY);
 
             _safeTransferFrom(token0, msg.sender, address(this), amount0);
@@ -124,31 +128,36 @@ contract Pair is ERC20 {
         emit Mint(msg.sender, amount0, amount1);
     }
 
-function removeLiquidity(uint256 amount) external lock {
-    require(amount > 0, "AgentDEX: INSUFFICIENT_INPUT");
+    function removeLiquidity(uint256 amount) external lock {
+        require(amount > 0, "AgentDEX: INSUFFICIENT_INPUT");
 
-    uint256 _totalSupply = totalSupply();
-    require(_totalSupply > MINIMUM_LIQUIDITY, "AgentDEX: INSUFFICIENT_TOTAL_SUPPLY");
-    
-    uint256 liquidity = balanceOf(msg.sender);
-    require(liquidity >= amount, "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE");
+        uint256 _totalSupply = totalSupply();
 
-    // Calculate amounts
-    uint256 amount0 = (amount * reserve0) / _totalSupply;
-    uint256 amount1 = (amount * reserve1) / _totalSupply;
-    
-    // Check for zero returns
-    require(amount0 > 0 && amount1 > 0, "AgentDEX: INSUFFICIENT_LIQUIDITY_BURNED");
+        uint256 liquidity = balanceOf(msg.sender);
+        require(
+            liquidity - MINIMUM_LIQUIDITY >= amount,
+            "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE"
+        );
 
-    _burn(msg.sender, amount);
-    _safeTransfer(token0, msg.sender, amount0);
-    _safeTransfer(token1, msg.sender, amount1);
+        // Calculate amounts
+        uint256 amount0 = (amount * reserve0) / _totalSupply;
+        uint256 amount1 = (amount * reserve1) / _totalSupply;
 
-    reserve0 -= amount0;
-    reserve1 -= amount1;
+        // Check for zero returns
+        require(
+            amount0 > 0 && amount1 > 0,
+            "AgentDEX: INSUFFICIENT_LIQUIDITY_BURNED"
+        );
 
-    emit Burn(msg.sender, amount0, amount1, msg.sender);
-}
+        _burn(msg.sender, amount);
+        _safeTransfer(token0, msg.sender, amount0);
+        _safeTransfer(token1, msg.sender, amount1);
+
+        reserve0 -= amount0;
+        reserve1 -= amount1;
+
+        emit Burn(msg.sender, amount0, amount1, msg.sender);
+    }
 
     function getReserves()
         public
