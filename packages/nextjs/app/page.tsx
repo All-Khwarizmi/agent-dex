@@ -10,8 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/Tabs"
 
 const Home: NextPage = () => {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24">
-      <h1 className="text-4xl font-bold mb-8">BuildGuild DEX</h1>
+    <section className="flex flex-col items-center justify-center p-24">
+      <h1 className="text-4xl font-bold mb-8">Agent DEX</h1>
       <Tabs defaultValue="swap" className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="swap">Swap</TabsTrigger>
@@ -32,7 +32,7 @@ const Home: NextPage = () => {
           <LLMChat />
         </TabsContent>
       </Tabs>
-    </main>
+    </section>
   );
 };
 
