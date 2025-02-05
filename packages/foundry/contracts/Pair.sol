@@ -7,13 +7,12 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Pair is ERC20 {
-    using Math for uint112;
     address public factory;
     address public token0;
     address public token1;
 
-    uint112 private reserve0; // uses single storage slot, accessible via getReserves
-    uint112 private reserve1; // uses single storage slot, accessible via getReserves
+    uint256 private reserve0; // uses single storage slot, accessible via getReserves
+    uint256 private reserve1; // uses single storage slot, accessible via getReserves
 
     uint public constant MINIMUM_LIQUIDITY = 10 ** 3;
     bytes4 private constant SELECTOR =
@@ -60,7 +59,7 @@ contract Pair is ERC20 {
         unlocked = 1;
     }
 
-    function addLiquidity(uint112 amount0, uint112 amount1) external lock {
+    function addLiquidity(uint256 amount0, uint256 amount1) external lock {
         require(amount0 > 0 && amount1 > 0, "AgentDEX: INSUFFICIENT_INPUT");
 
         uint256 _totalSupply = totalSupply();
@@ -76,7 +75,7 @@ contract Pair is ERC20 {
             // Initial LP tokens = sqrt(amount0 * amount1)
             // This formula ensures that the initial deposit sets the price
             // and subsequent deposits must match this ratio
-            uint liquidity = Math.sqrt(uint256(amount0) * amount1);
+            uint liquidity = Math.sqrt(amount0 * amount1);
 
             // Lock minimum liquidity forever by burning to address(0)
             // This prevents the pool from being fully drained and price manipulation
@@ -125,10 +124,36 @@ contract Pair is ERC20 {
         emit Mint(msg.sender, amount0, amount1);
     }
 
+function removeLiquidity(uint256 amount) external lock {
+    require(amount > 0, "AgentDEX: INSUFFICIENT_INPUT");
+
+    uint256 _totalSupply = totalSupply();
+    require(_totalSupply > MINIMUM_LIQUIDITY, "AgentDEX: INSUFFICIENT_TOTAL_SUPPLY");
+    
+    uint256 liquidity = balanceOf(msg.sender);
+    require(liquidity >= amount, "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE");
+
+    // Calculate amounts
+    uint256 amount0 = (amount * reserve0) / _totalSupply;
+    uint256 amount1 = (amount * reserve1) / _totalSupply;
+    
+    // Check for zero returns
+    require(amount0 > 0 && amount1 > 0, "AgentDEX: INSUFFICIENT_LIQUIDITY_BURNED");
+
+    _burn(msg.sender, amount);
+    _safeTransfer(token0, msg.sender, amount0);
+    _safeTransfer(token1, msg.sender, amount1);
+
+    reserve0 -= amount0;
+    reserve1 -= amount1;
+
+    emit Burn(msg.sender, amount0, amount1, msg.sender);
+}
+
     function getReserves()
         public
         view
-        returns (uint112 _reserve0, uint112 _reserve1)
+        returns (uint256 _reserve0, uint256 _reserve1)
     {
         _reserve0 = reserve0;
         _reserve1 = reserve1;
