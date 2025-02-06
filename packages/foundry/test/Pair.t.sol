@@ -6,6 +6,9 @@ import "forge-std/Test.sol";
 import "../contracts/Pair.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
+import "../contracts/interfaces/IUniswapFactory.sol";
+import "../contracts/interfaces/IUniswapRouter.sol";
+
 // Create a simple mock token for testing
 contract MockERC20 is ERC20 {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) {
@@ -37,8 +40,22 @@ contract PairTest is Test {
         tokenA = new MockERC20("Token A", "TKNA");
         tokenB = new MockERC20("Token B", "TKNB");
 
+        // Deploy uniswap factory
+        IUniswapV2Factory factory = IUniswapV2Factory(
+            0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
+        );
+        // Deploy uniswap router
+        IUniswapV2Router router = IUniswapV2Router(
+            0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+        );
+
         // Deploy pair
-        pair = new Pair(address(tokenA), address(tokenB));
+        pair = new Pair(
+            address(tokenA),
+            address(tokenB),
+            address(factory),
+            address(router)
+        );
 
         // Mint tokens to alice
         tokenA.mint(alice, 1000000 * 10 ** 18);

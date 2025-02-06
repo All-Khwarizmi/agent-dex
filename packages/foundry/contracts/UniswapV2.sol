@@ -1,19 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-interface IUniswapV2Router {
-    function getAmountsOut(
-        uint amountIn,
-        address[] memory path
-    ) external view returns (uint[] memory amounts);
-}
-
-interface IUniswapV2Factory {
-    function getPair(
-        address tokenA,
-        address tokenB
-    ) external view returns (address pair);
-}
+import "./interfaces/IUniswapFactory.sol";
+import "./interfaces/IUniswapRouter.sol";
 
 contract UniswapV2PriceChecker {
     address constant FACTORY = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;

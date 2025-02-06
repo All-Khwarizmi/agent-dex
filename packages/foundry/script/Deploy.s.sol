@@ -6,6 +6,9 @@ import "../contracts/UniswapV2.sol";
 import "../contracts/Pair.sol";
 import "../test/Pair.t.sol";
 
+import "../contracts/interfaces/IUniswapFactory.sol";
+import "../contracts/interfaces/IUniswapRouter.sol";
+
 /**
  * @notice Deploy script for YourContract contract
  * @dev Inherits ScaffoldETHDeploy which:
@@ -31,6 +34,21 @@ contract DeployUniswapV2PriceChecker is ScaffoldETHDeploy {
         MockERC20 tokenA = new MockERC20("Token A", "TKNA");
         MockERC20 tokenB = new MockERC20("Token B", "TKNB");
         new UniswapV2PriceChecker();
-        new Pair(address(tokenA), address(tokenB));
+
+        // Deploy uniswap factory
+        IUniswapV2Factory factory = IUniswapV2Factory(
+            0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
+        );
+        // Deploy uniswap router
+        IUniswapV2Router router = IUniswapV2Router(
+            0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+        );
+
+        new Pair(
+            address(tokenA),
+            address(tokenB),
+            address(factory),
+            address(router)
+        );
     }
 }

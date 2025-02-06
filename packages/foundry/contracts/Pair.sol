@@ -7,12 +7,16 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./libraries/PairLibrary.sol";
 
+import "./interfaces/IUniswapFactory.sol";
+import "./interfaces/IUniswapRouter.sol";
+
 contract Pair is ERC20 {
+    IUniswapV2Factory private uniswapFactory;
+    IUniswapV2Router private uniswapRouter;
+
     address public factory;
     address public token0;
     address public token1;
-
-    
 
     uint256 private reserve0; // uses single storage slot, accessible via getReserves
     uint256 private reserve1; // uses single storage slot, accessible via getReserves
@@ -50,12 +54,19 @@ contract Pair is ERC20 {
         uint256 indexed sharesBurned
     );
 
-    constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") {
+    constructor(
+        address _token0,
+        address _token1,
+        address _factory,
+        address _router
+    ) ERC20("AgentDEX LP", "LP") {
         require(_token0 != address(0), "AgentDEX: ZERO_ADDRESS");
         require(_token1 != address(0), "AgentDEX: ZERO_ADDRESS");
         token0 = _token0;
         token1 = _token1;
         factory = msg.sender;
+        uniswapFactory = IUniswapV2Factory(_factory);
+        uniswapRouter = IUniswapV2Router(_router);
     }
 
     modifier lock() {
