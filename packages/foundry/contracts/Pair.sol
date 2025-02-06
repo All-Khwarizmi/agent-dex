@@ -5,6 +5,7 @@ import "./interfaces/IFactory.sol";
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./libraries/PairLibrary.sol";
 
 contract Pair is ERC20 {
     address public factory;
@@ -19,7 +20,8 @@ contract Pair is ERC20 {
         bytes4(keccak256(bytes("transfer(address,uint256)")));
     uint private unlocked = 1;
 
-    uint256 public constant FEE_RATE = 500; //fee = 1/feeRate = 0.2%
+    uint256 private constant FEE_NUMERATOR = 997;
+    uint256 private constant FEE_DENOMINATOR = 1000;
 
     event Mint(address indexed sender, uint amount0, uint amount1);
     event Burn(
@@ -59,6 +61,15 @@ contract Pair is ERC20 {
         unlocked = 0;
         _;
         unlocked = 1;
+    }
+
+    function getReserves()
+        public
+        view
+        returns (uint256 _reserve0, uint256 _reserve1)
+    {
+        _reserve0 = reserve0;
+        _reserve1 = reserve1;
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
@@ -159,13 +170,155 @@ contract Pair is ERC20 {
         emit Burn(msg.sender, amount0, amount1, msg.sender);
     }
 
-    function getReserves()
-        public
-        view
-        returns (uint256 _reserve0, uint256 _reserve1)
-    {
-        _reserve0 = reserve0;
-        _reserve1 = reserve1;
+    function swap(
+        address targetToken,
+        address fromToken,
+        uint amountIn
+    ) external {
+        require(amountIn > 0, "AgentDEX: INSUFFICIENT_INPUT_AMOUNT");
+
+        bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
+        require(_shouldSwap, "AgentDEX: SWAP_CONDITION_NOT_MET");
+
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+
+        // Calculate amount out
+        uint256 amountOut = PairLibrary.getAmountOut(
+            amountIn,
+            reserveIn,
+            reserveOut,
+            FEE_NUMERATOR,
+            FEE_DENOMINATOR
+        );
+        require(amountOut > 0, "AgentDEX: INSUFFICIENT_OUTPUT_AMOUNT");
+
+        // Update reserves
+        updateReserves(targetToken, amountIn, amountOut);
+
+        // Transfer tokens
+        _safeTransfer(fromToken, msg.sender, amountIn);
+        _safeTransfer(targetToken, msg.sender, amountOut);
+
+        // Check if our price is better than uniswapV2
+        // Check if the reserver is enough
+        // Check if the swap wont impact the price too much
+        // If so swap
+        // If not forward to uniswapV2
+    }
+
+    function getReservesFromToken(
+        address token
+    ) public view returns (uint reserves) {
+        if (token == token0) {
+            return reserve0;
+        } else if (token == token1) {
+            return reserve1;
+        }
+    }
+
+    function updateReserves(
+        address targetToken,
+        uint amountIn,
+        uint amountOut
+    ) public {
+        if (targetToken == token0) {
+            reserve0 += amountIn;
+            reserve1 -= amountOut;
+        } else if (targetToken == token1) {
+            reserve1 += amountIn;
+            reserve0 -= amountOut;
+        }
+    }
+
+    function shouldSwap(
+        address targetToken,
+        address fromToken,
+        uint amountIn
+    ) public view returns (bool) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+
+        uint256 amountOut = PairLibrary.getAmountOut(
+            amountIn,
+            reserveIn,
+            reserveOut,
+            FEE_NUMERATOR,
+            FEE_DENOMINATOR
+        );
+
+        // Price impact should be less than 20%
+        uint256 priceImpact = calculatePriceImpact(
+            targetToken,
+            fromToken,
+            amountIn
+        );
+
+        // Reserves balance should be less than 10%
+        uint256 reservesBalance = calculateReservesBalanceVariation(
+            targetToken,
+            fromToken,
+            amountIn
+        );
+
+        return
+            reserveOut >= amountOut * 2 &&
+            priceImpact <= 20 &&
+            reservesBalance <= 10;
+    }
+
+    function calculatePriceImpact(
+        address targetToken,
+        address fromToken,
+        uint amountIn
+    ) public view returns (uint256 priceImpact) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+        uint256 amountOut = PairLibrary.getAmountOut(
+            amountIn,
+            reserveIn,
+            reserveOut,
+            FEE_NUMERATOR,
+            FEE_DENOMINATOR
+        );
+        priceImpact = ((reserveOut - amountOut) * 100) / reserveOut;
+    }
+
+    function calculateReservesBalanceVariation(
+        address targetToken,
+        address fromToken,
+        uint amountIn
+    ) public view returns (uint256 reservesBalance) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+
+        // Calculate reserves balance before swap
+        uint256 balanceBefore = reserveOut > reserveIn
+            ? reserveOut - reserveIn
+            : reserveIn - reserveOut;
+
+        // Calculate amount out
+        uint256 amountOut = PairLibrary.getAmountOut(
+            amountIn,
+            reserveIn,
+            reserveOut,
+            FEE_NUMERATOR,
+            FEE_DENOMINATOR
+        );
+
+        // Calculate new reserves
+        uint256 newReserveOut = reserveOut + amountOut;
+        uint256 newReserveIn = reserveIn + amountIn;
+
+        // Calculate new reserves balance
+        uint256 balanceAfter = newReserveOut > newReserveIn
+            ? newReserveOut - newReserveIn
+            : newReserveIn - newReserveOut;
+
+        // Calculate variation in reserves in percentage
+        reservesBalance =
+            ((balanceAfter - balanceBefore) * 100) /
+            balanceBefore;
     }
 
     function _safeTransfer(address token, address to, uint value) private {
