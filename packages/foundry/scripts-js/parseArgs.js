@@ -10,7 +10,7 @@ config();
 
 // Get all arguments after the script name
 const args = process.argv.slice(2);
-let fileName = "Deploy.s.sol";
+let fileName = "DeployUniswapV2.s.sol";
 let network = "localhost";
 
 // Show help message if --help is provided
@@ -22,9 +22,9 @@ Options:
   --network <network>   Specify the network (default: localhost)
   --help, -h           Show this help message
 Examples:
-  yarn deploy --file DeployYourContract.s.sol --network sepolia
+  yarn deploy --file DeployUniswapV2.s.sol --network sepolia
   yarn deploy --network sepolia
-  yarn deploy --file DeployYourContract.s.sol
+  yarn deploy --file DeployUniswapV2.s.sol
   yarn deploy
   `);
   process.exit(0);

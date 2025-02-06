@@ -12,6 +12,8 @@ contract Pair is ERC20 {
     address public token0;
     address public token1;
 
+    
+
     uint256 private reserve0; // uses single storage slot, accessible via getReserves
     uint256 private reserve1; // uses single storage slot, accessible via getReserves
 
@@ -179,6 +181,8 @@ contract Pair is ERC20 {
 
         bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
         require(_shouldSwap, "AgentDEX: SWAP_CONDITION_NOT_MET");
+
+        // Check the UniswapV2 pool
 
         uint256 reserveIn = getReservesFromToken(fromToken);
         uint256 reserveOut = getReservesFromToken(targetToken);
