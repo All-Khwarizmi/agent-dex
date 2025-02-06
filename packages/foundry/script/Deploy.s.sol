@@ -3,6 +3,8 @@ pragma solidity ^0.8.19;
 
 import "./DeployHelpers.s.sol";
 import "../contracts/UniswapV2.sol";
+import "../contracts/Pair.sol";
+import "../test/Pair.t.sol";
 
 /**
  * @notice Deploy script for YourContract contract
@@ -25,6 +27,10 @@ contract DeployUniswapV2PriceChecker is ScaffoldETHDeploy {
      *      - Export contract addresses & ABIs to `nextjs` packages
      */
     function run() external ScaffoldEthDeployerRunner {
+        // Deploy mock tokens
+        MockERC20 tokenA = new MockERC20("Token A", "TKNA");
+        MockERC20 tokenB = new MockERC20("Token B", "TKNB");
         new UniswapV2PriceChecker();
+        new Pair(address(tokenA), address(tokenB));
     }
 }
