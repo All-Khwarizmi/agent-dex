@@ -293,6 +293,8 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
+
+    // Swap
     function _getExpectedAmounts(
         uint256 swapAmount
     ) internal view returns (uint256 uniswapOut, uint256 ourAmountOut) {
@@ -364,9 +366,6 @@ contract PairTest is Test {
         uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
         uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
 
-        // Approve tokens
-        usdc.approve(address(pair), type(uint256).max);
-        weth.approve(address(pair), type(uint256).max);
 
         // Add liquidity
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
