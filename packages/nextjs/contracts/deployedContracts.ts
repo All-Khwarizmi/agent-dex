@@ -22,6 +22,16 @@ const deployedContracts = {
               type: "address",
               internalType: "address",
             },
+            {
+              name: "_factory",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_router",
+              type: "address",
+              internalType: "address",
+            },
           ],
           stateMutability: "nonpayable",
         },
@@ -203,6 +213,35 @@ const deployedContracts = {
               name: "",
               type: "address",
               internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getAmountOut",
+          inputs: [
+            {
+              name: "targetToken",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "fromToken",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "amountIn",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "view",
@@ -429,17 +468,22 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "updateReserves",
+          name: "uniswapHasBetterPrice",
           inputs: [
-            {
-              name: "targetToken",
-              type: "address",
-              internalType: "address",
-            },
             {
               name: "amountIn",
               type: "uint256",
               internalType: "uint256",
+            },
+            {
+              name: "fromToken",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "targetToken",
+              type: "address",
+              internalType: "address",
             },
             {
               name: "amountOut",
@@ -447,8 +491,14 @@ const deployedContracts = {
               internalType: "uint256",
             },
           ],
-          outputs: [],
-          stateMutability: "nonpayable",
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "view",
         },
         {
           type: "event",
@@ -580,34 +630,16 @@ const deployedContracts = {
               internalType: "address",
             },
             {
-              name: "amount0In",
+              name: "amountIn",
               type: "uint256",
               indexed: false,
               internalType: "uint256",
             },
             {
-              name: "amount1In",
+              name: "amountOut",
               type: "uint256",
               indexed: false,
               internalType: "uint256",
-            },
-            {
-              name: "amount0Out",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "amount1Out",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "to",
-              type: "address",
-              indexed: true,
-              internalType: "address",
             },
           ],
           anonymous: false,
@@ -725,7 +757,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1738850595.json",
+      deploymentFile: "run-1738877329.json",
       deploymentScript: "Deploy.s.sol",
     },
   },

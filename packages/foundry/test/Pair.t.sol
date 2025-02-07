@@ -32,6 +32,7 @@ contract PairTest is Test {
     address constant FACTORY = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
 
     function setUp() public {
+        // We reset the fork to the mainnet fork
         vm.createSelectFork(vm.envString("ETH_RPC_URL"));
 
         alice = makeAddr("alice");
@@ -39,6 +40,7 @@ contract PairTest is Test {
         vm.deal(alice, 100 ether);
 
         // Setup token instances
+        // Real mainnet token addresses
         usdc = ERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
         weth = ERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
 
@@ -46,31 +48,34 @@ contract PairTest is Test {
         _setupTokens();
     }
 
+    function _deployPair() internal {
+        vm.startPrank(alice);
+        pair = new Pair(address(usdc), address(weth), FACTORY, ROUTER);
+        vm.stopPrank();
+    }
+
     function _setupTokens() internal {
         // WETH whale
-        address whale = 0xF04a5cC80B1E94C69B48f5ee68a08CD2F09A7c3E;
+        address wethWhale = 0xF04a5cC80B1E94C69B48f5ee68a08CD2F09A7c3E;
+        address usdcWhale = 0x37305B1cD40574E4C5Ce33f8e8306Be057fD7341;
 
         uint256 usdcAmount = 2_000_000 * 1e6;
         uint256 wethAmount = 600 * 1e18;
 
-        vm.startPrank(whale);
+        // Transfer WETH to alice from whale
+        vm.startPrank(wethWhale);
         weth.transfer(alice, wethAmount);
         vm.stopPrank();
 
-        // USDC whale
-        vm.startPrank(0x37305B1cD40574E4C5Ce33f8e8306Be057fD7341);
+        // Transfer USDC to alice from whale
+        vm.startPrank(usdcWhale);
         usdc.transfer(alice, usdcAmount);
         vm.stopPrank();
 
+        // Approve USDC and WETH to be used by the pair contract
         vm.startPrank(alice);
         usdc.approve(address(pair), type(uint256).max);
         weth.approve(address(pair), type(uint256).max);
-        vm.stopPrank();
-    }
-
-    function _deployPair() internal {
-        vm.startPrank(alice);
-        pair = new Pair(address(usdc), address(weth), FACTORY, ROUTER);
         vm.stopPrank();
     }
 
