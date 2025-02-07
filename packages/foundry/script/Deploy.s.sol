@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "./DeployHelpers.s.sol";
 import "../contracts/UniswapV2.sol";
 import "../contracts/Pair.sol";
+import "../contracts/Factory.sol";
 import "../test/Pair.t.sol";
 
 import "../contracts/interfaces/IUniswapFactory.sol";
@@ -30,25 +31,19 @@ contract DeployUniswapV2PriceChecker is ScaffoldETHDeploy {
      *      - Export contract addresses & ABIs to `nextjs` packages
      */
     function run() external ScaffoldEthDeployerRunner {
-        // Deploy mock tokens
-        MockERC20 tokenA = new MockERC20("Token A", "TKNA");
-        MockERC20 tokenB = new MockERC20("Token B", "TKNB");
-        new UniswapV2PriceChecker();
+        // Deploy tokens
+        address usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+        address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
 
-        // Deploy uniswap factory
-        IUniswapV2Factory factory = IUniswapV2Factory(
-            0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
-        );
-        // Deploy uniswap router
-        IUniswapV2Router router = IUniswapV2Router(
-            0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
-        );
+        // Deploy factory
+        Factory localFactory = new Factory();
 
-        new Pair(
-            address(tokenA),
-            address(tokenB),
-            address(factory),
-            address(router)
-        );
+        localFactory.createPair(usdc, weth);
+
+        // Deploy pair to have it in debug page
+        address uniswapFactoryAddr = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
+        address uniswapRouterAddr = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
+
+        new Pair(usdc, weth, uniswapFactoryAddr, uniswapRouterAddr);
     }
 }
