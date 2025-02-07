@@ -199,6 +199,69 @@ contract Pair is ERC20 {
         uint256 amountOut = getAmountOut(targetToken, fromToken, amountIn);
         require(amountOut > 0, "AgentDEX: INSUFFICIENT_OUTPUT_AMOUNT");
 
+        // TODO:
+        // 1. Check if uniswapV2 has better price
+        (
+            bool shouldSwapWithUniswap,
+            uint256 uniswapAmount
+        ) = uniswapHasBetterPrice(amountIn, fromToken, targetToken, amountOut);
+
+        console.log("\n=== Should Swap With Uniswap? ===");
+        console.log("Should Swap With Uniswap:", shouldSwapWithUniswap);
+        console.log("Uniswap Amount:", uniswapAmount);
+
+        // 2. If yes, swap with uniswapV2 and takes fees
+        if (shouldSwapWithUniswap) {
+            // First transfer FROM user TO pair
+            _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
+
+            // Calculate fees
+            uint256 fees = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
+            amountIn = amountIn - fees;
+            uniswapAmount = uniswapAmount - fees;
+
+            // Approve the router to spend the amountIn
+            ERC20(fromToken).approve(address(uniswapRouter), amountIn);
+
+            uint256 amountOutMin = (uniswapAmount * 999) / 1000;
+            address[] memory path = new address[](2);
+            path[0] = fromToken;
+            path[1] = targetToken;
+
+            uint[] memory amounts = uniswapRouter.swapExactTokensForTokens(
+                amountIn,
+                amountOutMin,
+                path,
+                address(this),
+                block.timestamp
+            );
+
+            // Transfer tokens to user
+            ERC20(targetToken).transfer(msg.sender, amounts[1]);
+
+            console.log("\n=== Post-Transfer Balances ===");
+            console.log("amount from uniswap:", amounts[amounts.length - 1]);
+            console.log(
+                "Pair From Token:",
+                ERC20(fromToken).balanceOf(address(this))
+            );
+            console.log(
+                "Pair Target Token:",
+                ERC20(targetToken).balanceOf(address(this))
+            );
+            console.log(
+                "User From Token:",
+                ERC20(fromToken).balanceOf(msg.sender)
+            );
+            console.log(
+                "User Target Token:",
+                ERC20(targetToken).balanceOf(msg.sender)
+            );
+
+            return;
+        }
+        // 3. If no, swap with our protocol
+
         // Log pre-transfer balances
         console.log("\n=== Pre-Transfer Balances ===");
         console.log(
@@ -319,18 +382,15 @@ contract Pair is ERC20 {
         address fromToken,
         address targetToken,
         uint256 amountOut
-    ) public view returns (bool) {
-        // Compare with Uniswap
+    ) public view returns (bool shouldSwapWithUniswap, uint256 uniswapAmount) {
         address[] memory path = new address[](2);
         path[0] = fromToken;
         path[1] = targetToken;
         uint[] memory amounts = uniswapRouter.getAmountsOut(amountIn, path);
-        uint256 uniswapAmount = amounts[1];
+        uniswapAmount = amounts[amounts.length - 1];
 
-        bool betterThanUniswap = amountOut >= uniswapAmount;
-        console.log("Better than Uniswap: %s", betterThanUniswap);
-
-        return betterThanUniswap;
+        shouldSwapWithUniswap = amountOut < uniswapAmount;
+        console.log("Better than Uniswap: %s", !shouldSwapWithUniswap);
     }
 
     function getReservesFromToken(
