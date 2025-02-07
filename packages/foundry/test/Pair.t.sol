@@ -65,11 +65,13 @@ contract PairTest is Test {
         // Transfer WETH to alice from whale
         vm.startPrank(wethWhale);
         weth.transfer(alice, wethAmount);
+        weth.transfer(bob, wethAmount);
         vm.stopPrank();
 
         // Transfer USDC to alice from whale
         vm.startPrank(usdcWhale);
         usdc.transfer(alice, usdcAmount);
+        usdc.transfer(bob, usdcAmount);
         vm.stopPrank();
 
         // Approve USDC and WETH to be used by the pair contract
@@ -156,62 +158,82 @@ contract PairTest is Test {
     function testRemoveLiquidity() public {
         vm.startPrank(alice);
 
-        // Use proper decimal amounts
-        uint256 initialAmount = 10000 * 10 ** 18; // 10000 tokens with 18 decimals
-        pair.addLiquidity(initialAmount, initialAmount);
+        // Setup with proper decimals
+        uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
+        uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
+
+        console.log("\n=== Initial Setup ===");
+        console.log("USDC liquidity: %s USDC", usdcLiquidity / 1e6);
+        console.log("WETH liquidity: %s WETH", wethLiquidity / 1e18);
+
+        // Add liquidity
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
 
         // Get LP tokens balance
         uint256 lpBalance = pair.balanceOf(alice);
+        console.log("LP tokens received: %s", lpBalance);
 
         // Remove 80% of LP tokens
-        uint256 removeAmount = (lpBalance * 800) / 1000; // 80% of LP balance
+        uint256 removeAmount = (lpBalance * 800) / 1000; // 80%
+        console.log("\n=== Removing Liquidity ===");
+        console.log("Removing %s LP tokens (%s%%)", removeAmount, 80);
 
-        // Calculate expected amounts
-        uint256 expectedTokenReturn = (initialAmount * removeAmount) /
-            lpBalance;
+        // Record initial balances
+        uint256 initialUSDCBalance = usdc.balanceOf(alice);
+        uint256 initialWETHBalance = weth.balanceOf(alice);
+        (uint256 initialReserveUSDC, uint256 initialReserveWETH) = pair
+            .getReserves();
 
-        // Record initial token balances
-        uint256 initialTokenABalance = usdc.balanceOf(alice);
-        uint256 initialTokenBBalance = weth.balanceOf(alice);
+        // Calculate expected returns
+        uint256 expectedUSDC = (usdcLiquidity * removeAmount) / lpBalance;
+        uint256 expectedWETH = (wethLiquidity * removeAmount) / lpBalance;
+
+        console.log("\n=== Expected Returns ===");
+        console.log("Expected USDC: %s", expectedUSDC / 1e6);
+        console.log("Expected WETH: %s", expectedWETH / 1e18);
 
         // Remove liquidity
         pair.removeLiquidity(removeAmount);
 
-        // Record final reserves
-        (uint256 finalReserve0, uint256 finalReserve1) = pair.getReserves();
+        // Calculate actual returns
+        uint256 usdcReceived = usdc.balanceOf(alice) - initialUSDCBalance;
+        uint256 wethReceived = weth.balanceOf(alice) - initialWETHBalance;
+        (uint256 finalReserveUSDC, uint256 finalReserveWETH) = pair
+            .getReserves();
 
-        uint256 expectedFinalReserve = initialAmount - expectedTokenReturn;
+        console.log("\n=== Actual Returns ===");
+        console.log("USDC received: %s", usdcReceived / 1e6);
+        console.log("WETH received: %s", wethReceived / 1e18);
 
-        // Get token balance changes
-        uint256 tokenAReceived = usdc.balanceOf(alice) - initialTokenABalance;
-        uint256 tokenBReceived = weth.balanceOf(alice) - initialTokenBBalance;
-        console.log("Tokens Received: ", tokenAReceived, tokenBReceived);
+        console.log("\n=== Final Reserves ===");
+        console.log("USDC reserve: %s", finalReserveUSDC / 1e6);
+        console.log("WETH reserve: %s", finalReserveWETH / 1e18);
 
         // Verify final state
         assertEq(
-            finalReserve0,
-            expectedFinalReserve,
-            "Reserve0 should match expected amount"
+            finalReserveUSDC,
+            initialReserveUSDC - usdcReceived,
+            "USDC reserve should match expected"
         );
         assertEq(
-            finalReserve1,
-            expectedFinalReserve,
-            "Reserve1 should match expected amount"
+            finalReserveWETH,
+            initialReserveWETH - wethReceived,
+            "WETH reserve should match expected"
         );
         assertEq(
             pair.balanceOf(alice),
             lpBalance - removeAmount,
-            "Alice's LP balance should match remaining amount"
+            "LP balance should match remaining amount"
         );
         assertEq(
-            tokenAReceived,
-            expectedTokenReturn,
-            "Should get back expected token A amount"
+            usdcReceived,
+            expectedUSDC,
+            "Should get back expected USDC amount"
         );
         assertEq(
-            tokenBReceived,
-            expectedTokenReturn,
-            "Should get back expected token B amount"
+            wethReceived,
+            expectedWETH,
+            "Should get back expected WETH amount"
         );
 
         vm.stopPrank();
@@ -265,9 +287,12 @@ contract PairTest is Test {
 
     function testCannotRemoveZeroLiquidity() public {
         vm.startPrank(alice);
+        // Setup with proper decimals
+        uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
+        uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
 
-        // Add initial liquidity
-        pair.addLiquidity(10000 * 10 ** 18, 10000 * 10 ** 18);
+        // Add liquidity
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
 
         // Try to remove zero liquidity
         vm.expectRevert("AgentDEX: INSUFFICIENT_INPUT");
@@ -292,7 +317,6 @@ contract PairTest is Test {
 
         vm.stopPrank();
     }
-
 
     // Swap
     function _getExpectedAmounts(
@@ -365,7 +389,6 @@ contract PairTest is Test {
         // Setup with proper decimals
         uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
         uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
-
 
         // Add liquidity
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
