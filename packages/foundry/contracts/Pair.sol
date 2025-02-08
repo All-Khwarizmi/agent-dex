@@ -5,7 +5,6 @@ import "./interfaces/IFactory.sol";
 
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "./libraries/PairLibrary.sol";
 
 import "forge-std/console.sol";
 
@@ -78,6 +77,177 @@ contract Pair is ERC20 {
     {
         _reserve0 = reserve0;
         _reserve1 = reserve1;
+    }
+
+    function shouldSwap(
+        address targetToken,
+        address fromToken,
+        uint amountIn
+    ) public view returns (bool) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+
+        // Log initial values
+        console.log("\n=== Should Swap Check ===");
+        console.log("Input Amount:", amountIn);
+        console.log("Reserve In:", reserveIn);
+        console.log("Reserve Out:", reserveOut);
+
+        // Get output amount
+        uint256 amountOut = getAmountOut(amountIn, reserveIn, reserveOut);
+
+        // Calculate price impact: (amountIn / reserveIn) * 10000 for bps
+        uint256 priceImpact = (amountIn * 10000) / reserveIn;
+
+        // Calculate reserve ratio: (amountOut / reserveOut) * 10000 for bps
+        uint256 reserveRatio = (amountOut * 10000) / reserveOut;
+
+        console.log("Amount Out:", amountOut);
+        console.log("Price Impact (bps):", priceImpact);
+        console.log("Reserve Ratio (bps):", reserveRatio);
+
+        bool sufficientReserves = amountOut <= reserveOut / 2; // Changed to avoid overflow
+        bool acceptablePriceImpact = priceImpact <= 25; // 0.25%
+        bool acceptableReserveRatio = reserveRatio <= 10; // 0.1%
+
+        console.log("\n=== Swap Checks ===");
+        console.log("Sufficient Reserves:", sufficientReserves);
+        console.log("Acceptable Price Impact:", acceptablePriceImpact);
+        console.log("Acceptable Reserve Ratio:", acceptableReserveRatio);
+
+        return
+            sufficientReserves &&
+            acceptablePriceImpact &&
+            acceptableReserveRatio;
+    }
+
+    function getAmountOut(
+        uint256 amountIn,
+        uint256 reserveIn,
+        uint256 reserveOut
+    ) public pure returns (uint256 amountOut) {
+        require(amountIn > 0, "INSUFFICIENT_INPUT_AMOUNT");
+        require(reserveIn > 0 && reserveOut > 0, "INSUFFICIENT_LIQUIDITY");
+
+        // Add console logs for debugging
+        unchecked {
+            // Example: For 1000 USDC -> WETH
+            // amountIn = 1000e6
+            // reserveIn = 1_000_000e6 (USDC)
+            // reserveOut = 500e18 (WETH)
+            // FEE_NUMERATOR = 997
+            // FEE_DENOMINATOR = 1000
+
+            uint256 amountInWithFee = amountIn * FEE_NUMERATOR; // 997_000e6
+            uint256 numerator = amountInWithFee * reserveOut; // 997_000e6 * 500e18
+            uint256 denominator = (reserveIn * FEE_DENOMINATOR) +
+                amountInWithFee; // (1_000_000e6 * 1000) + 997_000e6
+            amountOut = numerator / denominator;
+        }
+
+        require(amountOut > 0, "INSUFFICIENT_OUTPUT_AMOUNT");
+    }
+
+    function uniswapHasBetterPrice(
+        uint256 amountIn,
+        address fromToken,
+        address targetToken,
+        uint256 amountOut
+    ) public view returns (bool shouldSwapWithUniswap, uint256 uniswapAmount) {
+        address[] memory path = new address[](2);
+        path[0] = fromToken;
+        path[1] = targetToken;
+        uint[] memory amounts = uniswapRouter.getAmountsOut(amountIn, path);
+        uniswapAmount = amounts[amounts.length - 1];
+
+        shouldSwapWithUniswap = amountOut < uniswapAmount;
+        console.log("Better than Uniswap: %s", !shouldSwapWithUniswap);
+    }
+
+    function getReservesFromToken(
+        address token
+    ) public view returns (uint reserves) {
+        if (token == token0) {
+            return reserve0;
+        } else if (token == token1) {
+            return reserve1;
+        }
+    }
+
+    function getAmountOut(
+        address targetToken,
+        address fromToken,
+        uint256 amountIn
+    ) public view returns (uint256 amountOut) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+
+        console.log("Reserves for calculation:");
+        console.log("Reserve In (From Token):", reserveIn);
+        console.log("Reserve Out (Target Token):", reserveOut);
+
+        return getAmountOut(amountIn, reserveIn, reserveOut);
+    }
+
+    function calculatePriceImpact(
+        address targetToken,
+        address fromToken,
+        uint amountIn
+    ) public view returns (uint256 priceImpact) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+        uint256 amountOut = getAmountOut(
+            amountIn,
+            reserveIn,
+            reserveOut
+        );
+
+        priceImpact = ((amountOut) * 100) / reserveOut;
+    }
+
+    function calculateReservesBalanceVariation(
+        address targetToken,
+        address fromToken,
+        uint amountIn
+    ) public view returns (uint256 reservesBalance) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+
+        // Calculate reserves balance before swap
+        uint256 balanceBefore = reserveOut > reserveIn
+            ? reserveOut - reserveIn
+            : reserveIn - reserveOut;
+
+        // Calculate amount out
+        uint256 amountOut = getAmountOut(
+            amountIn,
+            reserveIn,
+            reserveOut
+        );
+
+        // Calculate new reserves
+        uint256 newReserveOut = reserveOut + amountOut;
+        uint256 newReserveIn = reserveIn + amountIn;
+
+        // Calculate new reserves balance
+        uint256 balanceAfter = newReserveOut > newReserveIn
+            ? newReserveOut - newReserveIn
+            : newReserveIn - newReserveOut;
+
+        // Calculate variation in reserves in percentage
+        reservesBalance = balanceBefore > balanceAfter
+            ? balanceBefore - balanceAfter
+            : balanceAfter - balanceBefore;
+
+        reservesBalance = Math.max(
+            (reservesBalance * 100) / reserve0,
+            (reservesBalance * 100) / reserve1
+        );
+    }
+
+    function poolBalance() public view returns (uint256) {
+        uint256 _totalSupply = totalSupply();
+        return Math.min((_totalSupply) / reserve0, (_totalSupply) / reserve1);
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
@@ -327,162 +497,6 @@ contract Pair is ERC20 {
         );
 
         emit Swap(msg.sender, amountIn, amountOut);
-    }
-
-    function shouldSwap(
-        address targetToken,
-        address fromToken,
-        uint amountIn
-    ) public view returns (bool) {
-        uint256 reserveIn = getReservesFromToken(fromToken);
-        uint256 reserveOut = getReservesFromToken(targetToken);
-
-        // Log initial values
-        console.log("\n=== Should Swap Check ===");
-        console.log("Input Amount:", amountIn);
-        console.log("Reserve In:", reserveIn);
-        console.log("Reserve Out:", reserveOut);
-
-        // Get output amount
-        uint256 amountOut = PairLibrary.getAmountOut(
-            amountIn,
-            reserveIn,
-            reserveOut,
-            FEE_NUMERATOR,
-            FEE_DENOMINATOR
-        );
-
-        // Calculate price impact: (amountIn / reserveIn) * 10000 for bps
-        uint256 priceImpact = (amountIn * 10000) / reserveIn;
-
-        // Calculate reserve ratio: (amountOut / reserveOut) * 10000 for bps
-        uint256 reserveRatio = (amountOut * 10000) / reserveOut;
-
-        console.log("Amount Out:", amountOut);
-        console.log("Price Impact (bps):", priceImpact);
-        console.log("Reserve Ratio (bps):", reserveRatio);
-
-        bool sufficientReserves = amountOut <= reserveOut / 2; // Changed to avoid overflow
-        bool acceptablePriceImpact = priceImpact <= 25; // 0.25%
-        bool acceptableReserveRatio = reserveRatio <= 10; // 0.1%
-
-        console.log("\n=== Swap Checks ===");
-        console.log("Sufficient Reserves:", sufficientReserves);
-        console.log("Acceptable Price Impact:", acceptablePriceImpact);
-        console.log("Acceptable Reserve Ratio:", acceptableReserveRatio);
-
-        return
-            sufficientReserves &&
-            acceptablePriceImpact &&
-            acceptableReserveRatio;
-    }
-
-    function uniswapHasBetterPrice(
-        uint256 amountIn,
-        address fromToken,
-        address targetToken,
-        uint256 amountOut
-    ) public view returns (bool shouldSwapWithUniswap, uint256 uniswapAmount) {
-        address[] memory path = new address[](2);
-        path[0] = fromToken;
-        path[1] = targetToken;
-        uint[] memory amounts = uniswapRouter.getAmountsOut(amountIn, path);
-        uniswapAmount = amounts[amounts.length - 1];
-
-        shouldSwapWithUniswap = amountOut < uniswapAmount;
-        console.log("Better than Uniswap: %s", !shouldSwapWithUniswap);
-    }
-
-    function getReservesFromToken(
-        address token
-    ) public view returns (uint reserves) {
-        if (token == token0) {
-            return reserve0;
-        } else if (token == token1) {
-            return reserve1;
-        }
-    }
-
-    function getAmountOut(
-        address targetToken,
-        address fromToken,
-        uint256 amountIn
-    ) public view returns (uint256 amountOut) {
-        uint256 reserveIn = getReservesFromToken(fromToken);
-        uint256 reserveOut = getReservesFromToken(targetToken);
-
-        console.log("Reserves for calculation:");
-        console.log("Reserve In (From Token):", reserveIn);
-        console.log("Reserve Out (Target Token):", reserveOut);
-
-        return
-            PairLibrary.getAmountOut(
-                amountIn,
-                reserveIn,
-                reserveOut,
-                FEE_NUMERATOR,
-                FEE_DENOMINATOR
-            );
-    }
-
-    function calculatePriceImpact(
-        address targetToken,
-        address fromToken,
-        uint amountIn
-    ) public view returns (uint256 priceImpact) {
-        uint256 reserveIn = getReservesFromToken(fromToken);
-        uint256 reserveOut = getReservesFromToken(targetToken);
-        uint256 amountOut = PairLibrary.getAmountOut(
-            amountIn,
-            reserveIn,
-            reserveOut,
-            FEE_NUMERATOR,
-            FEE_DENOMINATOR
-        );
-
-        priceImpact = ((amountOut) * 100) / reserveOut;
-    }
-
-    function calculateReservesBalanceVariation(
-        address targetToken,
-        address fromToken,
-        uint amountIn
-    ) public view returns (uint256 reservesBalance) {
-        uint256 reserveIn = getReservesFromToken(fromToken);
-        uint256 reserveOut = getReservesFromToken(targetToken);
-
-        // Calculate reserves balance before swap
-        uint256 balanceBefore = reserveOut > reserveIn
-            ? reserveOut - reserveIn
-            : reserveIn - reserveOut;
-
-        // Calculate amount out
-        uint256 amountOut = PairLibrary.getAmountOut(
-            amountIn,
-            reserveIn,
-            reserveOut,
-            FEE_NUMERATOR,
-            FEE_DENOMINATOR
-        );
-
-        // Calculate new reserves
-        uint256 newReserveOut = reserveOut + amountOut;
-        uint256 newReserveIn = reserveIn + amountIn;
-
-        // Calculate new reserves balance
-        uint256 balanceAfter = newReserveOut > newReserveIn
-            ? newReserveOut - newReserveIn
-            : newReserveIn - newReserveOut;
-
-        // Calculate variation in reserves in percentage
-        reservesBalance = balanceBefore > balanceAfter
-            ? balanceBefore - balanceAfter
-            : balanceAfter - balanceBefore;
-
-        reservesBalance = Math.max(
-            (reservesBalance * 100) / reserve0,
-            (reservesBalance * 100) / reserve1
-        );
     }
 
     function _safeTransfer(address token, address to, uint value) private {
