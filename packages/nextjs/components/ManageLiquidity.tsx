@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/Tabs";
 import { LoaderIcon } from "react-hot-toast";
 import { zeroAddress } from "viem";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { PAIR_CONTRACT_NAME, TOKENS } from "~~/utils/constants";
+import { TOKENS } from "~~/utils/constants";
 
 function getTokenAddr(tokenSymbol: string) {
   return TOKENS.find(token => token.symbol === tokenSymbol)?.address || "";
@@ -45,6 +44,9 @@ export default function ManageLiquidity() {
   useEffect(() => {
     setTokenAddresses([getTokenAddr(tokenA), getTokenAddr(tokenB)]);
   }, [tokenA, tokenB, setTokenAddresses]);
+
+  const isPairInitialized = pairAddr && pairAddr !== zeroAddress;
+  const hasUserLiquidity = userLiquidity && BigInt(userLiquidity as string) > 0;
 
   return (
     <Card>
@@ -97,37 +99,44 @@ export default function ManageLiquidity() {
           </div>
           <div>
             {isLoadingPoolLiquidity ? (
-              <p className="text-sm text-gray-500 mb-2">Loading...</p>
-            ) : (
+              <p className="text-sm text-gray-500 mb-2">Loading pool information...</p>
+            ) : isPairInitialized ? (
               <>
-                <p className="text-sm text-gray-500 mb-2">
-                  {poolBalance ? `Pool Balance: ${poolBalance.toLocaleString()}` : "Pool Not Initialized"}
-                </p>
-                <p className="text-sm text-gray-500 mb-2">
-                  {userLiquidity ? `Your Liquidity: ${userLiquidity.toLocaleString()}` : "No Liquidity"}
-                </p>
+                <p className="text-sm text-gray-500 mb-2">Pool Balance: {poolBalance?.toLocaleString() || "0"}</p>
+                <p className="text-sm text-gray-500 mb-2">Your Liquidity: {userLiquidity?.toLocaleString() || "0"}</p>
               </>
+            ) : (
+              <p className="text-sm text-yellow-500 mb-2">This pool has not been initialized yet.</p>
             )}
           </div>
           <Tabs defaultValue="add" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="add">Add Liquidity</TabsTrigger>
-              <TabsTrigger value="remove">Remove Liquidity</TabsTrigger>
+              <TabsTrigger value="remove" disabled={!hasUserLiquidity}>
+                Remove Liquidity
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="add">
               <Button
                 className="w-full"
                 onClick={handleAddLiquidity}
-                disabled={isLoadingContract || !amountA || !amountB || !pairAddr || pairAddr === zeroAddress}
+                disabled={isLoadingContract || !amountA || !amountB || !isPairInitialized}
               >
-                {isLoadingContract ? "Processing..." : "Add Liquidity"}
+                {isLoadingContract ? "Processing..." : isPairInitialized ? "Add Liquidity" : "Initialize Pool"}
               </Button>
             </TabsContent>
             <TabsContent value="remove">
+              <Input
+                type="number"
+                placeholder="Amount of liquidity to remove"
+                value={liquidityToRemove}
+                onChange={e => setLiquidityToRemove(e.target.value)}
+                className="mb-2"
+              />
               <Button
                 className="w-full"
                 onClick={handleRemoveLiquidity}
-                disabled={isLoadingContract || !amountA || !pairAddr || pairAddr === zeroAddress}
+                disabled={isLoadingContract || !liquidityToRemove || !hasUserLiquidity}
               >
                 {isLoadingContract ? "Processing..." : "Remove Liquidity"}
               </Button>
@@ -136,7 +145,7 @@ export default function ManageLiquidity() {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col justify-center">
-        {pairAddr && pairAddr !== zeroAddress && <p className="text-sm text-green-500">Pair Exists</p>}
+        {isPairInitialized && <p className="text-sm text-green-500">Pair Exists</p>}
         {isLoadingContract && (
           <p className="text-sm text-green-500">
             <LoaderIcon className="animate-spin" />
