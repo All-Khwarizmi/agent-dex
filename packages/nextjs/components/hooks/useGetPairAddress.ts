@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useReadContract } from "wagmi";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
-
-const contractName = "Factory";
+import { FACTORY_CONTRACT_NAME } from "~~/utils/constants";
 
 export function useGetPairAddress() {
   const [addresses, setAddresses] = useState<[string, string]>(["", ""]);
-  const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo({ contractName });
+  const { data: deployedContractData, isLoading: deployedContractLoading } = useDeployedContractInfo({
+    contractName: FACTORY_CONTRACT_NAME,
+  });
 
   const { data: pairAddr, isLoading: isLoadingPairCount } = useReadContract({
     abi: [
