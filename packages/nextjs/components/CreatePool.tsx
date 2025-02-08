@@ -100,7 +100,7 @@ export default function CreatePool() {
         <Button
           className="w-full"
           onClick={handleCreatePool}
-          disabled={isLoadingContract || !amountA || !amountB || !pairAddr || pairAddr !== zeroAddress}
+          disabled={isLoadingContract || !amountA || !amountB || (pairAddr !== undefined && pairAddr !== zeroAddress)}
         >
           {isLoadingContract || isLoadingPairCount ? "Creating..." : "Create Pool"}
         </Button>
@@ -121,4 +121,3 @@ export default function CreatePool() {
     </Card>
   );
 }
-

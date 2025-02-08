@@ -1,57 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useManageLiquidity from "./hooks/useManageLiquidity";
 import { Button } from "./ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/Tabs";
-import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { LoaderIcon } from "react-hot-toast";
+import { zeroAddress } from "viem";
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { TOKENS } from "~~/utils/constants";
 
-const pools = [
-  { id: "1", name: "ETH/USDC" },
-  { id: "2", name: "WBTC/USDC" },
-  { id: "3", name: "ETH/DAI" },
-];
-
-const usdc = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-const weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+function getTokenAddr(tokenSymbol: string) {
+  return TOKENS.find(token => token.symbol === tokenSymbol)?.address || "";
+}
 
 export default function ManageLiquidity() {
-  const [selectedPool, setSelectedPool] = useState(pools[0]);
-  const [amount, setAmount] = useState("");
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [tokenA, setTokenA] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[0].symbol);
+  const [tokenB, setTokenB] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[1].symbol);
+  const [amountA, setAmountA] = useState("");
+  const [amountB, setAmountB] = useState("");
 
-  // const {
-  //   writeContract,
-  //   isPending: isLoadingContract,
-  //   isError: isErrorContract,
-  // } = useScaffoldWriteContract({
-  //   contractName: "Pair",
-  // });
+  const {
+    data: { pairAddr, poolBalance, userLiquidity, isLoading: isLoadingPoolLiquidity },
+    functions: { setTokenAddresses },
+  } = useManageLiquidity();
 
-  const { data: pairAddr, isLoading: isLoadingPairCount } = useScaffoldReadContract({
-    contractName: "Factory",
-    functionName: "getPair",
-    args: [usdc, weth],
+  const {
+    writeContract,
+    isPending: isLoadingContract,
+    error: writeContractError,
+  } = useScaffoldWriteContract({
+    contractName: "Pair",
   });
 
   const handleAddLiquidity = async () => {
-    setIsProcessing(true);
-    // const tx = writeContract({ functionName: "addLiquidity", args: [BigInt(amount), BigInt(amount)] });
-    setIsProcessing(false);
-    setAmount("");
+    writeContract({ functionName: "addLiquidity", args: [BigInt(amountA), BigInt(amountB)] });
   };
 
   const handleRemoveLiquidity = async () => {
-    setIsProcessing(true);
-    // In a real app, this would call a smart contract function to remove liquidity
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulating blockchain delay
-    setIsProcessing(false);
-    setAmount("");
+    writeContract({ functionName: "removeLiquidity", args: [BigInt(amountA)] });
   };
 
-  console.log(pairAddr);
+  useEffect(() => {
+    setTokenAddresses([getTokenAddr(tokenA), getTokenAddr(tokenB)]);
+  }, [tokenA, tokenB, setTokenAddresses]);
 
   return (
     <Card>
@@ -60,41 +54,101 @@ export default function ManageLiquidity() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Select value={selectedPool.id} onValueChange={value => setSelectedPool(pools.find(p => p.id === value)!)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select pool" />
-            </SelectTrigger>
-            <SelectContent className="bg-base-100 rounded-box">
-              {pools.map(pool => (
-                <SelectItem key={pool.id} value={pool.id}>
-                  {pool.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <div>
-            <p className="text-sm text-gray-500 mb-2">Pool Balance: 1000 LP Tokens</p>
-            <p className="text-sm text-gray-500 mb-2">Collected Fees: 10 USDC</p>
+          <div className="flex items-center space-x-2">
+            <Select value={tokenA} onValueChange={value => setTokenA(TOKENS.find(t => t.symbol === value)!.symbol)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select token" />
+              </SelectTrigger>
+              <SelectContent className="bg-base-100 rounded-box">
+                {TOKENS.map(token => (
+                  <SelectItem key={token.symbol} value={token.symbol}>
+                    {token.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              type="number"
+              placeholder="0.0"
+              value={amountA}
+              onChange={e => setAmountA(e.target.value)}
+              className="flex-grow"
+            />
           </div>
-          <Input type="number" placeholder="Amount" value={amount} onChange={e => setAmount(e.target.value)} />
+          <div className="flex items-center space-x-2">
+            <Select value={tokenB} onValueChange={value => setTokenB(TOKENS.find(t => t.symbol === value)!.symbol)}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select token" />
+              </SelectTrigger>
+              <SelectContent className="bg-base-100 rounded-box">
+                {TOKENS.map(token => (
+                  <SelectItem key={token.symbol} value={token.symbol}>
+                    {token.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Input
+              type="number"
+              placeholder="0.0"
+              value={amountB}
+              onChange={e => setAmountB(e.target.value)}
+              className="flex-grow"
+            />
+          </div>
+          <div>
+            {isLoadingPoolLiquidity ? (
+              <p className="text-sm text-gray-500 mb-2">Loading...</p>
+            ) : (
+              <>
+                <p className="text-sm text-gray-500 mb-2">
+                  {poolBalance ? `Pool Balance: ${poolBalance.toLocaleString()}` : "Pool Not Initialized"}
+                </p>
+                <p className="text-sm text-gray-500 mb-2">
+                  {userLiquidity ? `Your Liquidity: ${userLiquidity.toLocaleString()}` : "No Liquidity"}
+                </p>
+              </>
+            )}
+          </div>
           <Tabs defaultValue="add" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="add">Add Liquidity</TabsTrigger>
               <TabsTrigger value="remove">Remove Liquidity</TabsTrigger>
             </TabsList>
             <TabsContent value="add">
-              <Button className="w-full" onClick={handleAddLiquidity} disabled={isProcessing || !amount}>
-                {isProcessing ? "Processing..." : "Add Liquidity"}
+              <Button
+                className="w-full"
+                onClick={handleAddLiquidity}
+                disabled={isLoadingContract || !amountA || !amountB || !pairAddr || pairAddr === zeroAddress}
+              >
+                {isLoadingContract ? "Processing..." : "Add Liquidity"}
               </Button>
             </TabsContent>
             <TabsContent value="remove">
-              <Button className="w-full" onClick={handleRemoveLiquidity} disabled={isProcessing || !amount}>
-                {isProcessing ? "Processing..." : "Remove Liquidity"}
+              <Button
+                className="w-full"
+                onClick={handleRemoveLiquidity}
+                disabled={isLoadingContract || !amountA || !pairAddr || pairAddr === zeroAddress}
+              >
+                {isLoadingContract ? "Processing..." : "Remove Liquidity"}
               </Button>
             </TabsContent>
           </Tabs>
         </div>
       </CardContent>
+      <CardFooter className="flex flex-col justify-center">
+        {pairAddr && pairAddr !== zeroAddress && <p className="text-sm text-green-500">Pair Exists</p>}
+        {isLoadingContract && (
+          <p className="text-sm text-green-500">
+            <LoaderIcon className="animate-spin" />
+          </p>
+        )}
+        {writeContractError && (
+          <div className="text-sm text-red-500 w-full overflow-scroll">
+            <p>{writeContractError.message}</p>
+          </div>
+        )}
+      </CardFooter>
     </Card>
   );
 }
