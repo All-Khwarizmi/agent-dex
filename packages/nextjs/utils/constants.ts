@@ -99,4 +99,4 @@ export const TOKENS = [
     name: "Synthetix Network Token",
     address: "0xC011a73ee8576Fb46F5E1c5751cA3B9Fe0af2a6F",
   },
-];
+] as const;
