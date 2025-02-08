@@ -6,7 +6,9 @@ import { Button } from "./ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
+import { LoaderIcon } from "react-hot-toast";
 import { zeroAddress } from "viem";
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { TOKENS } from "~~/utils/constants";
 
 function getTokenAddr(tokenSymbol: string) {
@@ -17,17 +19,23 @@ export default function CreatePool() {
   const [tokenB, setTokenB] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[1].symbol);
   const [amountA, setAmountA] = useState("");
   const [amountB, setAmountB] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
 
   const {
     data: { pairAddr, isLoading: isLoadingPairCount },
     functions: { setTokenAddresses },
   } = useGetPairAddress();
 
-  const handleCreatePool = async () => {
-    setIsCreating(true);
+  const {
+    writeContract,
+    isPending: isLoadingContract,
+    error: writeContractError,
+  } = useScaffoldWriteContract({
+    contractName: "Factory",
+  });
 
-    setIsCreating(false);
+  const handleCreatePool = async () => {
+    writeContract({ functionName: "createPair", args: [getTokenAddr(tokenA), getTokenAddr(tokenB)] });
+
     // Reset form after pool creation
     setAmountA("");
     setAmountB("");
@@ -92,13 +100,25 @@ export default function CreatePool() {
         <Button
           className="w-full"
           onClick={handleCreatePool}
-          disabled={isCreating || !amountA || !amountB || !pairAddr || pairAddr !== zeroAddress}
+          disabled={isLoadingContract || !amountA || !amountB || !pairAddr || pairAddr !== zeroAddress}
         >
-          {isCreating || isLoadingPairCount ? "Creating..." : "Create Pool"}
+          {isLoadingContract || isLoadingPairCount ? "Creating..." : "Create Pool"}
         </Button>
 
         {pairAddr && pairAddr !== zeroAddress && <p className="text-sm text-green-500">Pair Already Created</p>}
+        {isLoadingContract && (
+          <p className="text-sm text-green-500">
+            <LoaderIcon className="animate-spin " />
+          </p>
+        )}
+
+        {writeContractError && (
+          <div className="text-sm text-red-500 w-full overflow-scroll">
+            <p>{writeContractError.message}</p>
+          </div>
+        )}
       </CardFooter>
     </Card>
   );
 }
+
