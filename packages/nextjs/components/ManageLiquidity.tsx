@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/Tabs";
 import { LoaderIcon } from "react-hot-toast";
 import { zeroAddress } from "viem";
 import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
-import { TOKENS } from "~~/utils/constants";
+import { PAIR_CONTRACT_NAME, TOKENS } from "~~/utils/constants";
 
 function getTokenAddr(tokenSymbol: string) {
   return TOKENS.find(token => token.symbol === tokenSymbol)?.address || "";
@@ -19,29 +19,28 @@ function getTokenAddr(tokenSymbol: string) {
 export default function ManageLiquidity() {
   const [tokenA, setTokenA] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[0].symbol);
   const [tokenB, setTokenB] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[1].symbol);
-  const [amountA, setAmountA] = useState("");
-  const [amountB, setAmountB] = useState("");
 
   const {
-    data: { pairAddr, poolBalance, userLiquidity, isLoading: isLoadingPoolLiquidity },
-    functions: { setTokenAddresses },
+    data: {
+      pairAddr,
+      poolBalance,
+      userLiquidity,
+      isLoading: isLoadingPoolLiquidity,
+      amountA,
+      amountB,
+      liquidityToRemove,
+      isLoadingContract,
+      writeContractError,
+    },
+    functions: {
+      setTokenAddresses,
+      setAmountA,
+      setAmountB,
+      setLiquidityToRemove,
+      handleAddLiquidity,
+      handleRemoveLiquidity,
+    },
   } = useManageLiquidity();
-
-  const {
-    writeContract,
-    isPending: isLoadingContract,
-    error: writeContractError,
-  } = useScaffoldWriteContract({
-    contractName: "Pair",
-  });
-
-  const handleAddLiquidity = async () => {
-    writeContract({ functionName: "addLiquidity", args: [BigInt(amountA), BigInt(amountB)] });
-  };
-
-  const handleRemoveLiquidity = async () => {
-    writeContract({ functionName: "removeLiquidity", args: [BigInt(amountA)] });
-  };
 
   useEffect(() => {
     setTokenAddresses([getTokenAddr(tokenA), getTokenAddr(tokenB)]);
