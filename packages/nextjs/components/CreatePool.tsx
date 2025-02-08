@@ -1,29 +1,33 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "./ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
-import { Button } from "./ui/button";
-
-const tokens = [
-  { symbol: "ETH", name: "Ethereum" },
-  { symbol: "USDC", name: "USD Coin" },
-  { symbol: "WBTC", name: "Wrapped Bitcoin" },
-  { symbol: "DAI", name: "Dai Stablecoin" },
-];
+import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { TOKENS } from "~~/utils/constants";
 
 export default function CreatePool() {
-  const [tokenA, setTokenA] = useState(tokens[0]);
-  const [tokenB, setTokenB] = useState(tokens[1]);
+  const [tokenA, setTokenA] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[0].symbol);
+  const [tokenB, setTokenB] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[1].symbol);
   const [amountA, setAmountA] = useState("");
   const [amountB, setAmountB] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
+  const {
+    writeContract,
+    isPending: isLoadingContract,
+    isError: isErrorContract,
+  } = useScaffoldWriteContract({
+    contractName: "Pair",
+  });
+
   const handleCreatePool = async () => {
     setIsCreating(true);
-    // In a real app, this would call a smart contract function to create the pool
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulating blockchain delay
+
+    writeContract({ functionName: "addLiquidity", args: [BigInt(amountA), BigInt(amountB)] });
+
     setIsCreating(false);
     // Reset form after pool creation
     setAmountA("");
@@ -38,12 +42,12 @@ export default function CreatePool() {
       <CardContent>
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
-            <Select value={tokenA.symbol} onValueChange={value => setTokenA(tokens.find(t => t.symbol === value)!)}>
+            <Select value={tokenA} onValueChange={value => setTokenA(TOKENS.find(t => t.symbol === value)!.symbol)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select token" />
               </SelectTrigger>
-              <SelectContent>
-                {tokens.map(token => (
+              <SelectContent className="bg-base-100 rounded-box">
+                {TOKENS.map(token => (
                   <SelectItem key={token.symbol} value={token.symbol}>
                     {token.name}
                   </SelectItem>
@@ -59,12 +63,12 @@ export default function CreatePool() {
             />
           </div>
           <div className="flex items-center space-x-2">
-            <Select value={tokenB.symbol} onValueChange={value => setTokenB(tokens.find(t => t.symbol === value)!)}>
+            <Select value={tokenB} onValueChange={value => setTokenB(TOKENS.find(t => t.symbol === value)!.symbol)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Select token" />
               </SelectTrigger>
-              <SelectContent>
-                {tokens.map(token => (
+              <SelectContent className="bg-base-100 rounded-box">
+                {TOKENS.map(token => (
                   <SelectItem key={token.symbol} value={token.symbol}>
                     {token.name}
                   </SelectItem>
@@ -83,8 +87,10 @@ export default function CreatePool() {
       </CardContent>
       <CardFooter>
         <Button className="w-full" onClick={handleCreatePool} disabled={isCreating || !amountA || !amountB}>
-          {isCreating ? "Creating Pool..." : "Create Pool"}
+          {isCreating || isLoadingContract ? "Creating..." : "Create Pool"}
         </Button>
+
+        {isErrorContract && <p className="text-sm text-red-500">Error</p>}
       </CardFooter>
     </Card>
   );
