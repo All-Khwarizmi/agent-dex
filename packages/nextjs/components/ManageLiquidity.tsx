@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "./ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/Tabs";
-import { Button } from "./ui/button";
+import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 const pools = [
   { id: "1", name: "ETH/USDC" },
@@ -13,15 +14,31 @@ const pools = [
   { id: "3", name: "ETH/DAI" },
 ];
 
+const usdc = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+const weth = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
+
 export default function ManageLiquidity() {
   const [selectedPool, setSelectedPool] = useState(pools[0]);
   const [amount, setAmount] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // const {
+  //   writeContract,
+  //   isPending: isLoadingContract,
+  //   isError: isErrorContract,
+  // } = useScaffoldWriteContract({
+  //   contractName: "Pair",
+  // });
+
+  const { data: pairAddr, isLoading: isLoadingPairCount } = useScaffoldReadContract({
+    contractName: "Factory",
+    functionName: "getPair",
+    args: [usdc, weth],
+  });
+
   const handleAddLiquidity = async () => {
     setIsProcessing(true);
-    // In a real app, this would call a smart contract function to add liquidity
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulating blockchain delay
+    // const tx = writeContract({ functionName: "addLiquidity", args: [BigInt(amount), BigInt(amount)] });
     setIsProcessing(false);
     setAmount("");
   };
@@ -34,6 +51,8 @@ export default function ManageLiquidity() {
     setAmount("");
   };
 
+  console.log(pairAddr);
+
   return (
     <Card>
       <CardHeader>
@@ -45,7 +64,7 @@ export default function ManageLiquidity() {
             <SelectTrigger>
               <SelectValue placeholder="Select pool" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-base-100 rounded-box">
               {pools.map(pool => (
                 <SelectItem key={pool.id} value={pool.id}>
                   {pool.name}
