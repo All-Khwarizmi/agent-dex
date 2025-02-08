@@ -1,4 +1,5 @@
-// script/Deploy.s.sol
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.19;
 
 import "./DeployHelpers.s.sol";
@@ -10,24 +11,15 @@ import "../contracts/test/MockERC20.sol";
 
 contract Deploy is ScaffoldETHDeploy {
     function run() external ScaffoldEthDeployerRunner {
-        // Deploy mock tokens first
-        MockERC20 tokenA = new MockERC20("Token A", "TKNA");
-        MockERC20 tokenB = new MockERC20("Token B", "TKNB");
+      
 
-        // Mint some tokens to deployer
-        tokenA.mint(msg.sender, 1_000_000 * 1e18);
-        tokenB.mint(msg.sender, 1_000_000 * 1e18);
 
-        console.log("Token A deployed to:", address(tokenA));
-        console.log("Token B deployed to:", address(tokenB));
 
         // Deploy factory
         Factory factory = new Factory();
         console.log("Factory deployed to:", address(factory));
 
         // Create pairs
-        address pairAB = factory.createPair(address(tokenA), address(tokenB));
-        console.log("Pair A-B deployed to:", pairAB);
 
         // Deploy price checker pair
         Pair priceChecker = new Pair(

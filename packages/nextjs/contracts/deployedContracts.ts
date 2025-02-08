@@ -4,10 +4,11 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
+
 const deployedContracts = {
   1: {
     Pair: {
-      address: "0x2a264f26859166c5bf3868a54593ee716aebc848",
+      address: "0x83AEB412B3d0688D636F53F357233a203bfbC7e1",
       abi: [
         {
           type: "constructor",
@@ -776,6 +777,125 @@ const deployedContracts = {
       ],
       inheritedFunctions: {},
       deploymentFile: "run-1738877329.json",
+      deploymentScript: "Deploy.s.sol",
+    },
+    Factory: {
+      address: "0xe054e0f97b056c35a8be2bac987445f42c920d09",
+      abi: [
+        {
+          type: "function",
+          name: "allPairs",
+          inputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "createPair",
+          inputs: [
+            {
+              name: "_tokenA",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "_tokenB",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "pair",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
+          name: "getPair",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getPairCount",
+          inputs: [],
+          outputs: [
+            {
+              name: "poolCount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "event",
+          name: "PairCreated",
+          inputs: [
+            {
+              name: "token0",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "token1",
+              type: "address",
+              indexed: true,
+              internalType: "address",
+            },
+            {
+              name: "pair",
+              type: "address",
+              indexed: false,
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "uint256",
+              indexed: false,
+              internalType: "uint256",
+            },
+          ],
+          anonymous: false,
+        },
+      ],
+      inheritedFunctions: {},
+      deploymentFile: "run-1739006295.json",
       deploymentScript: "Deploy.s.sol",
     },
   },
