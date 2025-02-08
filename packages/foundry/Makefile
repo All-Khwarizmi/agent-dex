@@ -1,6 +1,42 @@
 .PHONY: build deploy generate-abis verify-keystore account chain compile flatten fork format lint test verify
 
 DEPLOY_SCRIPT ?= script/Deploy.s.sol
+FUND_SCRIPT ?= ./script/FundUser.sol:FundUser
+USER_ADDRESS ?= 0xDcc4E41072017A20101B68B9500630A3ab6fE2fF
+
+
+
+# Fund user on local chain
+fund:
+	@if [ "$(USER_ADDRESS)" = "0x0" ]; then \
+		forge script $(FUND_SCRIPT) --rpc-url localhost --broadcast --legacy; \
+	else \
+		forge script $(FUND_SCRIPT) $(USER_ADDRESS) --rpc-url localhost --broadcast -vvvvv; \
+	fi
+
+# # Fund user on Sepolia
+# fund-sepolia:
+# 	@if [ "$(USER_ADDRESS)" = "0x0" ]; then \
+# 		forge script $(FUND_SCRIPT) --rpc-url $(SEPOLIA_RPC_URL) --broadcast; \
+# 	else \
+# 		forge script $(FUND_SCRIPT) --sig "run(address)" $(USER_ADDRESS) --rpc-url $(SEPOLIA_RPC_URL) --broadcast; \
+# 	fi
+
+# # Fund user on Mainnet fork
+# fund-mainnet:
+# 	@if [ "$(USER_ADDRESS)" = "0x0" ]; then \
+# 		forge script $(FUND_SCRIPT) --rpc-url $(MAINNET_RPC_URL) --broadcast; \
+# 	else \
+# 		forge script $(FUND_SCRIPT) --sig "run(address)" $(USER_ADDRESS) --rpc-url $(MAINNET_RPC_URL) --broadcast; \
+# 	fi
+
+# # Fund specific user with specific tokens
+# fund-user:
+# 	@if [ -z "$(USER)" ] || [ -z "$(TOKENS)" ]; then \
+# 		echo "Usage: make fund-user USER=<address> TOKENS='USDC,WETH,DAI'"; \
+# 		exit 1; \
+# 	fi
+# 	forge script $(FUND_SCRIPT) --sig "fundSpecific(address,string)" $(USER) $(TOKENS) --rpc-url localhost --broadcast --legacy
 
 # setup wallet for anvil
 setup-anvil-wallet:

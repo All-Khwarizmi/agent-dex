@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "account": "make account",
+    "fund-user": "make fund-user USER=${1:-0xDcc4E41072017A20101B68B9500630A3ab6fE2fF}",
     "account:generate": "make account-generate ACCOUNT_NAME=${1:-scaffold-eth-custom}",
     "account:import": "make account-import ACCOUNT_NAME=${1:-scaffold-eth-custom}",
     "chain": "make chain",

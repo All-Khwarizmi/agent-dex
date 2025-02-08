@@ -9,17 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "../contracts/interfaces/IUniswapFactory.sol";
 import "../contracts/interfaces/IUniswapRouter.sol";
 
-// Create a simple mock token for testing
-contract MockERC20 is ERC20 {
-    constructor(string memory name, string memory symbol) ERC20(name, symbol) {
-        // Mint some initial tokens to the deployer
-        _mint(msg.sender, 1000000 * 10 ** 18);
-    }
-
-    function mint(address to, uint256 amount) public {
-        _mint(to, amount);
-    }
-}
 
 contract PairTest is Test {
     Pair public pair;
@@ -351,12 +340,10 @@ contract PairTest is Test {
         console.log("Swap Amount: %s USDC", swapAmount / 1e6);
 
         // Calculate expected output using our library
-        uint256 amountOut = PairLibrary.getAmountOut(
+        uint256 amountOut = pair.getAmountOut(
             swapAmount,
             reserveUSDC,
-            reserveWETH,
-            997, // FEE_NUMERATOR
-            1000 // FEE_DENOMINATOR
+            reserveWETH
         );
 
         console.log("\nStep by Step Calculation:");
@@ -431,7 +418,12 @@ contract PairTest is Test {
 
         // Verify exact amounts
         assertEq(usdcSpent, swapAmount, "Incorrect USDC spent");
-        assertApproxEqRel(wethReceived, expectedWethReceived, 20 * 1e18, "Incorrect WETH received");
+        assertApproxEqRel(
+            wethReceived,
+            expectedWethReceived,
+            20 * 1e18,
+            "Incorrect WETH received"
+        );
 
         // Verify no precision loss
         assertTrue(wethReceived > 0, "Should receive non-zero WETH");
