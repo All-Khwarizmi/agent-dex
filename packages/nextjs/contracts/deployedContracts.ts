@@ -768,7 +768,7 @@ const deployedContracts = {
   },
   31337: {
     Factory: {
-      address: "0x8ce361602b935680e8dec218b820ff5056beb7af",
+      address: "0x0c8e79f3534b00d9a3d4a856b665bf4ebc22f2ba",
       abi: [
         {
           type: "function",
@@ -883,11 +883,11 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1738927515.json",
+      deploymentFile: "run-1738992899.json",
       deploymentScript: "Deploy.s.sol",
     },
     Pair: {
-      address: "0xe1da8919f262ee86f9be05059c9280142cf23f48",
+      address: "0xf7cd8fa9b94db2aa972023b379c7f72c65e4de9d",
       abi: [
         {
           type: "constructor",
@@ -1642,7 +1642,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1738927515.json",
+      deploymentFile: "run-1738992899.json",
       deploymentScript: "Deploy.s.sol",
     },
   },

@@ -1,13 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useGetPairAddress } from "./hooks/useGetPairAddress";
 import { Button } from "./ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/Select";
-import { useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
+import { zeroAddress } from "viem";
 import { TOKENS } from "~~/utils/constants";
 
+function getTokenAddr(tokenSymbol: string) {
+  return TOKENS.find(token => token.symbol === tokenSymbol)?.address || "";
+}
 export default function CreatePool() {
   const [tokenA, setTokenA] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[0].symbol);
   const [tokenB, setTokenB] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[1].symbol);
@@ -16,23 +20,22 @@ export default function CreatePool() {
   const [isCreating, setIsCreating] = useState(false);
 
   const {
-    writeContract,
-    isPending: isLoadingContract,
-    isError: isErrorContract,
-  } = useScaffoldWriteContract({
-    contractName: "Pair",
-  });
+    data: { pairAddr, isLoading: isLoadingPairCount },
+    functions: { setTokenAddresses },
+  } = useGetPairAddress();
 
   const handleCreatePool = async () => {
     setIsCreating(true);
-
-    writeContract({ functionName: "addLiquidity", args: [BigInt(amountA), BigInt(amountB)] });
 
     setIsCreating(false);
     // Reset form after pool creation
     setAmountA("");
     setAmountB("");
   };
+
+  useEffect(() => {
+    setTokenAddresses([getTokenAddr(tokenA), getTokenAddr(tokenB)]);
+  }, [tokenA, tokenB, setTokenAddresses]);
 
   return (
     <Card>
@@ -85,12 +88,16 @@ export default function CreatePool() {
           </div>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button className="w-full" onClick={handleCreatePool} disabled={isCreating || !amountA || !amountB}>
-          {isCreating || isLoadingContract ? "Creating..." : "Create Pool"}
+      <CardFooter className="flex flex-col justify-center">
+        <Button
+          className="w-full"
+          onClick={handleCreatePool}
+          disabled={isCreating || !amountA || !amountB || !pairAddr || pairAddr !== zeroAddress}
+        >
+          {isCreating || isLoadingPairCount ? "Creating..." : "Create Pool"}
         </Button>
 
-        {isErrorContract && <p className="text-sm text-red-500">Error</p>}
+        {pairAddr && pairAddr !== zeroAddress && <p className="text-sm text-green-500">Pair Already Created</p>}
       </CardFooter>
     </Card>
   );

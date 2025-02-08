@@ -1,7 +1,6 @@
 "use client";
 
 import { NextPage } from "next";
-import { useAccount } from "wagmi";
 import CreatePool from "~~/components/CreatePool";
 import DEXInterface from "~~/components/DexInterface";
 import LLMChat from "~~/components/LLMChat";
