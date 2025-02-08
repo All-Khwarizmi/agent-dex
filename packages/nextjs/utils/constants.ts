@@ -102,3 +102,4 @@ export const TOKENS = [
 ] as const;
 
 export const FACTORY_CONTRACT_NAME = "Factory";
+export const PAIR_CONTRACT_NAME = "Pair";

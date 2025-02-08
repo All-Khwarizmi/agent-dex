@@ -298,6 +298,19 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "poolBalance",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "removeLiquidity",
           inputs: [
             {
@@ -883,11 +896,11 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1738992899.json",
+      deploymentFile: "run-1739006295.json",
       deploymentScript: "Deploy.s.sol",
     },
     Pair: {
-      address: "0xf7cd8fa9b94db2aa972023b379c7f72c65e4de9d",
+      address: "0x12975173b87f7595ee45dffb2ab812ece596bf84",
       abi: [
         {
           type: "constructor",
@@ -1172,6 +1185,19 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "poolBalance",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "view",
@@ -1642,7 +1668,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1738992899.json",
+      deploymentFile: "run-1739006295.json",
       deploymentScript: "Deploy.s.sol",
     },
   },
