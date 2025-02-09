@@ -23,10 +23,20 @@ export class Pool {
   @Index('idx_pools_token1')
   token1: string;
 
-  @Column({ type: 'decimal', precision: 36, scale: 18, default: '0' })
+  @Column({
+    type: 'numeric',
+    precision: 78,
+    scale: 0,
+    default: '0',
+  })
   reserve0: string;
 
-  @Column({ type: 'decimal', precision: 36, scale: 18, default: '0' })
+  @Column({
+    type: 'numeric',
+    precision: 78,
+    scale: 0,
+    default: '0',
+  })
   reserve1: string;
 
   @CreateDateColumn({ type: 'timestamptz' })

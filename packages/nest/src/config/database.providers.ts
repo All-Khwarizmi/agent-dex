@@ -19,6 +19,14 @@ export const databaseProviders = [
         database: configService.get<string>('DB_NAME', 'myapp'),
         entities: [__dirname + '/../**/*.entity{.ts,.js}'],
         synchronize: process.env.NODE_ENV !== 'production', // Be careful with this in production
+        extra: {
+          max: 20,
+          connectionTimeoutMillis: 5000,
+          idleTimeoutMillis: 30000,
+          query_timeout: 5000,
+          retryAttempts: 3,
+          retryDelay: 3000,
+        },
       });
 
       return dataSource.initialize();

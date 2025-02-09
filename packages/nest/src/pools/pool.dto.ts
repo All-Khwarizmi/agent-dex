@@ -1,18 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
-
+import { IsString, IsEthereumAddress, IsNotEmpty } from 'class-validator';
 export class CreatePoolDto {
   @ApiProperty({ example: '0x123', description: 'Adresse du pool' })
+  @IsEthereumAddress()
+  @IsString()
+  @IsNotEmpty()
   address: string;
 
   @ApiProperty({ example: '0x456', description: 'Adresse du token0' })
+  @IsEthereumAddress()
+  @IsString()
+  @IsNotEmpty()
   token0: string;
 
   @ApiProperty({ example: '0x789', description: 'Adresse du token1' })
+  @IsEthereumAddress()
+  @IsString()
+  @IsNotEmpty()
   token1: string;
 
-  @ApiProperty({ example: '1000', description: 'Réserve du token0' })
+  @ApiProperty({ description: 'Reserve of token0 in wei' })
   reserve0: string;
 
-  @ApiProperty({ example: '2000', description: 'Réserve du token1' })
+  @ApiProperty({ description: 'Reserve of token1 in wei' })
   reserve1: string;
 }

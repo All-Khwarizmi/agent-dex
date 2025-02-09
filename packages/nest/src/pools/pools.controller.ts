@@ -29,7 +29,16 @@ export class PoolsController {
   @Post()
   @ApiOperation({ summary: 'Créer un nouveau pool' })
   @ApiResponse({ status: 201, description: 'Pool créé avec succès.' })
-  create(@Body() createPoolDto: CreatePoolDto) {
-    return this.poolsService.create(createPoolDto);
+  @ApiResponse({ status: 400, description: 'Erreur de validation.' })
+  async create(@Body() createPoolDto: CreatePoolDto) {
+    try {
+      console.log(createPoolDto);
+      const pool = await this.poolsService.create(createPoolDto);
+      console.log(pool);
+      return pool;
+    } catch (error) {
+      console.log(error);
+      return { error: error.message };
+    }
   }
 }
