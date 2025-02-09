@@ -1,5 +1,6 @@
 export const REPOSITORIES = {
   USER: 'USER_REPOSITORY',
   POOL: 'POOL_REPOSITORY',
+  EVENT: 'EVENT_REPOSITORY',
   DB: 'DATA_SOURCE',
 } as const;
