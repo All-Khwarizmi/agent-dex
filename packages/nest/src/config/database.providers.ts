@@ -1,10 +1,11 @@
 import { ConfigService } from '@nestjs/config';
+import { REPOSITORIES } from 'src/utils/constants';
 
 import { DataSource } from 'typeorm';
 
 export const databaseProviders = [
   {
-    provide: 'DATA_SOURCE',
+    provide: REPOSITORIES.DB,
     inject: [ConfigService],
     useFactory: async (configService: ConfigService) => {
       const dataSource = new DataSource({
