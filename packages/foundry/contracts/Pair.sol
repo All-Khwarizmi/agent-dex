@@ -171,7 +171,6 @@ contract Pair is ERC20 {
         console.log("Better than Uniswap: %s", !shouldSwapWithUniswap);
     }
 
-    // TODO: Add Investment event
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
         require(amount0 > 0 && amount1 > 0, "AgentDEX: INSUFFICIENT_INPUT");
 
@@ -202,6 +201,8 @@ contract Pair is ERC20 {
 
             reserve0 = amount0;
             reserve1 = amount1;
+
+            emit Investment(msg.sender, liquidity - MINIMUM_LIQUIDITY);
         } else {
             // Subsequent liquidity provisions
 
@@ -234,13 +235,14 @@ contract Pair is ERC20 {
 
             reserve0 += amount0;
             reserve1 += amount1;
+
+            emit Investment(msg.sender, liquidity);
         }
 
         emit Mint(msg.sender, amount0, amount1);
     }
 
     // TODO: Add checks to ensure removing liquidity is safe for the pool
-    // TODO: Add Divestment event
     function removeLiquidity(uint256 amount) external lock {
         require(amount > 0, "AgentDEX: INSUFFICIENT_INPUT");
 
@@ -268,6 +270,9 @@ contract Pair is ERC20 {
         reserve1 -= amount1;
 
         emit Burn(msg.sender, amount0, amount1, msg.sender);
+        
+        emit Divestment(msg.sender, amount);
+
     }
 
     function swap(
