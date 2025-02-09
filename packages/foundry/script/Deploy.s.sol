@@ -11,9 +11,6 @@ import "../contracts/test/MockERC20.sol";
 
 contract Deploy is ScaffoldETHDeploy {
     function run() external ScaffoldEthDeployerRunner {
-      
-
-
 
         // Deploy factory
         Factory factory = new Factory();
