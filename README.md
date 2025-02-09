@@ -56,6 +56,7 @@ AgentDEX is a decentralized exchange that combines traditional DEX functionality
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
     - [Local Development](#local-development)
+    - [Deploying new Factory Contract or new Virtual Testnet](#deploying-new-factory-contract-or-new-virtual-testnet)
   - [Usage](#usage)
     - [Traditional Interface](#traditional-interface)
     - [AI Agent Interface](#ai-agent-interface-1)
@@ -136,12 +137,20 @@ yarn nest:start
 yarn start
 ```
 
-> 🚧  To verify the contracts manually, you can use the [Tenderly Verifier](https://dashboard.tenderly.co/verifier).
+> 🚧 To verify the contracts manually, you can use the [Tenderly Verifier](https://dashboard.tenderly.co/verifier).
 
 ```bash
 # Get the ABI
 forge build --silent && jq '.abi' ./out/Factory.sol/Factory.json
 ```
+
+### Deploying new Factory Contract or new Virtual Testnet
+
+> 🚧 When deploying a new Factory contract or new Virtual Testnet, you will need to update the following:
+>
+> - `FACTORY_ADDRESS` in the `.env` file from nest package.
+> - RPC URL and Block Explorer URL in the `hardhat.config.ts` file from the foundry package.
+> - To be able to use the scaffold-eth hooks, you will need to deploy using the `deploy script` command (to trigger the creation of the contract in `nextjs/contracts/deployedContracts.ts`) or recycle the contract from the previous deployment, changing the `address` of the contract and maybe the chain ID.
 
 ## Usage
 
