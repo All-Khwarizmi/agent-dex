@@ -71,12 +71,45 @@ contract Pair is ERC20 {
     }
 
     function getReserves()
-        public
+        external
         view
         returns (uint256 _reserve0, uint256 _reserve1)
     {
         _reserve0 = reserve0;
         _reserve1 = reserve1;
+    }
+
+    // TODO: check if this is correct
+    function poolBalance() external view returns (uint256) {
+        uint256 _totalSupply = totalSupply();
+        return Math.min((_totalSupply) / reserve0, (_totalSupply) / reserve1);
+    }
+
+    function getReservesFromToken(
+        address token
+    ) public view returns (uint reserves) {
+        if (token == token0) {
+            return reserve0;
+        } else if (token == token1) {
+            return reserve1;
+        }
+    }
+
+    function getAmountOut(
+        address targetToken,
+        address fromToken,
+        uint256 amountIn
+    ) public view returns (uint256 amountOut) {
+        uint256 reserveIn = getReservesFromToken(fromToken);
+        uint256 reserveOut = getReservesFromToken(targetToken);
+
+        unchecked {
+            uint256 amountInWithFee = amountIn * FEE_NUMERATOR;
+            uint256 numerator = amountInWithFee * reserveOut;
+            uint256 denominator = (reserveIn * FEE_DENOMINATOR) +
+                amountInWithFee;
+            amountOut = numerator / denominator;
+        }
     }
 
     function shouldSwap(
@@ -94,7 +127,8 @@ contract Pair is ERC20 {
         console.log("Reserve Out:", reserveOut);
 
         // Get output amount
-        uint256 amountOut = getAmountOut(amountIn, reserveIn, reserveOut);
+        uint256 amountOut = getAmountOut(targetToken, fromToken, amountIn);
+        require(amountOut > 0, "INSUFFICIENT_OUTPUT_AMOUNT");
 
         // Calculate price impact: (amountIn / reserveIn) * 10000 for bps
         uint256 priceImpact = (amountIn * 10000) / reserveIn;
@@ -121,33 +155,6 @@ contract Pair is ERC20 {
             acceptableReserveRatio;
     }
 
-    function getAmountOut(
-        uint256 amountIn,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) public pure returns (uint256 amountOut) {
-        require(amountIn > 0, "INSUFFICIENT_INPUT_AMOUNT");
-        require(reserveIn > 0 && reserveOut > 0, "INSUFFICIENT_LIQUIDITY");
-
-        // Add console logs for debugging
-        unchecked {
-            // Example: For 1000 USDC -> WETH
-            // amountIn = 1000e6
-            // reserveIn = 1_000_000e6 (USDC)
-            // reserveOut = 500e18 (WETH)
-            // FEE_NUMERATOR = 997
-            // FEE_DENOMINATOR = 1000
-
-            uint256 amountInWithFee = amountIn * FEE_NUMERATOR; // 997_000e6
-            uint256 numerator = amountInWithFee * reserveOut; // 997_000e6 * 500e18
-            uint256 denominator = (reserveIn * FEE_DENOMINATOR) +
-                amountInWithFee; // (1_000_000e6 * 1000) + 997_000e6
-            amountOut = numerator / denominator;
-        }
-
-        require(amountOut > 0, "INSUFFICIENT_OUTPUT_AMOUNT");
-    }
-
     function uniswapHasBetterPrice(
         uint256 amountIn,
         address fromToken,
@@ -164,92 +171,7 @@ contract Pair is ERC20 {
         console.log("Better than Uniswap: %s", !shouldSwapWithUniswap);
     }
 
-    function getReservesFromToken(
-        address token
-    ) public view returns (uint reserves) {
-        if (token == token0) {
-            return reserve0;
-        } else if (token == token1) {
-            return reserve1;
-        }
-    }
-
-    function getAmountOut(
-        address targetToken,
-        address fromToken,
-        uint256 amountIn
-    ) public view returns (uint256 amountOut) {
-        uint256 reserveIn = getReservesFromToken(fromToken);
-        uint256 reserveOut = getReservesFromToken(targetToken);
-
-        console.log("Reserves for calculation:");
-        console.log("Reserve In (From Token):", reserveIn);
-        console.log("Reserve Out (Target Token):", reserveOut);
-
-        return getAmountOut(amountIn, reserveIn, reserveOut);
-    }
-
-    function calculatePriceImpact(
-        address targetToken,
-        address fromToken,
-        uint amountIn
-    ) public view returns (uint256 priceImpact) {
-        uint256 reserveIn = getReservesFromToken(fromToken);
-        uint256 reserveOut = getReservesFromToken(targetToken);
-        uint256 amountOut = getAmountOut(
-            amountIn,
-            reserveIn,
-            reserveOut
-        );
-
-        priceImpact = ((amountOut) * 100) / reserveOut;
-    }
-
-    function calculateReservesBalanceVariation(
-        address targetToken,
-        address fromToken,
-        uint amountIn
-    ) public view returns (uint256 reservesBalance) {
-        uint256 reserveIn = getReservesFromToken(fromToken);
-        uint256 reserveOut = getReservesFromToken(targetToken);
-
-        // Calculate reserves balance before swap
-        uint256 balanceBefore = reserveOut > reserveIn
-            ? reserveOut - reserveIn
-            : reserveIn - reserveOut;
-
-        // Calculate amount out
-        uint256 amountOut = getAmountOut(
-            amountIn,
-            reserveIn,
-            reserveOut
-        );
-
-        // Calculate new reserves
-        uint256 newReserveOut = reserveOut + amountOut;
-        uint256 newReserveIn = reserveIn + amountIn;
-
-        // Calculate new reserves balance
-        uint256 balanceAfter = newReserveOut > newReserveIn
-            ? newReserveOut - newReserveIn
-            : newReserveIn - newReserveOut;
-
-        // Calculate variation in reserves in percentage
-        reservesBalance = balanceBefore > balanceAfter
-            ? balanceBefore - balanceAfter
-            : balanceAfter - balanceBefore;
-
-        reservesBalance = Math.max(
-            (reservesBalance * 100) / reserve0,
-            (reservesBalance * 100) / reserve1
-        );
-    }
-
-    function poolBalance() public view returns (uint256) {
-        uint256 _totalSupply = totalSupply();
-        return Math.min((_totalSupply) / reserve0, (_totalSupply) / reserve1);
-    }
-
+    // TODO: Add Investment event
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
         require(amount0 > 0 && amount1 > 0, "AgentDEX: INSUFFICIENT_INPUT");
 
@@ -317,6 +239,8 @@ contract Pair is ERC20 {
         emit Mint(msg.sender, amount0, amount1);
     }
 
+    // TODO: Add checks to ensure removing liquidity is safe for the pool
+    // TODO: Add Divestment event
     function removeLiquidity(uint256 amount) external lock {
         require(amount > 0, "AgentDEX: INSUFFICIENT_INPUT");
 
@@ -328,11 +252,9 @@ contract Pair is ERC20 {
             "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE"
         );
 
-        // Calculate amounts
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
 
-        // Check for zero returns
         require(
             amount0 > 0 && amount1 > 0,
             "AgentDEX: INSUFFICIENT_LIQUIDITY_BURNED"
@@ -362,14 +284,10 @@ contract Pair is ERC20 {
         console.log("Token0:", token0);
         console.log("Token1:", token1);
 
-        bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
-        require(_shouldSwap, "AgentDEX: SWAP_CONDITION_NOT_MET");
-
         // Calculate amount out
         uint256 amountOut = getAmountOut(targetToken, fromToken, amountIn);
         require(amountOut > 0, "AgentDEX: INSUFFICIENT_OUTPUT_AMOUNT");
 
-        // TODO:
         // 1. Check if uniswapV2 has better price
         (
             bool shouldSwapWithUniswap,
@@ -380,7 +298,7 @@ contract Pair is ERC20 {
         console.log("Should Swap With Uniswap:", shouldSwapWithUniswap);
         console.log("Uniswap Amount:", uniswapAmount);
 
-        // 2. If yes, swap with uniswapV2 and takes fees
+        // 2. If yes, swap with uniswapV2 and take fees
         if (shouldSwapWithUniswap) {
             // First transfer FROM user TO pair
             _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
@@ -431,6 +349,8 @@ contract Pair is ERC20 {
             return;
         }
         // 3. If no, swap with our protocol
+        bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
+        require(_shouldSwap, "AgentDEX: SWAP_CONDITION_NOT_MET");
 
         // Log pre-transfer balances
         console.log("\n=== Pre-Transfer Balances ===");
@@ -521,16 +441,6 @@ contract Pair is ERC20 {
         require(
             success && (data.length == 0 || abi.decode(data, (bool))),
             "AgentDEX: TRANSFER_FAILED"
-        );
-    }
-
-    function _safeApprove(address token, address to, uint value) private {
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(ERC20.approve.selector, to, value)
-        );
-        require(
-            success && (data.length == 0 || abi.decode(data, (bool))),
-            "AgentDEX: APPROVE_FAILED"
         );
     }
 }

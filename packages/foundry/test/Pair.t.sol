@@ -327,48 +327,6 @@ contract PairTest is Test {
         );
     }
 
-    function testAmountCalculations() public view {
-        // Setup initial state
-        uint256 reserveUSDC = 1_000_000 * 1e6; // 1M USDC
-        uint256 reserveWETH = 500 * 1e18; // 500 WETH
-        uint256 swapAmount = 1000 * 1e6; // 1000 USDC
-
-        console.log("\n=== Test Amount Calculations ===");
-        console.log("Initial State:");
-        console.log("USDC Reserve: %s", reserveUSDC / 1e6);
-        console.log("WETH Reserve: %s", reserveWETH / 1e18);
-        console.log("Swap Amount: %s USDC", swapAmount / 1e6);
-
-        // Calculate expected output using our library
-        uint256 amountOut = pair.getAmountOut(
-            swapAmount,
-            reserveUSDC,
-            reserveWETH
-        );
-
-        console.log("\nStep by Step Calculation:");
-        uint256 amountInWithFee = swapAmount * 997;
-        console.log("Amount with fee: %s", amountInWithFee);
-
-        uint256 numerator = amountInWithFee * reserveWETH;
-        console.log("Numerator: %s", numerator);
-
-        uint256 denominator = (reserveUSDC * 1000) + amountInWithFee;
-        console.log("Denominator: %s", denominator);
-
-        console.log("Final amount out: %s WETH", amountOut / 1e18);
-
-        // Compare with Uniswap
-        address[] memory path = new address[](2);
-        path[0] = address(usdc);
-        path[1] = address(weth);
-        uint[] memory uniswapAmounts = IUniswapV2Router(ROUTER).getAmountsOut(
-            swapAmount,
-            path
-        );
-
-        console.log("\nUniswap output: %s WETH", uniswapAmounts[1] / 1e18);
-    }
 
     function testSwap() public {
         vm.startPrank(alice);
