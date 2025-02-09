@@ -1,14 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.26;
 // Import console.log
-import "forge-std/console.sol";
-import "forge-std/Test.sol";
 import "../contracts/Pair.sol";
+import "@forge-std/console.sol";
+import "@forge-std/Test.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
 import "../contracts/interfaces/IUniswapFactory.sol";
 import "../contracts/interfaces/IUniswapRouter.sol";
-
 
 contract PairTest is Test {
     Pair public pair;
@@ -326,7 +324,6 @@ contract PairTest is Test {
             swapAmount
         );
     }
-
 
     function testSwap() public {
         vm.startPrank(alice);
