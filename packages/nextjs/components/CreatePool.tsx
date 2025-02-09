@@ -51,7 +51,7 @@ export default function CreatePool() {
         <CardTitle>Create Liquidity Pool</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
+        <div className=" gap-4 flex items-center justify-center">
           <div className="flex items-center space-x-2">
             <Select value={tokenA} onValueChange={value => setTokenA(TOKENS.find(t => t.symbol === value)!.symbol)}>
               <SelectTrigger className="w-[180px]">
@@ -65,13 +65,6 @@ export default function CreatePool() {
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              type="number"
-              placeholder="0.0"
-              value={amountA}
-              onChange={e => setAmountA(e.target.value)}
-              className="flex-grow"
-            />
           </div>
           <div className="flex items-center space-x-2">
             <Select value={tokenB} onValueChange={value => setTokenB(TOKENS.find(t => t.symbol === value)!.symbol)}>
@@ -86,13 +79,6 @@ export default function CreatePool() {
                 ))}
               </SelectContent>
             </Select>
-            <Input
-              type="number"
-              placeholder="0.0"
-              value={amountB}
-              onChange={e => setAmountB(e.target.value)}
-              className="flex-grow"
-            />
           </div>
         </div>
       </CardContent>
@@ -100,7 +86,7 @@ export default function CreatePool() {
         <Button
           className="w-full"
           onClick={handleCreatePool}
-          disabled={isLoadingContract || !amountA || !amountB || (pairAddr !== undefined && pairAddr !== zeroAddress)}
+          disabled={isLoadingContract || (pairAddr !== undefined && pairAddr !== zeroAddress)}
         >
           {isLoadingContract || isLoadingPairCount ? "Creating..." : "Create Pool"}
         </Button>
