@@ -38,6 +38,7 @@ contract Pair is ERC20 {
         address indexed to
     );
     event Swap(address indexed sender, uint amountIn, uint amountOut);
+    event SwapForwarded(address user, address tokenIn, address tokenOut, uint amountIn, uint amountOut);
 
     event Investment(
         address indexed liquidityProvider,
@@ -270,7 +271,7 @@ contract Pair is ERC20 {
         reserve1 -= amount1;
 
         emit Burn(msg.sender, amount0, amount1, msg.sender);
-        
+
         emit Divestment(msg.sender, amount);
 
     }
@@ -351,6 +352,8 @@ contract Pair is ERC20 {
                 ERC20(targetToken).balanceOf(msg.sender)
             );
 
+            emit SwapForwarded(msg.sender, fromToken, targetToken, amountIn, amountOut);
+            
             return;
         }
         // 3. If no, swap with our protocol
