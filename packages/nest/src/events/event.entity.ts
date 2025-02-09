@@ -13,6 +13,7 @@ export enum EventType {
   SWAP_FORWARDED = 'SWAP_FORWARDED',
   INVESTMENT = 'INVESTMENT',
   DIVESTMENT = 'DIVESTMENT',
+  PAIR_CREATED = 'PAIR_CREATED',
 }
 
 @Entity('events')
@@ -39,6 +40,12 @@ export class Event {
 
   @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
   amount1: string;
+
+  @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
+  token0: string;
+
+  @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
+  token1: string;
 
   @Column({ type: 'varchar', length: 66 })
   @Index('idx_events_txhash')

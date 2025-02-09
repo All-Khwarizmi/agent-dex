@@ -15,16 +15,16 @@ const scaffoldConfig = {
   targetNetworks: [
     // chains.mainnet,
     {
-      id: 1,
+      id: 17357,
       name: "Virtual Mainnet",
       nativeCurrency: { name: "VETH", symbol: "VETH", decimals: 18 },
       rpcUrls: {
-        default: { http: ["https://virtual.mainnet.rpc.tenderly.co/8624ea44-b083-4c3b-a4d5-58c64584d606"] },
+        default: { http: ["https://virtual.mainnet.rpc.tenderly.co/9da4cd92-b54b-48cd-bd79-d0c627ff46f8"] },
       },
       blockExplorers: {
         default: {
           name: "Tenderly Explorer",
-          url: "https://virtual.mainnet.rpc.tenderly.co/0dbc0b0b-70d1-4367-a5a6-fecd929d8b13",
+          url: "https://virtual.mainnet.rpc.tenderly.co/1b46d72c-da7f-46f9-b66a-66afabd582ab",
         },
       },
     },

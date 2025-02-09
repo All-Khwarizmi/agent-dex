@@ -23,44 +23,84 @@ export class EventsService implements OnModuleInit {
   }
   async onModuleInit() {
     console.log('Starting event watching service...');
-    await this.startWatching();
-  }
-
-  private async startWatching() {
-    // First listen to Factory events
     await this.watchFactoryEvents();
   }
-
+  /**
+   * Watch for new pools
+   *   - When a new pool is created,
+   *     - Save the event to the database
+   *     - Save the pool to the database
+   *     - Start watching the pool's events
+   *   
+   … */
   private async watchFactoryEvents() {
     const factoryAddress = process.env.FACTORY_ADDRESS;
+
+    console.log('Watching factory events for:', factoryAddress);
 
     // Watch for new pools
     await this.client.watchContractEvent({
       address: factoryAddress,
       abi: [
         parseAbiItem(
-          'event PairCreated(address indexed token0,address indexed token1,address pair,uint)',
+          'event PairCreated(address indexed token0,address indexed token1,address pair,uint poolCount)',
         ),
       ],
+      eventName: 'PairCreated',
       onLogs: async (logs) => {
         for (const log of logs) {
-          // Save new pool to database
-          const poolAddress = log.args.pool;
-          const pool = this.poolsService.create({
-            address: poolAddress,
-            token0: log.args.tokenA,
-            token1: log.args.tokenB,
-          });
+          console.log('Received log:', log);
 
-          await this.poolsService.save(pool);
+          try {
+            // Save log to database
+            const event = this.eventRepository.create({
+              type: EventType.PAIR_CREATED,
+              sender: log.address,
+              poolAddress: log.args.pair,
+              token0: log.args.token0,
+              token1: log.args.token1,
+              transactionHash: log.transactionHash,
+              blockNumber: Number(log.blockNumber),
+            });
 
-          // Start watching this pool's events
-          await this.watchPoolEvents(poolAddress);
+            await this.eventRepository.save(event);
+
+            // Save new pool to database
+            const poolAddress = log.args.pair;
+            const pool = this.poolsService.create({
+              address: poolAddress,
+              token0: log.args.token0,
+              token1: log.args.token1,
+            });
+
+            console.log('New pool created:', pool);
+            await this.poolsService.save(pool);
+            // Start watching this pool's events
+            await this.watchPoolEvents(poolAddress);
+          } catch (error) {
+            console.error('Error creating pool:', error);
+          }
         }
       },
     });
   }
 
+  /**
+   * Watch for events related to a specific pool
+   *   - When a new mint event is received,
+   *     - Save the event to the database
+   *   - When a new burn event is received,
+   *     - Save the event to the database
+   *   - When a new swap event is received,
+   *     - Save the event to the database
+   *   - When a new swap forwarded event is received,
+   *     - Save the event to the database
+   *   - When a new investment event is received,
+   *     - Save the event to the database
+   *   - When a new divestment event is received,
+   *     - Save the event to the database
+   *   
+   … */
   private async watchPoolEvents(poolAddress: string) {
     console.log('Watching pool events for:', poolAddress);
     await this.client.watchContractEvent({
@@ -75,17 +115,23 @@ export class EventsService implements OnModuleInit {
         parseAbiItem(
           'event Swap(address indexed sender, uint amountIn, uint amountOut)',
         ),
-        // ... other pool events
       ],
       onLogs: async (logs) => {
         for (const log of logs) {
           // await this.handlePoolEvent(log);
+          //TODO
 
           console.log('Received log:', log);
         }
       },
     });
   }
+
+  /**
+   * Start listening to events
+   *   - When a new mint event is received,
+   *     - Save the event to the database
+   * */
   async startListening(contractAddress: string) {
     try {
       console.log('Starting to listen to events...');
@@ -122,6 +168,10 @@ export class EventsService implements OnModuleInit {
     }
   }
 
+  /**
+   * Stop listening to events
+   *
+   * */
   stopListening() {
     if (this.unwatch) {
       this.unwatch();
