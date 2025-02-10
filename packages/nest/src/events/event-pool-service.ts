@@ -74,7 +74,7 @@ export class EventPoolService {
   }
 
   async handleMintEvent(log: any) {
-    console.log('Received log:', log);
+    console.log('Received mint event', log);
     try {
       //TODO: refactor this into a method: (EventStoreService)
       // Save log to database
@@ -88,16 +88,76 @@ export class EventPoolService {
         blockNumber: Number(log.blockNumber),
       });
 
-      await this.eventRepository.save(event);
+      const asyncBatch = [
+        await this.eventRepository.save(event),
 
-      // Update the liquidity provider's total shares
-      await this.liquidityProviderService.mint(
-        event.sender,
-        event.poolAddress,
-        log.args.mintedLiquidity.toString(),
-      );
+        // Update the liquidity provider's total shares
+        await this.liquidityProviderService.mint(
+          event.sender,
+          event.poolAddress,
+          log.args.mintedLiquidity.toString(),
+        ),
 
-      // Update the pool's liquidity
+        // Update the pool's liquidity
+        await this.poolsService.updatePoolReserves(event.poolAddress, {
+          reserve0: log.args.amount0.toString(),
+          reserve1: log.args.amount1.toString(),
+        }),
+      ];
+
+      const result = await Promise.allSettled(asyncBatch);
+      for (const r of result) {
+        if (r.status === 'rejected') {
+          console.error('Error creating pool:', r.reason);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating pool:', error);
+    }
+  }
+
+  async handleBurnEvent(log: any) {
+    console.log('Received burn event', log);
+    try {
+      //TODO: refactor this into a method: (EventStoreService)
+      // Save log to database
+      const event = this.eventRepository.create({
+        type: EventType.BURN,
+        sender: log.args.sender,
+        poolAddress: log.address,
+        amount0: log.args.amount0.toString(),
+        amount1: log.args.amount1.toString(),
+        transactionHash: log.transactionHash,
+        blockNumber: Number(log.blockNumber),
+      });
+
+      const asyncBatch = [
+        await this.eventRepository.save(event),
+
+        // Update the liquidity provider's total shares
+        await this.liquidityProviderService.burn(
+          event.sender,
+          event.poolAddress,
+          log.args.burntLiquidity.toString(),
+        ),
+
+        // Update the pool's liquidity
+        await this.poolsService.updatePoolReserves(
+          event.poolAddress,
+          {
+            reserve0: log.args.amount0.toString(),
+            reserve1: log.args.amount1.toString(),
+          },
+          true,
+        ),
+      ];
+
+      const result = await Promise.allSettled(asyncBatch);
+      for (const r of result) {
+        if (r.status === 'rejected') {
+          console.error('Error creating pool:', r.reason);
+        }
+      }
     } catch (error) {
       console.error('Error creating pool:', error);
     }

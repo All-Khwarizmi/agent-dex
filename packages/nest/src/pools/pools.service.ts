@@ -19,6 +19,29 @@ export class PoolsService {
     return this.poolRepository.findOne({ where: { id: id } });
   }
 
+  async findByAddress(address: string) {
+    return this.poolRepository.findOne({ where: { address: address } });
+  }
+
+  async updatePoolReserves(
+    poolAddress: string,
+    reserves: Pick<CreatePoolDto, 'reserve0' | 'reserve1'>,
+    burn = false,
+  ) {
+    const pool = await this.findByAddress(poolAddress);
+    if (!pool) {
+      throw new Error('Pool not found');
+    }
+    return this.poolRepository.update(pool.id, {
+      reserve0: burn
+        ? pool.reserve0 - reserves.reserve0
+        : pool.reserve0 + reserves.reserve0,
+      reserve1: burn
+        ? pool.reserve1 - reserves.reserve1
+        : pool.reserve1 + reserves.reserve1,
+    });
+  }
+
   async create(createPoolDto: Partial<CreatePoolDto>) {
     const pool = this.poolRepository.create({
       address: createPoolDto.address,

@@ -76,4 +76,22 @@ export class LiquidityProviderService {
       liquidityProvider.poolLiquidity[poolAddress] + mintedLiquidity;
     await this.update(liquidityProvider.id, liquidityProvider);
   }
+
+  async burn(lpAddress: string, poolAddress: string, burntLiquidity: number) {
+    const liquidityProvider = await this.findLPByAddress(lpAddress);
+    if (!liquidityProvider) {
+      throw new Error('Liquidity provider not found');
+    }
+    // Update the liquidity provider's total shares
+    liquidityProvider.totalShares = (
+      Number(liquidityProvider.totalShares) - burntLiquidity
+    ).toString();
+
+    // Update the pool's liquidity
+    liquidityProvider.poolLiquidity[poolAddress] = (
+      Number(liquidityProvider.poolLiquidity[poolAddress]) - burntLiquidity
+    ).toString();
+    toString();
+    await this.update(liquidityProvider.id, liquidityProvider);
+  }
 }

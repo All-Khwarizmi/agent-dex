@@ -4,9 +4,7 @@ import {
   Column,
   CreateDateColumn,
   Index,
-  OneToOne,
 } from 'typeorm';
-import { LiquidityProvider } from './liquidityProvider.entity';
 
 @Entity('pools')
 export class Pool {
@@ -31,7 +29,7 @@ export class Pool {
     scale: 0,
     default: '0',
   })
-  reserve0: string;
+  reserve0: number;
 
   @Column({
     type: 'numeric',
@@ -39,7 +37,7 @@ export class Pool {
     scale: 0,
     default: '0',
   })
-  reserve1: string;
+  reserve1: number;
 
   @Column({
     type: 'numeric',
@@ -47,7 +45,7 @@ export class Pool {
     scale: 0,
     default: '0',
   })
-  swaps: string;
+  swaps: number;
 
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
