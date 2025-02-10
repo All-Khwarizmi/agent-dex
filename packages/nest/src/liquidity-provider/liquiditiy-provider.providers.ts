@@ -4,7 +4,7 @@ import { DataSource } from 'typeorm';
 
 export const liquidityProviderProviders = [
   {
-    provide: REPOSITORIES.LIQUIDITTY_PROVIDER,
+    provide: REPOSITORIES.LIQUIDITY_PROVIDER,
     useFactory: (dataSource: DataSource) =>
       dataSource.getRepository(LiquidityProvider),
     inject: [REPOSITORIES.DB],

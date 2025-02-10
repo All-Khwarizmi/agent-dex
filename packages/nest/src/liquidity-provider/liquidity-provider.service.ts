@@ -6,7 +6,7 @@ import { Repository } from 'typeorm';
 @Injectable()
 export class LiquidityProviderService {
   constructor(
-    @Inject(REPOSITORIES.LIQUIDITTY_PROVIDER)
+    @Inject(REPOSITORIES.LIQUIDITY_PROVIDER)
     private liquidityProviderRepository: Repository<LiquidityProvider>,
   ) {}
   async findOne(id: number) {
