@@ -3,7 +3,6 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  Index,
   OneToOne,
 } from 'typeorm';
 import { LiquidityProvider } from './liquidityProvider.entity';
@@ -29,11 +28,10 @@ export class User {
   @Column({ type: 'varchar', length: 42, unique: true })
   address: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   name: string;
 
-  @Column({ type: 'varchar', length: 255, unique: true })
-  @Index('idx_users_email')
+  @Column({ type: 'varchar', length: 255, nullable: true })
   email: string;
 
   @Column({
@@ -41,7 +39,6 @@ export class User {
     enum: UserStatus,
     default: UserStatus.PENDING,
   })
-  @Index('idx_users_status')
   status: UserStatus;
 
   @CreateDateColumn({ type: 'timestamptz' })

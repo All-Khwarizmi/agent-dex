@@ -20,9 +20,6 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
-    return this.userRepository.create({
-      name: createUserDto.name,
-      email: createUserDto.email,
-    });
+    return this.userRepository.save(createUserDto);
   }
 }

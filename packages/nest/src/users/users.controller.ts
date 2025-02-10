@@ -6,11 +6,18 @@ import {
   ApiProperty,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
+import { UserStatus } from 'src/entities/user.entity';
 
 // DTO pour la documentation Swagger
 export class CreateUserDto {
   @ApiProperty({ example: 'John Doe', description: "Nom de l'utilisateur" })
   name: string;
+
+  @ApiProperty({
+    example: '0x1de56cF322c53Bd91Fdc437196b4e8B74CB08fe3',
+    description: "EVM Address de l'utilisateur",
+  })
+  address: string;
 
   @ApiProperty({
     example: 'john@example.com',
@@ -19,7 +26,7 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({ example: 'active', enum: ['active', 'inactive', 'pending'] })
-  status: 'active' | 'inactive' | 'pending';
+  status: UserStatus;
 }
 
 @ApiTags('users')
