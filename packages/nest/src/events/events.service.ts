@@ -1,11 +1,12 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
-import { createPublicClient, http, parseAbiItem } from 'viem';
+import { createPublicClient, http, Log, parseAbiItem } from 'viem';
 import { Event, EventType } from '../entities/event.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
 import { LiquidityProviderService } from 'src/liquidity-provider/liquidity-provider.service';
 import { PoolsService } from 'src/pools/pools.service';
+import { eventNames } from 'process';
 config();
 @Injectable()
 export class EventsService implements OnModuleInit {
@@ -54,6 +55,7 @@ export class EventsService implements OnModuleInit {
           console.log('Received log:', log);
 
           try {
+            //TODO: refactor this into a method
             // Save log to database
             const event = this.eventRepository.create({
               type: EventType.PAIR_CREATED,
@@ -67,6 +69,7 @@ export class EventsService implements OnModuleInit {
 
             await this.eventRepository.save(event);
 
+            //TODO: refactor this into a method
             // Save new pool to database
             const poolAddress = log.args.pair;
             const pool = await this.poolsService.create({
@@ -109,26 +112,56 @@ export class EventsService implements OnModuleInit {
       address: poolAddress,
       abi: [
         parseAbiItem(
-          'event Mint(address indexed sender, uint amount0, uint amount1)',
+          'event Mint(address indexed sender, uint amount0, uint amount1, uint mintedLiquidity)',
         ),
         parseAbiItem(
-          'event Burn(address indexed sender, uint amount0, uint amount1, address indexed to)',
+          'event Burn(address indexed sender, uint amount0, uint amount1, address indexed to, uint burntLiquidity)',
         ),
         parseAbiItem(
           'event Swap(address indexed sender, uint amountIn, uint amountOut)',
         ),
       ],
-      onLogs: async (logs) => {
+      eventNames: ['Mint', 'Burn', 'Swap'],
+      onLogs: async (logs: any) => {
         for (const log of logs) {
           // await this.handlePoolEvent(log);
           //TODO
-
-          console.log('Received log:', log);
+          switch (log.eventName) {
+            case 'Mint':
+              await this.handleMintEvent(log);
+              break;
+            case 'Burn':
+              // await this.handleBurnEvent(log);
+              break;
+          }
         }
       },
     });
   }
 
+  async handleMintEvent(log: any) {
+    console.log('Received log:', log);
+    try {
+      //TODO: refactor this into a method
+      // Save log to database
+      const event = this.eventRepository.create({
+        type: EventType.MINT,
+        sender: log.args.sender,
+        poolAddress: log.address,
+        amount0: log.args.amount0.toString(),
+        amount1: log.args.amount1.toString(),
+        transactionHash: log.transactionHash,
+        blockNumber: Number(log.blockNumber),
+      });
+
+      await this.eventRepository.save(event);
+
+      // Update the liquidity provider's total shares
+      // Update the pool's liquidity
+    } catch (error) {
+      console.error('Error creating pool:', error);
+    }
+  }
   /**
    * Start listening to events
    *   - When a new mint event is received,

@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   OneToOne,
@@ -14,6 +15,7 @@ export class LiquidityProvider {
 
   @OneToOne(() => User, (user) => user.liquidityProvider, {
     cascade: true,
+    nullable: true,
   })
   @JoinColumn()
   user: User;
@@ -31,8 +33,8 @@ export class LiquidityProvider {
   //   "0x789...012": 200
   // }
   @Column('jsonb', { default: '{}' })
-  poolLiquidity: string;
+  poolLiquidity: { [key: string]: string };
 
-  @Column({ type: 'timestamptz' })
+  @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 }

@@ -21,11 +21,11 @@ export class User {
   @OneToOne(
     () => LiquidityProvider,
     (liquidityProvider) => liquidityProvider.user,
-    { eager: true },
+    { eager: true, nullable: true },
   )
   liquidityProvider: LiquidityProvider;
 
-  @Column({ type: 'varchar', length: 42, unique: true })
+  @Column({ type: 'varchar', length: 42 })
   address: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
