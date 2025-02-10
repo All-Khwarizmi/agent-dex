@@ -30,15 +30,27 @@ contract Pair is ERC20 {
     uint256 private constant FEE_NUMERATOR = 997;
     uint256 private constant FEE_DENOMINATOR = 1000;
 
-    event Mint(address indexed sender, uint amount0, uint amount1);
+    event Mint(
+        address indexed sender,
+        uint amount0,
+        uint amount1,
+        uint mintedLiquidity
+    );
     event Burn(
         address indexed sender,
         uint amount0,
         uint amount1,
-        address indexed to
+        address indexed to,
+        uint burntLiquidity
     );
     event Swap(address indexed sender, uint amountIn, uint amountOut);
-    event SwapForwarded(address user, address tokenIn, address tokenOut, uint amountIn, uint amountOut);
+    event SwapForwarded(
+        address user,
+        address tokenIn,
+        address tokenOut,
+        uint amountIn,
+        uint amountOut
+    );
 
     event Investment(
         address indexed liquidityProvider,
@@ -204,6 +216,7 @@ contract Pair is ERC20 {
             reserve1 = amount1;
 
             emit Investment(msg.sender, liquidity - MINIMUM_LIQUIDITY);
+            emit Mint(msg.sender, amount0, amount1, liquidity);
         } else {
             // Subsequent liquidity provisions
 
@@ -238,9 +251,8 @@ contract Pair is ERC20 {
             reserve1 += amount1;
 
             emit Investment(msg.sender, liquidity);
+            emit Mint(msg.sender, amount0, amount1, liquidity);
         }
-
-        emit Mint(msg.sender, amount0, amount1);
     }
 
     // TODO: Add checks to ensure removing liquidity is safe for the pool
@@ -270,10 +282,9 @@ contract Pair is ERC20 {
         reserve0 -= amount0;
         reserve1 -= amount1;
 
-        emit Burn(msg.sender, amount0, amount1, msg.sender);
+        emit Burn(msg.sender, amount0, amount1, msg.sender, amount);
 
         emit Divestment(msg.sender, amount);
-
     }
 
     function swap(
@@ -352,8 +363,14 @@ contract Pair is ERC20 {
                 ERC20(targetToken).balanceOf(msg.sender)
             );
 
-            emit SwapForwarded(msg.sender, fromToken, targetToken, amountIn, amountOut);
-            
+            emit SwapForwarded(
+                msg.sender,
+                fromToken,
+                targetToken,
+                amountIn,
+                amountOut
+            );
+
             return;
         }
         // 3. If no, swap with our protocol
