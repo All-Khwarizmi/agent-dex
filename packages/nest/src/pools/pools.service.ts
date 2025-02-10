@@ -19,7 +19,7 @@ export class PoolsService {
     return this.poolRepository.findOne({ where: { id: id } });
   }
 
-  async create(createPoolDto: CreatePoolDto) {
+  async create(createPoolDto: Partial<CreatePoolDto>) {
     const pool = this.poolRepository.create({
       address: createPoolDto.address,
       token0: createPoolDto.token0,

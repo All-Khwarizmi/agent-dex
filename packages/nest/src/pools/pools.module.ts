@@ -8,5 +8,6 @@ import { DatabaseModule } from 'src/config/database.module';
   imports: [DatabaseModule],
   providers: [...poolProviders, PoolsService],
   controllers: [PoolsController],
+  exports: [PoolsService],
 })
 export class PoolsModule {}

@@ -4,7 +4,8 @@ import { createPublicClient, http, parseAbiItem } from 'viem';
 import { Event, EventType } from '../entities/event.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
-import { Pool } from 'src/entities/pool.entity';
+import { LiquidityProviderService } from 'src/liquidity-provider/liquidity-provider.service';
+import { PoolsService } from 'src/pools/pools.service';
 config();
 @Injectable()
 export class EventsService implements OnModuleInit {
@@ -14,8 +15,9 @@ export class EventsService implements OnModuleInit {
   constructor(
     @Inject(REPOSITORIES.EVENT)
     private eventRepository: Repository<Event>,
-    @Inject(REPOSITORIES.POOL)
-    private poolsService: Repository<Pool>,
+    private poolsService: PoolsService,
+
+    private liquidityProviderService: LiquidityProviderService,
   ) {
     this.client = createPublicClient({
       transport: http(process.env.RPC_URL),
@@ -67,14 +69,13 @@ export class EventsService implements OnModuleInit {
 
             // Save new pool to database
             const poolAddress = log.args.pair;
-            const pool = this.poolsService.create({
+            const pool = await this.poolsService.create({
               address: poolAddress,
               token0: log.args.token0,
               token1: log.args.token1,
             });
 
             console.log('New pool created:', pool);
-            await this.poolsService.save(pool);
 
             // Start watching this pool's events
             await this.watchPoolEvents(poolAddress);
