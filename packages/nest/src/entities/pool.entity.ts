@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   Index,
+  OneToOne,
 } from 'typeorm';
+import { LiquidityProvider } from './liquidityProvider.entity';
 
 @Entity('pools')
 export class Pool {

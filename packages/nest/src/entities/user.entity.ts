@@ -4,7 +4,9 @@ import {
   Column,
   CreateDateColumn,
   Index,
+  OneToOne,
 } from 'typeorm';
+import { LiquidityProvider } from './liquidityProvider.entity';
 
 export enum UserStatus {
   ACTIVE = 'active',
@@ -16,6 +18,16 @@ export enum UserStatus {
 export class User {
   @PrimaryGeneratedColumn('increment')
   id: number;
+
+  @OneToOne(
+    () => LiquidityProvider,
+    (liquidityProvider) => liquidityProvider.user,
+    { eager: true },
+  )
+  liquidityProvider: LiquidityProvider;
+
+  @Column({ type: 'varchar', length: 42, unique: true })
+  address: string;
 
   @Column({ type: 'varchar', length: 255 })
   name: string;
