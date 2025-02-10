@@ -2157,6 +2157,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@nestjs/typeorm@npm:^11.0.0":
+  version: 11.0.0
+  resolution: "@nestjs/typeorm@npm:11.0.0"
+  peerDependencies:
+    "@nestjs/common": ^10.0.0 || ^11.0.0
+    "@nestjs/core": ^10.0.0 || ^11.0.0
+    reflect-metadata: ^0.1.13 || ^0.2.0
+    rxjs: ^7.2.0
+    typeorm: ^0.3.0
+  checksum: 87ad24c247849d833c3c725cb3652a323619996cb29b5c751815c218eaecf08734b2d4623d98094829eac05730930bca8f9e9e7d88d116c5d2b52eb7b6fb5e0b
+  languageName: node
+  linkType: hard
+
 "@next/env@npm:14.2.23":
   version: 14.2.23
   resolution: "@next/env@npm:14.2.23"
@@ -3148,6 +3161,7 @@ __metadata:
     "@nestjs/schematics": ^10.0.0
     "@nestjs/swagger": ^8.0.5
     "@nestjs/testing": ^10.0.0
+    "@nestjs/typeorm": ^11.0.0
     "@types/express": ^5.0.0
     "@types/jest": ^29.5.2
     "@types/node": ^20.3.1
