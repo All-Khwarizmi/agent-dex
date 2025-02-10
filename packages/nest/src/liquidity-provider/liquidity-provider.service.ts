@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { LiquidityProvider } from 'src/entities/liquidityProvider.entity';
+import { UsersService } from 'src/users/users.service';
 import { REPOSITORIES } from 'src/utils/constants';
 import { Repository } from 'typeorm';
 
@@ -8,6 +9,7 @@ export class LiquidityProviderService {
   constructor(
     @Inject(REPOSITORIES.LIQUIDITY_PROVIDER)
     private liquidityProviderRepository: Repository<LiquidityProvider>,
+    private usersService: UsersService,
   ) {}
   async findOne(id: number) {
     return this.liquidityProviderRepository.findOne({ where: { id: id } });
@@ -40,6 +42,18 @@ export class LiquidityProviderService {
   async mint(lpAddress: string, poolAddress: string, mintedLiquidity: string) {
     let liquidityProvider = await this.findLPByAddress(lpAddress);
     if (!liquidityProvider) {
+      let user = await this.usersService.findByAddress(lpAddress);
+      if (!user) {
+        user = await this.usersService.create({
+          address: lpAddress,
+          liquidityProvider: {
+            address: lpAddress,
+          },
+        });
+        if (!user) {
+          throw new Error('User not found and could not be created');
+        }
+      }
       liquidityProvider = this.liquidityProviderRepository.create({
         address: lpAddress,
         totalShares: mintedLiquidity,

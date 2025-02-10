@@ -7,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UserStatus } from 'src/entities/user.entity';
+import { LiquidityProvider } from 'src/entities/liquidityProvider.entity';
 
 // DTO pour la documentation Swagger
 export class CreateUserDto {
@@ -18,6 +19,14 @@ export class CreateUserDto {
     description: "EVM Address de l'utilisateur",
   })
   address: string;
+  @ApiProperty({
+    example: {
+      address: '0x1de56cF322c53Bd91Fdc437196b4e8B74CB08fe3',
+      totalShares: '100',
+    },
+    description: "EVM Address de l'utilisateur",
+  })
+  liquidityProvider: Partial<LiquidityProvider>;
 
   @ApiProperty({
     example: 'john@example.com',

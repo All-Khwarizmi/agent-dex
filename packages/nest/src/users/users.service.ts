@@ -15,11 +15,15 @@ export class UsersService {
     return this.userRepository.find();
   }
 
+  async findByAddress(address: string) {
+    return this.userRepository.findOne({ where: { address: address } });
+  }
+
   async findOne(id: number) {
     return this.userRepository.findOne({ where: { id: id } });
   }
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: Partial<CreateUserDto>) {
     return this.userRepository.save(createUserDto);
   }
 }

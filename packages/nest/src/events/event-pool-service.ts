@@ -76,7 +76,7 @@ export class EventPoolService {
   async handleMintEvent(log: any) {
     console.log('Received log:', log);
     try {
-      //TODO: refactor this into a method
+      //TODO: refactor this into a method: (EventStoreService)
       // Save log to database
       const event = this.eventRepository.create({
         type: EventType.MINT,
@@ -91,6 +91,12 @@ export class EventPoolService {
       await this.eventRepository.save(event);
 
       // Update the liquidity provider's total shares
+      await this.liquidityProviderService.mint(
+        event.sender,
+        event.poolAddress,
+        log.args.mintedLiquidity.toString(),
+      );
+
       // Update the pool's liquidity
     } catch (error) {
       console.error('Error creating pool:', error);
