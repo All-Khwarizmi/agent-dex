@@ -39,6 +39,14 @@ export class Pool {
   })
   reserve1: string;
 
+  @Column({
+    type: 'numeric',
+    precision: 32,
+    scale: 0,
+    default: '0',
+  })
+  swaps: string;
+
   @CreateDateColumn({ type: 'timestamptz' })
   created_at: Date;
 }
