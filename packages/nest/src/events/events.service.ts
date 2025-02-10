@@ -1,10 +1,10 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { createPublicClient, http, parseAbiItem } from 'viem';
-import { Event, EventType } from './event.entity';
+import { Event, EventType } from '../entities/event.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
-import { Pool } from 'src/pools/pool.entity';
+import { Pool } from 'src/entities/pool.entity';
 config();
 @Injectable()
 export class EventsService implements OnModuleInit {
@@ -75,6 +75,7 @@ export class EventsService implements OnModuleInit {
 
             console.log('New pool created:', pool);
             await this.poolsService.save(pool);
+
             // Start watching this pool's events
             await this.watchPoolEvents(poolAddress);
           } catch (error) {

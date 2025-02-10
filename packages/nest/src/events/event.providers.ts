@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { Event } from './event.entity';
+import { Event } from '../entities/event.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 
 export const eventProviders = [

@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { REPOSITORIES } from 'src/utils/constants';
 import { Repository } from 'typeorm';
-import { Pool } from './pool.entity';
+import { Pool } from '../entities/pool.entity';
 import { CreatePoolDto } from './pool.dto';
 
 @Injectable()
