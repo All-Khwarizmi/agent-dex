@@ -35,6 +35,14 @@ export class User {
   email: string;
 
   @Column({
+    type: 'numeric',
+    precision: 32,
+    scale: 0,
+    default: '0',
+  })
+  swaps: number;
+
+  @Column({
     type: 'enum',
     enum: UserStatus,
     default: UserStatus.PENDING,

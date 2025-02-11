@@ -76,7 +76,7 @@ export class EventPoolService {
     });
   }
 
-  async handleMintEvent(log: any) {
+  private async handleMintEvent(log: any) {
     console.log('Received mint event', log);
     try {
       //TODO: refactor this into a method: (EventStoreService)
@@ -119,7 +119,7 @@ export class EventPoolService {
     }
   }
 
-  async handleBurnEvent(log: any) {
+  private async handleBurnEvent(log: any) {
     console.log('Received burn event', log);
     try {
       //TODO: refactor this into a method: (EventStoreService)
@@ -166,33 +166,32 @@ export class EventPoolService {
     }
   }
 
-  async handleSwap(log: any) {
+  private async handleSwap(log: any) {
     try {
       console.log('Received swap event', log);
 
-      const event = this.eventRepository.create({
-        type: EventType.SWAP,
-        sender: log.sender,
-        poolAddress: log.poolAddress,
-        amount0: log.amount0.toString(),
-        amount1: log.amount1.toString(),
-        transactionHash: log.transactionHash,
-        blockNumber: Number(log.blockNumber),
-      });
+      // Save log and update user swaps
+      const asyncBatch = [
+        this.eventRepository.create({
+          type: EventType.SWAP,
+          sender: log.args.sender,
+          poolAddress: log.args.poolAddress,
+          amount0: log.args.amount0.toString(),
+          amount1: log.args.amount1.toString(),
+          transactionHash: log.transactionHash,
+          blockNumber: Number(log.blockNumber),
+        }),
+        this.usersService.updateUserSwaps(log.args.sender),
+      ];
 
-      const pool = await this.poolsService.findByAddress(log.poolAddress);
-      if (!pool) {
-        return;
+      const result = await Promise.allSettled(asyncBatch);
+      for (const r of result) {
+        if (r.status === 'rejected') {
+          console.error('Error creating pool:', r.reason);
+        }
       }
 
-      const token0 = log.tokenIn.toLowerCase();
-      const token1 = log.tokenOut.toLowerCase();
-
-      console.log('token0', token0);
-      console.log('token1', token1);
-
-      console.log('pool', pool);
-
+      // Update the pool's liquidity
       const [_reserve0, _reserve1] = await this.client.readContract({
         address: log.address,
         abi: [
@@ -204,7 +203,7 @@ export class EventPoolService {
       });
 
       await this.poolsService.updatePoolReserves(
-        log.poolAddress,
+        log.address,
         {
           reserve0: _reserve0,
           reserve1: _reserve1,

@@ -22,6 +22,9 @@ export class CreatePoolDto {
   @ApiProperty({ description: 'Reserve of token0 in wei' })
   reserve0: number;
 
+  @ApiProperty({ description: 'Number of swaps' })
+  swaps: number;
+
   @ApiProperty({ description: 'Reserve of token1 in wei' })
   reserve1: number;
 }

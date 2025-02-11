@@ -34,6 +34,9 @@ export class CreateUserDto {
   })
   email: string;
 
+  @ApiProperty({ description: 'Number of swaps' })
+  swaps: number;
+
   @ApiProperty({ example: 'active', enum: ['active', 'inactive', 'pending'] })
   status: UserStatus;
 }
