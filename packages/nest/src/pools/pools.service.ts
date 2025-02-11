@@ -27,6 +27,7 @@ export class PoolsService {
     poolAddress: string,
     reserves: Pick<CreatePoolDto, 'reserve0' | 'reserve1'>,
     burn = false,
+    swap = false,
   ) {
     const pool = await this.findByAddress(poolAddress);
     if (!pool) {
@@ -39,6 +40,7 @@ export class PoolsService {
       reserve1: burn
         ? pool.reserve1 - reserves.reserve1
         : pool.reserve1 + reserves.reserve1,
+      swaps: swap ? pool.swaps + 1 : pool.swaps,
     });
   }
 

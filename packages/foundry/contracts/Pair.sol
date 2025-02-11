@@ -43,7 +43,13 @@ contract Pair is ERC20 {
         address indexed to,
         uint burntLiquidity
     );
-    event Swap(address indexed sender, uint amountIn, uint amountOut);
+    event Swap(
+        address indexed sender,
+        address tokenIn,
+        address tokenOut,
+        uint amountIn,
+        uint amountOut
+    );
     event SwapForwarded(
         address user,
         address tokenIn,
@@ -441,7 +447,7 @@ contract Pair is ERC20 {
             "AgentDEX: INSUFFICIENT_LIQUIDITY"
         );
 
-        emit Swap(msg.sender, amountIn, amountOut);
+        emit Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
     }
 
     function _safeTransfer(address token, address to, uint value) private {

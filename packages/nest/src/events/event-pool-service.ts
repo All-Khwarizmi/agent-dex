@@ -52,7 +52,7 @@ export class EventPoolService {
           'event Burn(address indexed sender, uint amount0, uint amount1, address indexed to, uint burntLiquidity)',
         ),
         parseAbiItem(
-          'event Swap(address indexed sender, uint amountIn, uint amountOut)',
+          'event Swap(address indexed sender, address tokenIn, address tokenOut, uint amountIn, uint amountOut)',
         ),
       ],
       eventNames: ['Mint', 'Burn', 'Swap'],
@@ -65,7 +65,10 @@ export class EventPoolService {
               await this.handleMintEvent(log);
               break;
             case 'Burn':
-              // await this.handleBurnEvent(log);
+              await this.handleBurnEvent(log);
+              break;
+            case 'Swap':
+              await this.handleSwap(log);
               break;
           }
         }
@@ -160,6 +163,57 @@ export class EventPoolService {
       }
     } catch (error) {
       console.error('Error creating pool:', error);
+    }
+  }
+
+  async handleSwap(log: any) {
+    try {
+      console.log('Received swap event', log);
+
+      const event = this.eventRepository.create({
+        type: EventType.SWAP,
+        sender: log.sender,
+        poolAddress: log.poolAddress,
+        amount0: log.amount0.toString(),
+        amount1: log.amount1.toString(),
+        transactionHash: log.transactionHash,
+        blockNumber: Number(log.blockNumber),
+      });
+
+      const pool = await this.poolsService.findByAddress(log.poolAddress);
+      if (!pool) {
+        return;
+      }
+
+      const token0 = log.tokenIn.toLowerCase();
+      const token1 = log.tokenOut.toLowerCase();
+
+      console.log('token0', token0);
+      console.log('token1', token1);
+
+      console.log('pool', pool);
+
+      const [_reserve0, _reserve1] = await this.client.readContract({
+        address: log.address,
+        abi: [
+          parseAbiItem(
+            'function getReserves() external view returns (uint256 _reserve0, uint256 _reserve1)',
+          ),
+        ],
+        functionName: 'getReserves',
+      });
+
+      await this.poolsService.updatePoolReserves(
+        log.poolAddress,
+        {
+          reserve0: _reserve0,
+          reserve1: _reserve1,
+        },
+        false,
+        true,
+      );
+    } catch (error) {
+      console.error('Error handling swap:', error);
     }
   }
 }
