@@ -75,7 +75,7 @@ AgentDEX is a decentralized exchange that combines traditional DEX functionality
 ### Step by Step Overview
 
 1. Setup Testnet (Tenderly)
-2. Update network rpc url and block explorer in the metamask network and `scaffold.config.ts` file from the nextjs package and the env files (both foundry and nest).
+2. Update network rpc url and block explorer in the metamask network and `scaffold.config.ts` file from the nextjs package and the env files (both foundry and nest). Also set the TENDERLY_API_KEY in the `.env` file from foundry package (scripts require it).
 3. Setup keystore (scripts)
 4. Fund account with ETH for gas (Tenderly Dashboard)
 5. Deploy Factory Contract (scripts)
@@ -141,7 +141,12 @@ yarn start
 forge build --silent && jq '.abi' ./out/Factory.sol/Factory.json
 
 # Copy into the clipboard
+yarn foundry:abi
+
+or
+
 forge build --silent && jq '.abi' ./out/Factory.sol/Factory.json | pbcopy
+
 ```
 
 ### MetaMask with Virtual Testnet

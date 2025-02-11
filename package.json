@@ -21,6 +21,7 @@
     "nest:test": "yarn workspace @se-2/nest test",
     "format": "yarn next:format && yarn foundry:format",
     "foundry:account": "yarn workspace @se-2/foundry account",
+    "foundry:abi": "yarn workspace @se-2/foundry abi",
     "foundry:account-import": "yarn workspace @se-2/foundry account:import",
     "foundry:chain": "yarn workspace @se-2/foundry chain",
     "foundry:compile": "yarn workspace @se-2/foundry compile",
