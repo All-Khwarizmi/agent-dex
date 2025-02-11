@@ -30,6 +30,7 @@ export class EventsService implements OnModuleInit {
   async onModuleInit() {
     console.log('Starting event watching service...');
     await this.watchFactoryEvents();
+    await this.watchAlreadyCreatedPools();
   }
   /**
    * Watch for new pools
@@ -90,6 +91,15 @@ export class EventsService implements OnModuleInit {
         }
       },
     });
+  }
+
+  private async watchAlreadyCreatedPools() {
+    // Get all pools
+    const pools = await this.poolsService.findAll();
+
+    for (const pool of pools) {
+      await this.eventPoolService.watchPoolEvents(pool.address);
+    }
   }
 
   /**

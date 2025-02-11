@@ -29,7 +29,7 @@ export class PoolsService {
     burn = false,
     swap = false,
   ) {
-    const pool = await this.findByAddress(poolAddress);
+    const pool = await this.findByAddress(poolAddress.toLowerCase());
     if (!pool) {
       throw new Error('Pool not found');
     }
@@ -46,7 +46,7 @@ export class PoolsService {
 
   async create(createPoolDto: Partial<CreatePoolDto>) {
     const pool = this.poolRepository.create({
-      address: createPoolDto.address,
+      address: createPoolDto.address.toLowerCase(),
       token0: createPoolDto.token0,
       token1: createPoolDto.token1,
       reserve0: createPoolDto.reserve0,

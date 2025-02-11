@@ -39,11 +39,13 @@ export class LiquidityProviderService {
     );
   }
 
-  async mint(lpAddress: string, poolAddress: string, mintedLiquidity: string) {
+  async mint(lpAddress: string, poolAddress: string, mintedLiquidity: number) {
     let liquidityProvider = await this.findLPByAddress(lpAddress);
     if (!liquidityProvider) {
-      let user = await this.usersService.findByAddress(lpAddress);
+      console.log('Creating new liquidity provider');
+      let user = await this.usersService.findByAddress(lpAddress.toUpperCase());
       if (!user) {
+        console.log('Creating new user');
         user = await this.usersService.create({
           address: lpAddress,
           liquidityProvider: {
@@ -56,25 +58,39 @@ export class LiquidityProviderService {
       }
       liquidityProvider = this.liquidityProviderRepository.create({
         address: lpAddress,
-        totalShares: mintedLiquidity,
+        totalShares: mintedLiquidity.toString(),
         poolLiquidity: {
-          [poolAddress]: mintedLiquidity,
+          [poolAddress]: mintedLiquidity.toString(),
         },
       });
+      liquidityProvider =
+        await this.liquidityProviderRepository.save(liquidityProvider);
+      console.log('LP created', liquidityProvider);
       if (!liquidityProvider) {
         throw new Error(
           'Liquidity provider not found and could not be created',
         );
       }
+      return liquidityProvider;
     }
-    // Update the liquidity provider's total shares
-    liquidityProvider.totalShares =
-      liquidityProvider.totalShares + mintedLiquidity;
+    console.log('LP found', liquidityProvider);
+    const newShares = (
+      Number(liquidityProvider.totalShares) + mintedLiquidity
+    ).toString();
 
-    // Update the pool's liquidity
-    liquidityProvider.poolLiquidity[poolAddress] =
-      liquidityProvider.poolLiquidity[poolAddress] + mintedLiquidity;
-    await this.update(liquidityProvider.id, liquidityProvider);
+    const newPoolLiquidity = {
+      ...liquidityProvider.poolLiquidity,
+      [poolAddress]: (
+        Number(liquidityProvider.poolLiquidity[poolAddress]) + mintedLiquidity
+      ).toString(),
+    };
+
+    console.log('Updating liquidity provider', newShares, newPoolLiquidity);
+    return await this.liquidityProviderRepository.update(liquidityProvider.id, {
+      ...liquidityProvider,
+      totalShares: newShares,
+      poolLiquidity: newPoolLiquidity,
+    });
   }
 
   async burn(lpAddress: string, poolAddress: string, burntLiquidity: number) {

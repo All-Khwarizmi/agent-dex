@@ -7,6 +7,7 @@ import { REPOSITORIES } from 'src/utils/constants';
 import { Repository } from 'typeorm';
 import { Event } from 'src/entities/event.entity';
 import { createPublicClient, http, parseAbiItem } from 'viem';
+import { fromBigIntToNumber } from 'src/utils/utilities/formatters';
 
 @Injectable()
 export class EventPoolService {
@@ -85,26 +86,27 @@ export class EventPoolService {
         type: EventType.MINT,
         sender: log.args.sender,
         poolAddress: log.address,
-        amount0: log.args.amount0.toString(),
-        amount1: log.args.amount1.toString(),
+        amount0: log.args.amount0,
+        amount1: log.args.amount1,
         transactionHash: log.transactionHash,
         blockNumber: Number(log.blockNumber),
       });
+      console.log(event);
 
       const asyncBatch = [
-        await this.eventRepository.save(event),
+        this.eventRepository.save(event),
 
-        // Update the liquidity provider's total shares
-        await this.liquidityProviderService.mint(
+        //Update the liquidity provider's total shares
+        this.liquidityProviderService.mint(
           event.sender,
           event.poolAddress,
-          log.args.mintedLiquidity.toString(),
+          fromBigIntToNumber(log.args.mintedLiquidity),
         ),
 
         // Update the pool's liquidity
-        await this.poolsService.updatePoolReserves(event.poolAddress, {
-          reserve0: log.args.amount0.toString(),
-          reserve1: log.args.amount1.toString(),
+        this.poolsService.updatePoolReserves(log.address, {
+          reserve0: fromBigIntToNumber(log.args.amount0),
+          reserve1: fromBigIntToNumber(log.args.amount1),
         }),
       ];
 
