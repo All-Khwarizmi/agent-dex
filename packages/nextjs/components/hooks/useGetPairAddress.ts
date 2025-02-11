@@ -9,7 +9,11 @@ export function useGetPairAddress() {
     contractName: FACTORY_CONTRACT_NAME,
   });
 
-  const { data: pairAddr, isLoading: isLoadingPairCount } = useReadContract({
+  const {
+    data: pairAddr,
+    isLoading: isLoadingPairCount,
+    refetch: refetchGetPair,
+  } = useReadContract({
     abi: [
       {
         type: "function",
@@ -53,6 +57,6 @@ export function useGetPairAddress() {
 
   return {
     data: { pairAddr, isLoading: deployedContractLoading && isLoadingPairCount },
-    functions: { setTokenAddresses: setAddresses },
+    functions: { setTokenAddresses: setAddresses, refetchGetPair },
   };
 }

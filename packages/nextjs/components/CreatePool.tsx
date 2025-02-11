@@ -17,16 +17,15 @@ function getTokenAddr(tokenSymbol: string) {
 export default function CreatePool() {
   const [tokenA, setTokenA] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[0].symbol);
   const [tokenB, setTokenB] = useState<(typeof TOKENS)[number]["symbol"]>(TOKENS[1].symbol);
-  const [amountA, setAmountA] = useState("");
-  const [amountB, setAmountB] = useState("");
+  const [pairExists, setPairExists] = useState(false);
 
   const {
     data: { pairAddr, isLoading: isLoadingPairCount },
-    functions: { setTokenAddresses },
+    functions: { setTokenAddresses, refetchGetPair },
   } = useGetPairAddress();
 
   const {
-    writeContract,
+    writeContractAsync,
     isPending: isLoadingContract,
     error: writeContractError,
   } = useScaffoldWriteContract({
@@ -34,12 +33,21 @@ export default function CreatePool() {
   });
 
   const handleCreatePool = async () => {
-    writeContract({ functionName: "createPair", args: [getTokenAddr(tokenA), getTokenAddr(tokenB)] });
-
-    // Reset form after pool creation
-    setAmountA("");
-    setAmountB("");
+    await writeContractAsync({
+      functionName: "createPair",
+      args: [getTokenAddr(tokenA), getTokenAddr(tokenB)],
+    });
+    await refetchGetPair();
   };
+
+  // Watch for pair creation
+  useEffect(() => {
+    if (pairAddr !== undefined && pairAddr !== zeroAddress) {
+      setPairExists(true);
+    } else {
+      setPairExists(false);
+    }
+  }, [pairAddr]);
 
   useEffect(() => {
     setTokenAddresses([getTokenAddr(tokenA), getTokenAddr(tokenB)]);
@@ -83,11 +91,7 @@ export default function CreatePool() {
         </div>
       </CardContent>
       <CardFooter className="flex flex-col justify-center">
-        <Button
-          className="w-full"
-          onClick={handleCreatePool}
-          disabled={isLoadingContract || (pairAddr !== undefined && pairAddr !== zeroAddress)}
-        >
+        <Button className="w-full" onClick={handleCreatePool} disabled={isLoadingContract || pairExists}>
           {isLoadingContract || isLoadingPairCount ? "Creating..." : "Create Pool"}
         </Button>
 
