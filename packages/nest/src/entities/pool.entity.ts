@@ -35,7 +35,7 @@ export class Pool {
     type: 'numeric',
     precision: 78,
     scale: 0,
-    default: '0',
+    default: 0,
   })
   reserve1: number;
 
@@ -43,7 +43,7 @@ export class Pool {
     type: 'numeric',
     precision: 32,
     scale: 0,
-    default: '0',
+    default: 0,
   })
   swaps: number;
 

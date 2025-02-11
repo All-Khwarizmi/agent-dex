@@ -130,8 +130,8 @@ export class EventPoolService {
         type: EventType.BURN,
         sender: log.args.sender,
         poolAddress: log.address,
-        amount0: log.args.amount0.toString(),
-        amount1: log.args.amount1.toString(),
+        amount0: fromBigIntToNumber(log.args.amount0),
+        amount1: fromBigIntToNumber(log.args.amount1),
         transactionHash: log.transactionHash,
         blockNumber: Number(log.blockNumber),
       });
@@ -143,15 +143,15 @@ export class EventPoolService {
         await this.liquidityProviderService.burn(
           event.sender,
           event.poolAddress,
-          log.args.burntLiquidity.toString(),
+          fromBigIntToNumber(log.args.burntLiquidity),
         ),
 
         // Update the pool's liquidity
         await this.poolsService.updatePoolReserves(
           event.poolAddress,
           {
-            reserve0: log.args.amount0.toString(),
-            reserve1: log.args.amount1.toString(),
+            reserve0: fromBigIntToNumber(log.args.amount0),
+            reserve1: fromBigIntToNumber(log.args.amount1),
           },
           true,
         ),
@@ -178,8 +178,8 @@ export class EventPoolService {
           type: EventType.SWAP,
           sender: log.args.sender,
           poolAddress: log.args.poolAddress,
-          amount0: log.args.amount0.toString(),
-          amount1: log.args.amount1.toString(),
+          amount0: fromBigIntToNumber(log.args.amount0),
+          amount1: fromBigIntToNumber(log.args.amount1),
           transactionHash: log.transactionHash,
           blockNumber: Number(log.blockNumber),
         }),
@@ -207,8 +207,8 @@ export class EventPoolService {
       await this.poolsService.updatePoolReserves(
         log.address,
         {
-          reserve0: _reserve0,
-          reserve1: _reserve1,
+          reserve0: fromBigIntToNumber(_reserve0),
+          reserve1: fromBigIntToNumber(_reserve1),
         },
         false,
         true,

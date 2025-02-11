@@ -58,10 +58,11 @@ export class LiquidityProviderService {
       }
       liquidityProvider = this.liquidityProviderRepository.create({
         address: lpAddress,
-        totalShares: mintedLiquidity.toString(),
+        totalShares: mintedLiquidity,
         poolLiquidity: {
-          [poolAddress]: mintedLiquidity.toString(),
+          [poolAddress]: mintedLiquidity,
         },
+        user,
       });
       liquidityProvider =
         await this.liquidityProviderRepository.save(liquidityProvider);
@@ -74,15 +75,12 @@ export class LiquidityProviderService {
       return liquidityProvider;
     }
     console.log('LP found', liquidityProvider);
-    const newShares = (
-      Number(liquidityProvider.totalShares) + mintedLiquidity
-    ).toString();
+    const newShares = liquidityProvider.totalShares + mintedLiquidity;
 
     const newPoolLiquidity = {
       ...liquidityProvider.poolLiquidity,
-      [poolAddress]: (
-        Number(liquidityProvider.poolLiquidity[poolAddress]) + mintedLiquidity
-      ).toString(),
+      [poolAddress]:
+        liquidityProvider.poolLiquidity[poolAddress] + mintedLiquidity,
     };
 
     console.log('Updating liquidity provider', newShares, newPoolLiquidity);
@@ -99,15 +97,12 @@ export class LiquidityProviderService {
       throw new Error('Liquidity provider not found');
     }
     // Update the liquidity provider's total shares
-    liquidityProvider.totalShares = (
-      Number(liquidityProvider.totalShares) - burntLiquidity
-    ).toString();
+    liquidityProvider.totalShares =
+      liquidityProvider.totalShares - burntLiquidity;
 
     // Update the pool's liquidity
-    liquidityProvider.poolLiquidity[poolAddress] = (
-      Number(liquidityProvider.poolLiquidity[poolAddress]) - burntLiquidity
-    ).toString();
-    toString();
+    liquidityProvider.poolLiquidity[poolAddress] =
+      liquidityProvider.poolLiquidity[poolAddress] - burntLiquidity;
     await this.update(liquidityProvider.id, liquidityProvider);
   }
 }

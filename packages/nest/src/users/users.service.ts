@@ -32,6 +32,9 @@ export class UsersService {
   }
 
   async create(createUserDto: Partial<CreateUserDto>) {
-    return this.userRepository.save(createUserDto);
+    return this.userRepository.save({
+      ...createUserDto,
+      address: createUserDto.address.toLowerCase(),
+    });
   }
 }

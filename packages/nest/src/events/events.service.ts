@@ -4,9 +4,7 @@ import { createPublicClient, http, parseAbiItem } from 'viem';
 import { Event, EventType } from '../entities/event.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
-import { LiquidityProviderService } from 'src/liquidity-provider/liquidity-provider.service';
 import { PoolsService } from 'src/pools/pools.service';
-import { UsersService } from 'src/users/users.service';
 import { EventPoolService } from './event-pool-service';
 config();
 
@@ -19,8 +17,6 @@ export class EventsService implements OnModuleInit {
     @Inject(REPOSITORIES.EVENT)
     private eventRepository: Repository<Event>,
     private poolsService: PoolsService,
-    private usersService: UsersService,
-    private liquidityProviderService: LiquidityProviderService,
     private eventPoolService: EventPoolService,
   ) {
     this.client = createPublicClient({

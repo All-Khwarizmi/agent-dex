@@ -35,11 +35,23 @@ export class Event {
   @Column({ type: 'varchar', length: 42, nullable: true })
   poolAddress: string;
 
-  @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
-  amount0: string;
+  @Column({
+    type: 'numeric',
+    precision: 78,
+    scale: 0,
+    nullable: true,
+    default: 0,
+  })
+  amount0: number;
 
-  @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
-  amount1: string;
+  @Column({
+    type: 'numeric',
+    precision: 78,
+    scale: 0,
+    nullable: true,
+    default: 0,
+  })
+  amount1: number;
 
   @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
   token0: string;
