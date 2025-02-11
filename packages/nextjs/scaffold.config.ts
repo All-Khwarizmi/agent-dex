@@ -19,12 +19,12 @@ const scaffoldConfig = {
       name: "Virtual Mainnet",
       nativeCurrency: { name: "VETH", symbol: "VETH", decimals: 18 },
       rpcUrls: {
-        default: { http: ["https://virtual.mainnet.rpc.tenderly.co/dc57b65e-72a3-4406-92fa-e23d30cde7b5"] },
+        default: { http: ["https://virtual.mainnet.rpc.tenderly.co/a0e41a0b-7dd7-4f40-8696-cdd520cb88ce"] },
       },
       blockExplorers: {
         default: {
           name: "Tenderly Explorer",
-          url: "https://virtual.mainnet.rpc.tenderly.co/29ca0229-3fa7-4e40-9528-4ce4b43a8233",
+          url: "https://virtual.mainnet.rpc.tenderly.co/4706254f-c36c-4de9-8a82-6db916adf321",
         },
       },
     },
