@@ -51,7 +51,7 @@ export default function CreatePool() {
         <CardTitle>Create Liquidity Pool</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className=" gap-4 flex items-center justify-center">
+        <div className=" gap-4 flex flex-col md:flex-row items-center justify-center">
           <div className="flex items-center space-x-2">
             <Select value={tokenA} onValueChange={value => setTokenA(TOKENS.find(t => t.symbol === value)!.symbol)}>
               <SelectTrigger className="w-[180px]">
