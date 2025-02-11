@@ -98,10 +98,8 @@ contract Pair is ERC20 {
         _reserve1 = reserve1;
     }
 
-    // TODO: check if this is correct
     function poolBalance() external view returns (uint256) {
-        uint256 _totalSupply = totalSupply();
-        return Math.min((_totalSupply) / reserve0, (_totalSupply) / reserve1);
+        return totalSupply();
     }
 
     function getReservesFromToken(
@@ -260,7 +258,6 @@ contract Pair is ERC20 {
         }
     }
 
-    // TODO: Add checks to ensure removing liquidity is safe for the pool
     function removeLiquidity(uint256 amount) external lock {
         require(amount > 0, "AgentDEX: INSUFFICIENT_INPUT");
 

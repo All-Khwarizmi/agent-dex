@@ -56,7 +56,7 @@ function useManageLiquidity() {
     isLoading: isLoadingPoolBalance,
   } = useReadContract({
     address: pairAddr,
-    functionName: "poolBalance",
+    functionName: "total",
     abi: deployedPairContractData?.abi,
     query: {
       enabled: pairAddr !== undefined,
