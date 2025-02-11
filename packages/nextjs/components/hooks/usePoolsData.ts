@@ -46,7 +46,7 @@ export function usePoolsData() {
 
   const { data: liquidityProviders, isLoading: isLoadingLPs } = useQuery<LiquidityProvider[]>({
     queryKey: ["liquidityProviders"],
-    queryFn: () => fetch(`${BASE_BACKEND_URL}/liquidity-providers`).then(res => res.json()),
+    queryFn: () => fetch(`${BASE_BACKEND_URL}/liquidity-provider`).then(res => res.json()),
   });
 
   return {
