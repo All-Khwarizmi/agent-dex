@@ -103,3 +103,5 @@ export const TOKENS = [
 
 export const FACTORY_CONTRACT_NAME = "Factory";
 export const PAIR_CONTRACT_NAME = "Pair";
+
+export const BASE_BACKEND_URL = process.env.NEXT_PUBLIC_BASE_BACKEND_URL || "http://localhost:5001";

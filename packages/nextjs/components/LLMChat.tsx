@@ -1,9 +1,9 @@
 "use client";
 
+import { Button } from "./ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
 import { ScrollArea } from "./ui/ScrollArea";
-import { Button } from "./ui/button";
 import { useChat } from "ai/react";
 
 export default function LLMChat() {
