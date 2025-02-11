@@ -210,10 +210,9 @@ contract Pair is ERC20 {
 
             // Lock minimum liquidity forever by burning it
             // This prevents the pool from being fully drained and price manipulation
-            _mint(address(this), MINIMUM_LIQUIDITY); // Lock minimum liquidity forever by burning to address(0)
+            _mint(address(this), liquidity); // Lock minimum liquidity forever by burning to address(0)
             _burn(address(this), MINIMUM_LIQUIDITY);
-
-            _mint(msg.sender, liquidity - MINIMUM_LIQUIDITY);
+            this.transfer(msg.sender, liquidity - MINIMUM_LIQUIDITY);
 
             _safeTransferFrom(token0, msg.sender, address(this), amount0);
             _safeTransferFrom(token1, msg.sender, address(this), amount1);
@@ -221,7 +220,7 @@ contract Pair is ERC20 {
             reserve0 = amount0;
             reserve1 = amount1;
 
-            emit Investment(msg.sender, liquidity - MINIMUM_LIQUIDITY);
+            emit Investment(msg.sender, liquidity);
             emit Mint(msg.sender, amount0, amount1, liquidity);
         } else {
             // Subsequent liquidity provisions
@@ -268,8 +267,16 @@ contract Pair is ERC20 {
         uint256 _totalSupply = totalSupply();
 
         uint256 liquidity = balanceOf(msg.sender);
+
         require(
-            liquidity - MINIMUM_LIQUIDITY >= amount,
+            liquidity >= amount,
+            "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE"
+        );
+        // Check the amount do not exceed 10% of the total supply
+        console.log("Total Supply:", _totalSupply);
+        console.log("Amount:", amount);
+        require(
+            (amount * 10000) / _totalSupply < 1000,
             "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE"
         );
 
@@ -288,9 +295,9 @@ contract Pair is ERC20 {
         reserve0 -= amount0;
         reserve1 -= amount1;
 
-        emit Burn(msg.sender, amount0, amount1, msg.sender, amount);
-
         emit Divestment(msg.sender, amount);
+
+        emit Burn(msg.sender, amount0, amount1, msg.sender, amount);
     }
 
     function swap(
