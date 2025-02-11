@@ -171,18 +171,18 @@ export class EventPoolService {
   private async handleSwap(log: any) {
     try {
       console.log('Received swap event', log);
-
+      const event = this.eventRepository.create({
+        type: EventType.SWAP,
+        sender: log.args.sender,
+        poolAddress: log.args.poolAddress,
+        amount0: fromBigIntToNumber(log.args.amountIn),
+        amount1: fromBigIntToNumber(log.args.amountOut),
+        transactionHash: log.transactionHash,
+        blockNumber: Number(log.blockNumber),
+      });
       // Save log and update user swaps
       const asyncBatch = [
-        this.eventRepository.create({
-          type: EventType.SWAP,
-          sender: log.args.sender,
-          poolAddress: log.args.poolAddress,
-          amount0: fromBigIntToNumber(log.args.amount0),
-          amount1: fromBigIntToNumber(log.args.amount1),
-          transactionHash: log.transactionHash,
-          blockNumber: Number(log.blockNumber),
-        }),
+        this.eventRepository.save(event),
         this.usersService.updateUserSwaps(log.args.sender),
       ];
 

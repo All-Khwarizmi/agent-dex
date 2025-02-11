@@ -24,7 +24,7 @@ export class UsersService {
   }
 
   async updateUserSwaps(address: string) {
-    const user = await this.findByAddress(address);
+    const user = await this.findByAddress(address.toLowerCase());
     if (!user) {
       return this.create({ address, swaps: 1 });
     }
