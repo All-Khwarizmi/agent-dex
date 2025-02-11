@@ -48,15 +48,16 @@ AgentDEX is a decentralized exchange that combines traditional DEX functionality
     - [Technical Architecture](#technical-architecture)
   - [Getting Started](#getting-started)
     - [Table of Contents](#table-of-contents)
+    - [Step by Step Overview](#step-by-step-overview)
+    - [Deploying new Factory Contract or new Virtual Testnet](#deploying-new-factory-contract-or-new-virtual-testnet)
+    - [Prerequisites](#prerequisites)
+    - [Installation](#installation)
+    - [Local Development](#local-development)
     - [MetaMask with Virtual Testnet](#metamask-with-virtual-testnet)
     - [Addresses](#addresses)
       - [Tokens](#tokens)
       - [Users](#users)
       - [Contracts](#contracts)
-    - [Prerequisites](#prerequisites)
-    - [Installation](#installation)
-    - [Local Development](#local-development)
-    - [Deploying new Factory Contract or new Virtual Testnet](#deploying-new-factory-contract-or-new-virtual-testnet)
   - [Usage](#usage)
     - [Traditional Interface](#traditional-interface)
     - [AI Agent Interface](#ai-agent-interface-1)
@@ -71,31 +72,24 @@ AgentDEX is a decentralized exchange that combines traditional DEX functionality
   - [Contact](#contact)
   - [Acknowledgments](#acknowledgments)
 
-### MetaMask with Virtual Testnet
+### Step by Step Overview
 
-[Tenderly docs](https://docs.tenderly.co/virtual-testnets/interact/add-testnet-to-wallet)
+1. Setup Testnet (Tenderly)
+2. Update network rpc url and block explorer in the metamask network and `scaffold.config.ts` file from the nextjs package and the env files (both foundry and nest).
+3. Setup keystore (scripts)
+4. Fund account with ETH for gas (Tenderly Dashboard)
+5. Deploy Factory Contract (scripts)
+6. Update `FACTORY_ADDRESS` in the `.env` file from nest package.
+7. Start backend (nest)
+8. Start frontend (nextjs)
 
-1. Add a network in MetaMask
-2. Select Custom RPC
-3. Name: Virtual Mainnet
-4. RPC URL: https://virtual.mainnet.rpc.tenderly.co/9da4cd92-b54b-48cd-bd79-d0c627ff46f8
-5. Chain ID: 17357
-6. Symbol: VETH
-7. Block Explorer URL: https://virtual.mainnet.rpc.tenderly.co/1b46d72c-da7f-46f9-b66a-66afabd582ab
+### Deploying new Factory Contract or new Virtual Testnet
 
-### Addresses
-
-#### Tokens
-
-- USDC: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
-- WETH: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
-
-#### Users
-
-#### Contracts
-
-- Uniswap V2 Factory: 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
-- Uniswap V2 Router: 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
+> 🚧 When deploying a new Factory contract or new Virtual Testnet, you will need to update the following:
+>
+> - Update network rpc url and block explorer in the metamask network and `scaffold.config.ts` file from the nextjs package and the env files (both nextjs and nest).
+> - `FACTORY_ADDRESS` in the `.env` file from nest package.
+> - To be able to use the scaffold-eth hooks, you will need to deploy using the `deploy script` command (to trigger the creation of the contract in `nextjs/contracts/deployedContracts.ts`) or recycle the contract from the previous deployment, changing the `address` of the contract and maybe the chain ID.
 
 ### Prerequisites
 
@@ -113,11 +107,14 @@ yarn install
 ### Local Development
 
 ```bash
-# Start local hardhat node
+# Start local node (we're using Tenderly's virtual testnet)
 yarn chain
 
 # Deploy contracts
-# option 1: deploy script
+# option 1a: deploy script (recommended)
+yarn deploy --network mainnet --file Deploy.s.sol
+
+# option 1b: deploy script
 forge script script/Deploy.s.sol:Deploy \
 --slow \
 --verify \
@@ -127,7 +124,7 @@ forge script script/Deploy.s.sol:Deploy \
   --etherscan-api-key $TENDERLY_ACCESS_TOKEN \
   --broadcast \
 
-# option 2: deploy via CLI
+# option 2: deploy via create2
 forge create Factory --rpc-url $TENDERLY_VIRTUAL_TESTNET_RPC_URL --private-key $PRIVATE_KEY --etherscan-api-key $TENDERLY_ACCESS_TOKEN --verify --verifier-url $TENDERLY_VERIFIER_URL
 
 # Start backend
@@ -142,15 +139,36 @@ yarn start
 ```bash
 # Get the ABI
 forge build --silent && jq '.abi' ./out/Factory.sol/Factory.json
+
+# Copy into the clipboard
+forge build --silent && jq '.abi' ./out/Factory.sol/Factory.json | pbcopy
 ```
 
-### Deploying new Factory Contract or new Virtual Testnet
+### MetaMask with Virtual Testnet
 
-> 🚧 When deploying a new Factory contract or new Virtual Testnet, you will need to update the following:
->
-> - `FACTORY_ADDRESS` in the `.env` file from nest package.
-> - RPC URL and Block Explorer URL in the `hardhat.config.ts` file from the foundry package.
-> - To be able to use the scaffold-eth hooks, you will need to deploy using the `deploy script` command (to trigger the creation of the contract in `nextjs/contracts/deployedContracts.ts`) or recycle the contract from the previous deployment, changing the `address` of the contract and maybe the chain ID.
+[Tenderly docs](https://docs.tenderly.co/virtual-testnets/interact/add-testnet-to-wallet)
+
+1. Add a network in MetaMask
+2. Select Custom RPC
+3. Name: Virtual Mainnet
+4. RPC URL: https://virtual.mainnet.rpc.tenderly.co/${TENDERLY_API_KEY}
+5. Chain ID: 17357
+6. Symbol: VETH
+7. Block Explorer URL: https://virtual.mainnet.rpc.tenderly.co/${TENDERLY_API_KEY}
+
+### Addresses
+
+#### Tokens
+
+- USDC: 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+- WETH: 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2
+
+#### Users
+
+#### Contracts
+
+- Uniswap V2 Factory: 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f
+- Uniswap V2 Router: 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D
 
 ## Usage
 
