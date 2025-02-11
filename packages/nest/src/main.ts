@@ -7,10 +7,10 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const config = new DocumentBuilder()
-    .setTitle('Users API')
-    .setDescription('API pour la gestion des utilisateurs')
+    .setTitle('Agent Dex API')
+    .setDescription('API to interact with the Agent Dex protocol backend')
     .setVersion('1.0')
-    .addTag('users')
+    .addTag('pools')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
@@ -21,10 +21,8 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe());
 
-  // Utiliser le port de l'environnement ou 5001 par défaut
   const port = process.env.PORT || 5001;
 
-  // Écouter sur toutes les interfaces
   await app.listen(port, '0.0.0.0');
   console.log(`Application is running on port ${port}`);
   console.log(`Swagger documentation available at /api`);

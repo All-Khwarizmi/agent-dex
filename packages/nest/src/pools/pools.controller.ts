@@ -9,27 +9,27 @@ export class PoolsController {
   constructor(private readonly poolsService: PoolsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Récupérer tous les pools' })
+  @ApiOperation({ summary: 'Get all pools' })
   @ApiResponse({
     status: 200,
-    description: 'Liste des pools récupérée avec succès.',
+    description: '  List of pools fetched successfully.',
   })
   findAll() {
     return this.poolsService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Récupérer un pool par son ID' })
-  @ApiResponse({ status: 200, description: 'Pool trouvé.' })
-  @ApiResponse({ status: 404, description: 'Pool non trouvé.' })
+  @ApiOperation({ summary: 'Get a pool by ID' })
+  @ApiResponse({ status: 200, description: 'Pool found.' })
+  @ApiResponse({ status: 404, description: 'Pool not found.' })
   findOne(@Param('id') id: string) {
     return this.poolsService.findOne(+id);
   }
 
   @Post()
-  @ApiOperation({ summary: 'Créer un nouveau pool' })
-  @ApiResponse({ status: 201, description: 'Pool créé avec succès.' })
-  @ApiResponse({ status: 400, description: 'Erreur de validation.' })
+  @ApiOperation({ summary: 'Create a new pool' })
+  @ApiResponse({ status: 201, description: 'Pool created successfully.' })
+  @ApiResponse({ status: 400, description: 'Validation error.' })
   async create(@Body() createPoolDto: CreatePoolDto) {
     try {
       console.log(createPoolDto);

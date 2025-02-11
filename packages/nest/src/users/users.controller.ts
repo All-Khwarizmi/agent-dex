@@ -11,12 +11,12 @@ import { LiquidityProvider } from 'src/entities/liquidityProvider.entity';
 
 // DTO pour la documentation Swagger
 export class CreateUserDto {
-  @ApiProperty({ example: 'John Doe', description: "Nom de l'utilisateur" })
+  @ApiProperty({ example: 'John Doe', description: 'User name' })
   name: string;
 
   @ApiProperty({
     example: '0x1de56cF322c53Bd91Fdc437196b4e8B74CB08fe3',
-    description: "EVM Address de l'utilisateur",
+    description: 'EVM Address of the user',
   })
   address: string;
   @ApiProperty({
@@ -24,13 +24,13 @@ export class CreateUserDto {
       address: '0x1de56cF322c53Bd91Fdc437196b4e8B74CB08fe3',
       totalShares: '100',
     },
-    description: "EVM Address de l'utilisateur",
+    description: "Link to the user's liquidity provider",
   })
   liquidityProvider: Partial<LiquidityProvider>;
 
   @ApiProperty({
     example: 'john@example.com',
-    description: "Email de l'utilisateur",
+    description: "User's email",
   })
   email: string;
 
@@ -47,26 +47,26 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Récupérer tous les utilisateurs' })
+  @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({
     status: 200,
-    description: 'Liste des utilisateurs récupérée avec succès.',
+    description: 'List of users fetched successfully.',
   })
   findAll() {
     return this.usersService.findAll();
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Récupérer un utilisateur par son ID' })
-  @ApiResponse({ status: 200, description: 'Utilisateur trouvé.' })
-  @ApiResponse({ status: 404, description: 'Utilisateur non trouvé.' })
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiResponse({ status: 200, description: 'User found.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
 
   @Post()
-  @ApiOperation({ summary: 'Créer un nouvel utilisateur' })
-  @ApiResponse({ status: 201, description: 'Utilisateur créé avec succès.' })
+  @ApiOperation({ summary: 'Create a new user' })
+  @ApiResponse({ status: 201, description: 'User created successfully.' })
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
