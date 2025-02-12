@@ -55,6 +55,9 @@ export class EventPoolService {
         parseAbiItem(
           'event Swap(address indexed sender, address tokenIn, address tokenOut, uint amountIn, uint amountOut)',
         ),
+        parseAbiItem(
+          'event SwapForwarded(address user,address tokenIn,address tokenOut,uint amountIn,uint amountOut)',
+        ),
       ],
       eventNames: ['Mint', 'Burn', 'Swap'],
       onLogs: async (logs: any) => {
@@ -70,6 +73,9 @@ export class EventPoolService {
               break;
             case 'Swap':
               await this.handleSwap(log);
+              break;
+            case 'SwapForwarded':
+              await this.handleSwapForwarded(log);
               break;
           }
         }
@@ -215,6 +221,34 @@ export class EventPoolService {
       );
     } catch (error) {
       console.error('Error handling swap:', error);
+    }
+  }
+  private async handleSwapForwarded(log: any) {
+    try {
+      console.log('Received swap forwarded event', log);
+      const event = this.eventRepository.create({
+        type: EventType.SWAP_FORWARDED,
+        sender: log.args.user,
+        poolAddress: log.address,
+        amount0: fromBigIntToNumber(log.args.amountIn),
+        amount1: fromBigIntToNumber(log.args.amountOut),
+        transactionHash: log.transactionHash,
+        blockNumber: Number(log.blockNumber),
+      });
+      // Save log and update user swaps
+      const asyncBatch = [
+        this.eventRepository.save(event),
+        this.usersService.updateUserSwaps(log.args.user),
+      ];
+
+      const result = await Promise.allSettled(asyncBatch);
+      for (const r of result) {
+        if (r.status === 'rejected') {
+          console.error('Error creating pool:', r.reason);
+        }
+      }
+    } catch (error) {
+      console.error('Error creating pool:', error);
     }
   }
 }
