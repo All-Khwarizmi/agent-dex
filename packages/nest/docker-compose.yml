@@ -1,4 +1,3 @@
-# apps/api/docker-compose.yml
 version: '3.8'
 services:
   db:
@@ -10,7 +9,13 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=myapp
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - agentdex_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
-  postgres_data:
+  agentdex_postgres_data:
+    name: agentdex_postgres_data

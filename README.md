@@ -107,12 +107,13 @@ yarn install
 ### Local Development
 
 ```bash
-# Start local node (we're using Tenderly's virtual testnet)
-yarn chain
+# Let’s start by forking mainnet
+anvil --fork-url https://mainnet.infura.io/v3/$INFURA_KEY
+
 
 # Deploy contracts
 # option 1a: deploy script (recommended)
-yarn deploy --network mainnet --file Deploy.s.sol
+yarn deploy --network localhost --file Deploy.s.sol
 
 # option 1b: deploy script
 forge script script/Deploy.s.sol:Deploy \

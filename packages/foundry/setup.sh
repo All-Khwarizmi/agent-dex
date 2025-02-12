@@ -4,7 +4,7 @@
 # Check if Anvil is running
 if ! nc -z localhost 8545; then
     echo "Starting Anvil..."
-    anvil --fork-url $ETH_RPC_URL --chain-id 31337 &
+    anvil --fork-url $RPC_URL --chain-id 31337 &
     sleep 5  # Wait for Anvil to start
 fi
 

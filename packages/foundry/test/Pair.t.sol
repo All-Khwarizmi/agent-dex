@@ -20,7 +20,7 @@ contract PairTest is Test {
 
     function setUp() public {
         // We reset the fork to the mainnet fork
-        vm.createSelectFork(vm.envString("ETH_RPC_URL"));
+        vm.createSelectFork(vm.envString("RPC_URL"));
 
         alice = makeAddr("alice");
         bob = makeAddr("bob");
