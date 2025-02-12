@@ -325,8 +325,11 @@ contract Pair is ERC20 {
         console.log("Should Swap With Uniswap:", shouldSwapWithUniswap);
         console.log("Uniswap Amount:", uniswapAmount);
 
-        // 2. If yes, swap with uniswapV2 and take fees
-        if (shouldSwapWithUniswap) {
+        // 2. If no, swap with our protocol
+        bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
+
+        // 3. If yes, swap with uniswapV2 and take fees
+        if (shouldSwapWithUniswap || !_shouldSwap) {
             // First transfer FROM user TO pair
             _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
 
@@ -383,9 +386,6 @@ contract Pair is ERC20 {
 
             return;
         }
-        // 3. If no, swap with our protocol
-        bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
-        require(_shouldSwap, "AgentDEX: SWAP_CONDITION_NOT_MET");
 
         // Log pre-transfer balances
         console.log("\n=== Pre-Transfer Balances ===");
