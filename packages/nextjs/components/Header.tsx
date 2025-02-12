@@ -102,7 +102,12 @@ export const Header = () => {
         </div>
         <Link href="/" passHref className="hidden lg:flex items-center gap-2 ml-4 mr-6 shrink-0">
           <div className="flex relative w-10 h-10">
-            <Image alt="SE2 logo" className="cursor-pointer" fill src="/logo.svg" />
+            <Image
+              alt="Agent Dex logo"
+              className="cursor-pointer rounded-lg"
+              fill
+              src="https://media.deloitte.com/is/image/deloitte/deloitte-nl-legal-ai-as-co-pilot-promo:720-x-480?$Responsive$=&fmt=webp&fit=stretch,1&dpr=off"
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-bold leading-tight">Agent Dex</span>
