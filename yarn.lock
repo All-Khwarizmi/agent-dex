@@ -19,6 +19,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ai-sdk/openai@npm:^1.1.9":
+  version: 1.1.9
+  resolution: "@ai-sdk/openai@npm:1.1.9"
+  dependencies:
+    "@ai-sdk/provider": 1.0.7
+    "@ai-sdk/provider-utils": 2.1.6
+  peerDependencies:
+    zod: ^3.0.0
+  checksum: 616ed6d00d3988c2e6b474922d0c4727f6e5de3c42ae85cad8cf0a6ab9d1c3f053cc468256af2e8e8be0e84c568e2cec5ae6d1773296c004bb3367446b961f97
+  languageName: node
+  linkType: hard
+
 "@ai-sdk/provider-utils@npm:2.1.6":
   version: 2.1.6
   resolution: "@ai-sdk/provider-utils@npm:2.1.6"
@@ -3197,6 +3209,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@se-2/nextjs@workspace:packages/nextjs"
   dependencies:
+    "@ai-sdk/openai": ^1.1.9
     "@heroicons/react": ~2.1.5
     "@radix-ui/react-scroll-area": ^1.2.2
     "@radix-ui/react-select": ^2.1.5

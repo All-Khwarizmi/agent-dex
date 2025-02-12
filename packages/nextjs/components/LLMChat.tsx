@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Button } from "./ui/Button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/Card";
 import { Input } from "./ui/Input";
@@ -11,19 +12,34 @@ export default function LLMChat() {
     api: "/api/chat",
   });
 
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
+    }
+  }, [scrollAreaRef, messages]); //Corrected dependency
+
   return (
     <Card className="w-full">
       <CardHeader>
         <CardTitle>AI DEX Assistant</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[400px] w-full pr-4">
-          {messages.map((message, i) => (
-            <div key={i} className={`mb-4 ${message.role === "assistant" ? "text-blue-600" : "text-green-600"}`}>
-              <strong>{message.role === "assistant" ? "AI: " : "You: "}</strong>
-              {message.content}
-            </div>
-          ))}
+        <ScrollArea ref={scrollAreaRef} className="h-[400px] w-full pr-4 overflow-y-auto">
+          <div className="space-y-4">
+            {messages.map((message, i) => (
+              <div
+                key={i}
+                className={`p-2 rounded-lg ${
+                  message.role === "assistant" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
+                }`}
+              >
+                <strong>{message.role === "assistant" ? "AI: " : "You: "}</strong>
+                {message.content}
+              </div>
+            ))}
+          </div>
         </ScrollArea>
       </CardContent>
       <CardFooter>
