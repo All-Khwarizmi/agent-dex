@@ -30,6 +30,10 @@ export default function ManageLiquidity() {
       liquidityToRemove,
       isLoadingContract,
       writeContractError,
+      balanceTokenA,
+      balanceTokenB,
+      isLoadingBalanceTokenA,
+      isLoadingBalanceTokenB,
     },
     functions: {
       setTokenAddresses,
@@ -38,6 +42,8 @@ export default function ManageLiquidity() {
       setLiquidityToRemove,
       handleAddLiquidity,
       handleRemoveLiquidity,
+      refetchBalanceTokenA,
+      refetchBalanceTokenB,
     },
   } = useManageLiquidity();
 
@@ -76,6 +82,12 @@ export default function ManageLiquidity() {
               className="flex-grow"
             />
           </div>
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-sm text-muted-foreground">Balance:</span>
+            <span className="text-sm text-green-500">
+              {balanceTokenA?.toLocaleString() || "0"} {tokenA}
+            </span>
+          </div>
           <div className="flex items-center space-x-2">
             <Select value={tokenB} onValueChange={value => setTokenB(TOKENS.find(t => t.symbol === value)!.symbol)}>
               <SelectTrigger className="w-[180px]">
@@ -96,6 +108,12 @@ export default function ManageLiquidity() {
               onChange={e => setAmountB(e.target.value)}
               className="flex-grow"
             />
+          </div>
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-sm text-muted-foreground">Balance:</span>
+            <span className="text-sm text-green-500">
+              {balanceTokenB?.toLocaleString() || "0"} {tokenB}
+            </span>
           </div>
           <div>
             {isLoadingPoolLiquidity ? (

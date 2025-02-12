@@ -1,11 +1,13 @@
 #!/bin/bash
 # fund_account.sh
 
-# Check if address argument is provided
 if [ -z "$1" ]; then
     echo "Usage: ./fund_account.sh <ADDRESS>"
     exit 1
 fi
+
+# Local Anvil RPC URL
+RPC_URL="http://localhost:8545"
 
 RECIPIENT=$1
 WETH="0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
@@ -18,31 +20,48 @@ DAI_WHALE="0xD1668fB5F690C59Ab4B0CAbAd0f8C1617895052B"
 
 echo "Funding account: $RECIPIENT"
 
+# Check if anvil is running
+if ! curl -s -X POST -H "Content-Type: application/json" --data '{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}' $RPC_URL > /dev/null; then
+    echo "Error: Anvil is not running. Please start anvil first."
+    exit 1
+fi
+
 # Fund with ETH
 echo "Funding with ETH..."
-cast rpc anvil_setBalance $RECIPIENT 0x8AC7230489E80000 # 10 ETH in hex
+cast rpc anvil_setBalance $RECIPIENT 0x8AC7230489E80000 --rpc-url $RPC_URL
 
-# Impersonate and fund with WETH
+# Fund whales with ETH for gas
+echo "Funding whales with ETH for gas..."
+cast rpc anvil_setBalance $WETH_WHALE 0x8AC7230489E80000 --rpc-url $RPC_URL
+cast rpc anvil_setBalance $USDC_WHALE 0x8AC7230489E80000 --rpc-url $RPC_URL
+cast rpc anvil_setBalance $DAI_WHALE 0x8AC7230489E80000 --rpc-url $RPC_URL
+
+# Fund with WETH
 echo "Funding with WETH..."
-cast rpc anvil_impersonateAccount $WETH_WHALE
-cast send $WETH "transfer(address,uint256)" $RECIPIENT 5000000000000000000 --from $WETH_WHALE
-cast rpc anvil_stopImpersonatingAccount $WETH_WHALE
+cast rpc anvil_impersonateAccount $WETH_WHALE --rpc-url $RPC_URL
+cast send --unlocked $WETH "transfer(address,uint256)" $RECIPIENT 5000000000000000000 --from $WETH_WHALE --rpc-url $RPC_URL
+cast rpc anvil_stopImpersonatingAccount $WETH_WHALE --rpc-url $RPC_URL
 
-# Impersonate and fund with USDC
+# Fund with USDC
 echo "Funding with USDC..."
-cast rpc anvil_impersonateAccount $USDC_WHALE
-cast send $USDC "transfer(address,uint256)" $RECIPIENT 10000000000 --from $USDC_WHALE # 10,000 USDC
-cast rpc anvil_stopImpersonatingAccount $USDC_WHALE
+cast rpc anvil_impersonateAccount $USDC_WHALE --rpc-url $RPC_URL
+cast send --unlocked $USDC "transfer(address,uint256)" $RECIPIENT 10000000000 --from $USDC_WHALE --rpc-url $RPC_URL
+cast rpc anvil_stopImpersonatingAccount $USDC_WHALE --rpc-url $RPC_URL
 
-# Impersonate and fund with DAI
+# Fund with DAI
 echo "Funding with DAI..."
-cast rpc anvil_impersonateAccount $DAI_WHALE
-cast send $DAI "transfer(address,uint256)" $RECIPIENT 10000000000000000000000 --from $DAI_WHALE # 10,000 DAI
-cast rpc anvil_stopImpersonatingAccount $DAI_WHALE
+cast rpc anvil_impersonateAccount $DAI_WHALE --rpc-url $RPC_URL
+cast send --unlocked $DAI "transfer(address,uint256)" $RECIPIENT 10000000000000000000000 --from $DAI_WHALE --rpc-url $RPC_URL
+cast rpc anvil_stopImpersonatingAccount $DAI_WHALE --rpc-url $RPC_URL
 
-# Check balances
+# Format and display balances
 echo "Final balances:"
-echo "ETH: $(cast balance $RECIPIENT) wei"
-echo "WETH: $(cast call $WETH "balanceOf(address)(uint256)" $RECIPIENT) wei"
-echo "USDC: $(cast call $USDC "balanceOf(address)(uint256)" $RECIPIENT)"
-echo "DAI: $(cast call $DAI "balanceOf(address)(uint256)" $RECIPIENT) wei"
+eth_bal=$(cast balance $RECIPIENT --rpc-url $RPC_URL)
+weth_bal=$(cast call $WETH "balanceOf(address)(uint256)" $RECIPIENT --rpc-url $RPC_URL)
+usdc_bal=$(cast call $USDC "balanceOf(address)(uint256)" $RECIPIENT --rpc-url $RPC_URL)
+dai_bal=$(cast call $DAI "balanceOf(address)(uint256)" $RECIPIENT --rpc-url $RPC_URL)
+
+echo "ETH:  $(echo "scale=2; $eth_bal/10^18" | bc) ETH"
+echo "WETH: $(echo "scale=2; $weth_bal/10^18" | bc) WETH"
+echo "USDC: $(echo "scale=2; $usdc_bal/10^6" | bc) USDC"
+echo "DAI:  $(echo "scale=2; $dai_bal/10^18" | bc) DAI"

@@ -1,6 +1,5 @@
 import { TOKENS } from "./constants";
-import { get } from "http";
-import { formatGwei, formatUnits } from "viem";
+import { formatUnits } from "viem";
 import { FormattedPool, TokenMetadata } from "~~/types/tokens";
 
 const MORALIS_API_KEY = process.env.NEXT_PUBLIC_MORALIS_API_KEY;
@@ -80,10 +79,10 @@ export function formatPoolPair(
     token0Address: pool.token0 || "",
     token1Address: pool.token1 || "",
     reserve0: Number(
-      formatTokensAccordingToDecimals(getSymbolFromAddress(pool.token0) || "ETH", BigInt(pool.reserve0)),
+      formatTokensAccordingToDecimals(getSymbolFromAddress(pool.token0) || "WETH", BigInt(pool.reserve0)),
     ),
     reserve1: Number(
-      formatTokensAccordingToDecimals(getSymbolFromAddress(pool.token1) || "ETH", BigInt(pool.reserve1)),
+      formatTokensAccordingToDecimals(getSymbolFromAddress(pool.token1) || "WETH", BigInt(pool.reserve1)),
     ),
     swaps: pool.swaps,
   };

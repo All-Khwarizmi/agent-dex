@@ -51,6 +51,38 @@ function useManageLiquidity() {
   });
 
   const {
+    data: balanceTokenA,
+    refetch: refetchBalanceTokenA,
+    isLoading: isLoadingBalanceTokenA,
+  } = useReadContract({
+    address: addresses[0],
+    functionName: "balanceOf",
+    args: [account || ""],
+    abi: deployedPairContractData?.abi,
+    query: {
+      enabled: !!addresses[0],
+    },
+  });
+  const {
+    data: balanceTokenB,
+    refetch: refetchBalanceTokenB,
+    isLoading: isLoadingBalanceTokenB,
+  } = useReadContract({
+    address: addresses[1],
+    functionName: "balanceOf",
+    args: [account || ""],
+    abi: deployedPairContractData?.abi,
+    query: {
+      enabled: !!addresses[1],
+    },
+  });
+
+  useEffect(() => {
+    refetchBalanceTokenA().then().catch(console.error);
+    refetchBalanceTokenB().then().catch(console.error);
+  }, [pairAddr, refetchBalanceTokenA, refetchBalanceTokenB]);
+
+  const {
     data: poolBalance,
     refetch: refetchPoolBalance,
     isLoading: isLoadingPoolBalance,
@@ -162,6 +194,10 @@ function useManageLiquidity() {
       writeContractError,
       userLiquidity,
       isLoadingContract,
+      balanceTokenA,
+      balanceTokenB,
+      isLoadingBalanceTokenA,
+      isLoadingBalanceTokenB,
       isLoading:
         isLoadingPairCount &&
         isLoadingPoolBalance &&
@@ -172,6 +208,8 @@ function useManageLiquidity() {
     functions: {
       setAmountA,
       setAmountB,
+      refetchBalanceTokenA,
+      refetchBalanceTokenB,
       setupAddLiquidity,
       handleAddLiquidity,
       setLiquidityToRemove,
