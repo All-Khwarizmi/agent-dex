@@ -20,16 +20,16 @@ export default function DetailsPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
+    <div className="container mx-auto p-4 pt-12 space-y-8">
       <h1 className="text-3xl font-bold">Detailed Information</h1>
 
       <Tabs value={activeTab} onValueChange={value => setActiveTab(value as "users" | "providers")}>
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full gap-2 grid-cols-2">
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="providers">Liquidity Providers</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="users">
+        <TabsContent value="users" className="shadow-md shadow-secondary rounded-lg">
           <Card>
             <CardHeader>
               <CardTitle>Detailed User Information</CardTitle>
@@ -40,7 +40,7 @@ export default function DetailsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="providers">
+        <TabsContent value="providers" className="shadow-md shadow-secondary rounded-lg">
           <Card>
             <CardHeader>
               <CardTitle>Detailed Liquidity Provider Information</CardTitle>

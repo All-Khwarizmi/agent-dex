@@ -11,7 +11,7 @@ interface StatsGridProps {
 export function StatsGrid({ poolsCount, totalSwaps, usersCount, providersCount }: StatsGridProps) {
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card>
+      <Card className="shadow-md shadow-secondary rounded-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Pools</CardTitle>
           <Database className="h-4 w-4 text-muted-foreground" />
@@ -20,7 +20,8 @@ export function StatsGrid({ poolsCount, totalSwaps, usersCount, providersCount }
           <div className="text-2xl font-bold">{poolsCount}</div>
         </CardContent>
       </Card>
-      <Card>
+
+      <Card className="shadow-md shadow-secondary rounded-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Swaps</CardTitle>
           <RefreshCcw className="h-4 w-4 text-muted-foreground" />
@@ -29,7 +30,8 @@ export function StatsGrid({ poolsCount, totalSwaps, usersCount, providersCount }
           <div className="text-2xl font-bold">{totalSwaps}</div>
         </CardContent>
       </Card>
-      <Card>
+
+      <Card className="shadow-md shadow-secondary rounded-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Users</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
@@ -38,7 +40,8 @@ export function StatsGrid({ poolsCount, totalSwaps, usersCount, providersCount }
           <div className="text-2xl font-bold">{usersCount}</div>
         </CardContent>
       </Card>
-      <Card>
+
+      <Card className="shadow-md shadow-secondary rounded-lg">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Liquidity Providers</CardTitle>
           <Wallet className="h-4 w-4 text-muted-foreground" />

@@ -1,12 +1,12 @@
 "use client";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
 import { PoolsTable } from "~~/components/PoolsTable";
 import { ProvidersTable } from "~~/components/ProvidersTable";
 import { StatsGrid } from "~~/components/StatsGrid";
 import { UsersTable } from "~~/components/UsersTable";
 import { usePoolsData } from "~~/components/hooks/usePoolsData";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/Card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/Tabs";
 
 export default function ExplorerPage() {
   const { pools, users, liquidityProviders, isLoading } = usePoolsData();
@@ -20,7 +20,9 @@ export default function ExplorerPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 space-y-8">
+    <div className="container mx-auto p-4  pt-12 space-y-8">
+      <h1 className="text-3xl font-bold">Pools</h1>
+
       <StatsGrid
         poolsCount={pools?.length ?? 0}
         totalSwaps={pools?.reduce((acc, pool) => acc + pool.swaps, 0) ?? 0}
@@ -28,15 +30,17 @@ export default function ExplorerPage() {
         providersCount={liquidityProviders?.length ?? 0}
       />
 
-      <Tabs defaultValue="pools" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="pools">Pools</TabsTrigger>
-          <TabsTrigger value="tokens">Tokens</TabsTrigger>
-          <TabsTrigger value="users">Users</TabsTrigger>
-          <TabsTrigger value="providers">Liquidity Providers</TabsTrigger>
-        </TabsList>
+      <Tabs defaultValue="pools" className="w-full space-y-2 flex flex-col">
+        <div>
+          <TabsList className="md:grid flex flex-col size-full grid-cols-4 gap-2">
+            <TabsTrigger value="pools">Pools</TabsTrigger>
+            <TabsTrigger value="tokens">Tokens</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="providers">Liquidity Providers</TabsTrigger>
+          </TabsList>
+        </div>
 
-        <TabsContent value="pools">
+        <TabsContent value="pools" className="shadow-md shadow-secondary rounded-lg">
           <Card>
             <CardHeader>
               <CardTitle>Active Pools</CardTitle>
@@ -47,13 +51,13 @@ export default function ExplorerPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="tokens">
+        <TabsContent value="tokens" className="shadow-md shadow-secondary rounded-lg">
           <Card>
             <CardHeader>
               <CardTitle>Available Tokens</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4">
+              <div className="grid gap-4 overflow-x-auto">
                 {Array.from(new Set([...(pools?.map(p => p.token0) ?? []), ...(pools?.map(p => p.token1) ?? [])])).map(
                   token => (
                     <div key={token} className="flex justify-between items-center p-4 bg-secondary rounded-lg">
@@ -69,7 +73,7 @@ export default function ExplorerPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="users">
+        <TabsContent value="users" className="shadow-md shadow-secondary rounded-lg">
           <Card>
             <CardHeader>
               <CardTitle>Protocol Users</CardTitle>
@@ -80,7 +84,7 @@ export default function ExplorerPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="providers">
+        <TabsContent value="providers" className="shadow-md shadow-secondary rounded-lg">
           <Card>
             <CardHeader>
               <CardTitle>Liquidity Providers</CardTitle>
