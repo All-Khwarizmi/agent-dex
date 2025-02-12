@@ -92,10 +92,10 @@ export function shortenAddress(address: string): string {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 }
 
-function formatTokensAccordingToDecimals(symbol: (typeof TOKENS)[number]["symbol"], amount: bigint) {
+export function formatTokensAccordingToDecimals(symbol: (typeof TOKENS)[number]["symbol"], amount: bigint) {
   const token = TOKENS.find(token => token.symbol === symbol);
   if (!token) {
-    return amount.toString();
+    return amount?.toString();
   }
   return formatUnits(amount, token.decimals);
 }

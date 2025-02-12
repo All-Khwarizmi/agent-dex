@@ -3,6 +3,7 @@ import { Abi, erc20Abi } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { FACTORY_CONTRACT_NAME, PAIR_CONTRACT_NAME } from "~~/utils/constants";
+import { formatTokensAccordingToDecimals, getSymbolFromAddress } from "~~/utils/tokens";
 
 function useManageLiquidity() {
   const [addresses, setAddresses] = useState<[string, string]>(["", ""]);
@@ -88,7 +89,7 @@ function useManageLiquidity() {
     isLoading: isLoadingPoolBalance,
   } = useReadContract({
     address: pairAddr,
-    functionName: "total",
+    functionName: "poolBalance",
     abi: deployedPairContractData?.abi,
     query: {
       enabled: pairAddr !== undefined,
@@ -194,8 +195,14 @@ function useManageLiquidity() {
       writeContractError,
       userLiquidity,
       isLoadingContract,
-      balanceTokenA,
-      balanceTokenB,
+      balanceTokenA: formatTokensAccordingToDecimals(
+        getSymbolFromAddress(addresses[0]) || "WETH",
+        (balanceTokenA as bigint) ?? 0n,
+      ),
+      balanceTokenB: formatTokensAccordingToDecimals(
+        getSymbolFromAddress(addresses[1]) || "WETH",
+        (balanceTokenB as bigint) ?? 0n,
+      ),
       isLoadingBalanceTokenA,
       isLoadingBalanceTokenB,
       isLoading:
