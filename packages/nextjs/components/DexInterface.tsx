@@ -25,7 +25,7 @@ export default function DEXInterface() {
   } = useSwap();
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full  mx-auto ">
       <CardHeader>
         <CardTitle>Swap Tokens</CardTitle>
       </CardHeader>

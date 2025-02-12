@@ -20,7 +20,7 @@ interface ProvidersDetailedTableProps {
 export function ProvidersDetailedTable({ providers }: ProvidersDetailedTableProps) {
   console.log(providers);
   return (
-    <Table>
+    <Table >
       <TableHeader>
         <TableRow>
           <TableHead>Address</TableHead>
@@ -35,7 +35,7 @@ export function ProvidersDetailedTable({ providers }: ProvidersDetailedTableProp
             <TableCell className="font-medium">
               <Address address={provider.address} />
             </TableCell>
-            <TableCell>{formatUnits(BigInt(provider.totalShares), 18)}</TableCell>
+            <TableCell>{provider.totalShares}</TableCell>
             <TableCell>
               <pre>{JSON.stringify(provider.poolLiquidity)}</pre>
             </TableCell>
