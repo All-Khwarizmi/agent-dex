@@ -110,7 +110,7 @@ export default function ManageLiquidity() {
             )}
           </div>
           <Tabs defaultValue="add" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 gap-2">
               <TabsTrigger value="add">Add Liquidity</TabsTrigger>
               <TabsTrigger value="remove" disabled={!hasUserLiquidity}>
                 Remove Liquidity
