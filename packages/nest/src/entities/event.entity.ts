@@ -53,10 +53,10 @@ export class Event {
   })
   amount1: number;
 
-  @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
+  @Column({ type: 'varchar', length: 42, nullable: true })
   token0: string;
 
-  @Column({ type: 'numeric', precision: 78, scale: 0, nullable: true })
+  @Column({ type: 'varchar', length: 42, nullable: true })
   token1: string;
 
   @Column({ type: 'varchar', length: 66 })
