@@ -7,6 +7,7 @@ import { UsersTable } from "~~/components/UsersTable";
 import { usePoolsData } from "~~/components/hooks/usePoolsData";
 import { Card, CardContent, CardHeader, CardTitle } from "~~/components/ui/Card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~~/components/ui/Tabs";
+import { getSymbolFromAddress } from "~~/utils/tokens";
 
 export default function ExplorerPage() {
   const { pools, users, liquidityProviders, isLoading } = usePoolsData();
@@ -61,7 +62,7 @@ export default function ExplorerPage() {
                 {Array.from(new Set([...(pools?.map(p => p.token0) ?? []), ...(pools?.map(p => p.token1) ?? [])])).map(
                   token => (
                     <div key={token} className="flex justify-between items-center p-4 bg-secondary rounded-lg">
-                      <span>{token}</span>
+                      <span>{getSymbolFromAddress(token)}</span>
                       <span className="text-sm text-muted-foreground">
                         {pools?.filter(p => p.token0 === token || p.token1 === token).length} pools
                       </span>
