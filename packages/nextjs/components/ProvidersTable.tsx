@@ -1,3 +1,4 @@
+import { Address } from "./scaffold-eth";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/Table";
 
 interface LiquidityProvider {
@@ -26,7 +27,9 @@ export function ProvidersTable({ providers }: ProvidersTableProps) {
       <TableBody>
         {providers.map(provider => (
           <TableRow key={provider.id}>
-            <TableCell className="font-medium">{provider.address}</TableCell>
+            <TableCell className="font-medium">
+              <Address address={provider.address} />
+            </TableCell>
             <TableCell>{provider.totalShares.toLocaleString()}</TableCell>
             <TableCell>{Object.keys(provider.poolLiquidity).length}</TableCell>
             <TableCell>{new Date(provider.created_at).toLocaleDateString()}</TableCell>

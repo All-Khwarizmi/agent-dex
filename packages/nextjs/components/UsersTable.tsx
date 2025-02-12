@@ -1,3 +1,4 @@
+import { Address } from "./scaffold-eth";
 import { Badge } from "./ui/Badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/Table";
 
@@ -30,7 +31,9 @@ export function UsersTable({ users }: UsersTableProps) {
       <TableBody>
         {users.map(user => (
           <TableRow key={user.id}>
-            <TableCell className="font-medium">{user.address}</TableCell>
+            <TableCell className="font-medium">
+              <Address address={user.address} />
+            </TableCell>
             <TableCell>{user.name || "Anonymous"}</TableCell>
             <TableCell>
               <Badge variant={user.status === "active" ? "default" : "secondary"}>{user.status}</Badge>

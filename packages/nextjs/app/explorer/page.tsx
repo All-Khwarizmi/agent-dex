@@ -26,7 +26,7 @@ export default function ExplorerPage() {
 
       <StatsGrid
         poolsCount={pools?.length ?? 0}
-        totalSwaps={pools?.reduce((acc, pool) => acc + pool.swaps, 0) ?? 0}
+        totalSwaps={pools?.reduce((acc, pool) => acc + Number(pool.swaps), 0) ?? 0}
         usersCount={users?.length ?? 0}
         providersCount={liquidityProviders?.length ?? 0}
       />
