@@ -498,19 +498,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "factory",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "getAmountOut",
           inputs: [
             {
@@ -584,6 +571,19 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "pairFactory",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -1126,6 +1126,21 @@ const deployedContracts = {
             },
           ],
         },
+        {
+          type: "error",
+          name: "Pair_IdenticalAddress",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_Locked",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_ZeroAddress",
+          inputs: [],
+        },
       ],
       inheritedFunctions: {},
       deploymentFile: "run-1739366767.json",
@@ -1158,12 +1173,12 @@ const deployedContracts = {
           name: "createPair",
           inputs: [
             {
-              name: "_tokenA",
+              name: "token0",
               type: "address",
               internalType: "address",
             },
             {
-              name: "_tokenB",
+              name: "token1",
               type: "address",
               internalType: "address",
             },
@@ -1244,6 +1259,21 @@ const deployedContracts = {
             },
           ],
           anonymous: false,
+        },
+        {
+          type: "error",
+          name: "Factory_IdenticalAddresses",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Factory_PoolExists",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Factory_ZeroAddress",
+          inputs: [],
         },
       ],
       inheritedFunctions: {},
@@ -1279,12 +1309,12 @@ const deployedContracts = {
           name: "createPair",
           inputs: [
             {
-              name: "_tokenA",
+              name: "token0",
               type: "address",
               internalType: "address",
             },
             {
-              name: "_tokenB",
+              name: "token1",
               type: "address",
               internalType: "address",
             },
@@ -1365,6 +1395,21 @@ const deployedContracts = {
             },
           ],
           anonymous: false,
+        },
+        {
+          type: "error",
+          name: "Factory_IdenticalAddresses",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Factory_PoolExists",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Factory_ZeroAddress",
+          inputs: [],
         },
       ],
       inheritedFunctions: {},
@@ -1513,19 +1558,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "factory",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "getAmountOut",
           inputs: [
             {
@@ -1599,6 +1631,19 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "pairFactory",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -2141,6 +2186,21 @@ const deployedContracts = {
             },
           ],
         },
+        {
+          type: "error",
+          name: "Pair_IdenticalAddress",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_Locked",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_ZeroAddress",
+          inputs: [],
+        },
       ],
       inheritedFunctions: {},
       deploymentFile: "run-1739277792.json",
@@ -2175,12 +2235,12 @@ const deployedContracts = {
           name: "createPair",
           inputs: [
             {
-              name: "_tokenA",
+              name: "token0",
               type: "address",
               internalType: "address",
             },
             {
-              name: "_tokenB",
+              name: "token1",
               type: "address",
               internalType: "address",
             },
@@ -2262,9 +2322,24 @@ const deployedContracts = {
           ],
           anonymous: false,
         },
+        {
+          type: "error",
+          name: "Factory_IdenticalAddresses",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Factory_PoolExists",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Factory_ZeroAddress",
+          inputs: [],
+        },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739430709.json",
+      deploymentFile: "run-1739447104.json",
       deploymentScript: "Deploy.s.sol",
     },
     Pair: {
@@ -2409,19 +2484,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "factory",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "getAmountOut",
           inputs: [
             {
@@ -2495,6 +2557,19 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "pairFactory",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -3037,9 +3112,24 @@ const deployedContracts = {
             },
           ],
         },
+        {
+          type: "error",
+          name: "Pair_IdenticalAddress",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_Locked",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_ZeroAddress",
+          inputs: [],
+        },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739430709.json",
+      deploymentFile: "run-1739447104.json",
       deploymentScript: "Deploy.s.sol",
     },
   },
