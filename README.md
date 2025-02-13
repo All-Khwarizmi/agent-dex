@@ -88,6 +88,8 @@ yarn fork
 # Deploy contracts
 yarn deploy
 
+# Add factory contract address to .env in nest package
+
 # Setup database
 yarn db
 
@@ -101,7 +103,7 @@ yarn nest:start
 yarn start
 
 # Fund user wallet with ETH - DAI - USDC - WETH
-cd packages/foundry && make fund xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
+cd packages/foundry && make fund USER_ADDRESS=xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
 ```
 
 ### Addresses
