@@ -16,7 +16,7 @@ API for AgentDEX protocol.
 yarn install
 
 # Start PostgreSQL
-docker-compose up -d
+yarn db
 
 # Tests
 yarn test
@@ -27,13 +27,10 @@ yarn run start:dev
 
 # 2. Docker server
 # 2a. Build
-docker build -t api .
+yarn docker:build
 
 # 2b. Run
-docker run -p 5001:5001 \
-  --env DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/myapp \
-  --env RPC_URL="http://127.0.0.1:8545" \
-  api
+yarn docker:run
 
 ```
 

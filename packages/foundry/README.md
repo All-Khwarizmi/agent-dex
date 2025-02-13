@@ -1,14 +1,30 @@
+# AgentDEX Protocol
+
+Smart contracts for AgentDEX protocol.
+
+## 🛠️ Technologies
+
+- **Foundry**: Smart contract development
+- **Solidity**: Smart contract language
+- **Forge**: Smart contract testing
+- **Anvil**: Local chain
+
+## 🚀 Getting Started
+
 ```bash
-# Fund default user on local chain
-make fund
+# Installation
+yarn install
 
-# Fund specific address on local chain
-make fund USER_ADDRESS=0x123...
+# Start local chain
+yarn fork # or yarn chain
 
-# Fund user on Sepolia
-make fund-sepolia USER_ADDRESS=0x123...
+# Test
+yarn test
 
-# Fund specific tokens for specific user
-make fund-user USER=0x123... TOKENS="USDC,WETH,DAI"
+# Fund user wallet
+make fund xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
+
+# Deploy contracts
+yarn deploy --network localhost --file Deploy.s.sol
 
 ```
