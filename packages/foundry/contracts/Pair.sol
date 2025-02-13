@@ -10,6 +10,7 @@ import "forge-std/console.sol";
 
 import "./interfaces/IUniswapFactory.sol";
 import "./interfaces/IUniswapRouter.sol";
+import "./interfaces/IPair.sol";
 
 // Layout of Contract:
 // version
@@ -33,7 +34,7 @@ import "./interfaces/IUniswapRouter.sol";
 // internal & private view & pure functions
 // external & public view & pure functions
 
-contract Pair is ERC20 {
+contract Pair is IPair, ERC20 {
     IUniswapV2Factory private immutable i_uniswapV2Factory;
     IUniswapV2Router private immutable i_uniswapV2Router;
 
@@ -51,43 +52,6 @@ contract Pair is ERC20 {
 
     uint256 private constant FEE_NUMERATOR = 997;
     uint256 private constant FEE_DENOMINATOR = 1000;
-
-    event Mint(
-        address indexed sender,
-        uint amount0,
-        uint amount1,
-        uint mintedLiquidity
-    );
-    event Burn(
-        address indexed sender,
-        uint amount0,
-        uint amount1,
-        address indexed to,
-        uint burntLiquidity
-    );
-    event Swap(
-        address indexed sender,
-        address tokenIn,
-        address tokenOut,
-        uint amountIn,
-        uint amountOut
-    );
-    event SwapForwarded(
-        address user,
-        address tokenIn,
-        address tokenOut,
-        uint amountIn,
-        uint amountOut
-    );
-
-    event Investment(
-        address indexed liquidityProvider,
-        uint256 indexed sharesPurchased
-    );
-    event Divestment(
-        address indexed liquidityProvider,
-        uint256 indexed sharesBurned
-    );
 
     constructor(
         address _token0,
