@@ -3,6 +3,7 @@ pragma solidity 0.8.26;
 
 interface IFactory {
     error Factory_IdenticalAddresses();
+    error Factory_ZeroAddress();
     error Factory_PoolExists();
 
     event PairCreated(

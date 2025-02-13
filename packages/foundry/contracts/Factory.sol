@@ -27,6 +27,8 @@ contract Factory is IFactory {
         address token0,
         address token1
     ) public returns (address pair) {
+        if (token0 == address(0) || token1 == address(0))
+            revert Factory_ZeroAddress();
         if (token0 == token1) revert Factory_IdenticalAddresses();
         if (
             getPair[token0][token1] != address(0) ||

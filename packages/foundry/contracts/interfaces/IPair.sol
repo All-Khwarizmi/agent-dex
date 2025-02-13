@@ -2,6 +2,10 @@
 pragma solidity 0.8.26;
 
 interface IPair {
+    error Pair_ZeroAddress();
+    error Pair_IdenticalAddress();
+    error Pair_Locked();
+
     event Mint(
         address indexed sender,
         uint amount0,

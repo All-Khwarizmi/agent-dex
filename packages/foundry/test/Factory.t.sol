@@ -10,6 +10,7 @@ contract FactoryTest is Test {
     Factory public factory;
     address token0;
     address token1;
+    address constant ZERO_ADDRESS = address(0);
 
     function setUp() public {
         factory = new Factory();
@@ -26,6 +27,11 @@ contract FactoryTest is Test {
     function testCreatePairRevertsWhenIdenticalAddresses() public {
         vm.expectRevert(IFactory.Factory_IdenticalAddresses.selector);
         factory.createPair(token0, token0);
+    }
+
+    function testCreatePairRevertsWhenZeroAddresses() public {
+        vm.expectRevert(IFactory.Factory_ZeroAddress.selector);
+        factory.createPair(ZERO_ADDRESS, ZERO_ADDRESS);
     }
 
     function testCreatePairFailsIfPairExistsAlready() public {

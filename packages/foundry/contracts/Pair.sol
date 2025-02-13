@@ -38,7 +38,7 @@ contract Pair is IPair, ERC20 {
     IUniswapV2Factory private immutable i_uniswapV2Factory;
     IUniswapV2Router private immutable i_uniswapV2Router;
 
-    address public factory;
+    address public pairFactory;
     address public token0;
     address public token1;
 
@@ -48,10 +48,18 @@ contract Pair is IPair, ERC20 {
     uint256 public constant MINIMUM_LIQUIDITY = 10 ** 3;
     bytes4 private constant SELECTOR =
         bytes4(keccak256(bytes("transfer(address,uint256)")));
-    uint private unlocked = 1;
 
     uint256 private constant FEE_NUMERATOR = 997;
     uint256 private constant FEE_DENOMINATOR = 1000;
+
+    uint private unlocked = 1;
+
+    modifier lock() {
+        if (unlocked == 0) revert Pair_Locked();
+        unlocked = 0;
+        _;
+        unlocked = 1;
+    }
 
     constructor(
         address _token0,
@@ -59,20 +67,11 @@ contract Pair is IPair, ERC20 {
         address _factory,
         address _router
     ) ERC20("AgentDEX LP", "LP") {
-        require(_token0 != address(0), "AgentDEX: ZERO_ADDRESS");
-        require(_token1 != address(0), "AgentDEX: ZERO_ADDRESS");
         token0 = _token0;
         token1 = _token1;
-        factory = msg.sender;
+        pairFactory = msg.sender;
         i_uniswapV2Factory = IUniswapV2Factory(_factory);
         i_uniswapV2Router = IUniswapV2Router(_router);
-    }
-
-    modifier lock() {
-        require(unlocked == 1, "UniswapV2: LOCKED");
-        unlocked = 0;
-        _;
-        unlocked = 1;
     }
 
     function getReserves()

@@ -18,6 +18,8 @@ contract PairTest is Test {
     address constant ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
     address constant FACTORY = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
 
+    address constant ZERO_ADDRESS = address(0);
+
     function setUp() public {
         // We reset the fork to the mainnet fork
         vm.createSelectFork(vm.envString("RPC_URL"));
