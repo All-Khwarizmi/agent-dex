@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { REPOSITORIES } from 'src/utils/constants';
 import { Repository } from 'typeorm';
 import { Pool } from '../entities/pool.entity';
-import { CreatePoolDto } from './pool.dto';
+import { CreatePoolDTO } from './pool.dto';
 
 @Injectable()
 export class PoolsService {
@@ -25,7 +25,7 @@ export class PoolsService {
 
   async updatePoolReserves(
     poolAddress: string,
-    reserves: Pick<CreatePoolDto, 'reserve0' | 'reserve1'>,
+    reserves: Pick<CreatePoolDTO, 'reserve0' | 'reserve1'>,
     burn = false,
     swap = false,
   ) {
@@ -44,7 +44,7 @@ export class PoolsService {
     });
   }
 
-  async create(createPoolDto: Partial<CreatePoolDto>) {
+  async create(createPoolDto: Partial<CreatePoolDTO>) {
     const pool = this.poolRepository.create({
       address: createPoolDto.address.toLowerCase(),
       token0: createPoolDto.token0,

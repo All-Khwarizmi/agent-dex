@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { PoolsService } from './pools.service';
-import { CreatePoolDto } from './pool.dto';
+import { CreatePoolDTO } from './pool.dto';
 @ApiTags('pools')
 @Controller('pools')
 export class PoolsController {
@@ -30,7 +30,7 @@ export class PoolsController {
   @ApiOperation({ summary: 'Create a new pool' })
   @ApiResponse({ status: 201, description: 'Pool created successfully.' })
   @ApiResponse({ status: 400, description: 'Validation error.' })
-  async create(@Body() createPoolDto: CreatePoolDto) {
+  async create(@Body() createPoolDto: CreatePoolDTO) {
     try {
       console.log(createPoolDto);
       const pool = await this.poolsService.create(createPoolDto);

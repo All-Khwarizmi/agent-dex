@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CreateUserDto } from './users.controller';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { REPOSITORIES } from 'src/utils/constants';
+import { CreateUserDTO } from './user.dto';
 
 @Injectable()
 export class UsersService {
@@ -31,7 +31,7 @@ export class UsersService {
     return this.userRepository.update(user.id, { swaps: user.swaps + 1 });
   }
 
-  async create(createUserDto: Partial<CreateUserDto>) {
+  async create(createUserDto: Partial<CreateUserDTO>) {
     return this.userRepository.save({
       ...createUserDto,
       address: createUserDto.address.toLowerCase(),

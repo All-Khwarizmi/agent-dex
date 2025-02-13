@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsEthereumAddress, IsNotEmpty } from 'class-validator';
-export class CreatePoolDTO {
+import { IsEthereumAddress, IsString, IsNotEmpty } from 'class-validator';
+
+export class EventDTO {
   @ApiProperty({ example: '0x123', description: 'Adresse du pool' })
   @IsEthereumAddress()
   @IsString()
@@ -27,4 +28,13 @@ export class CreatePoolDTO {
 
   @ApiProperty({ description: 'Reserve of token1 in wei' })
   reserve1: number;
+
+  @ApiProperty({ description: 'Amount of token0 swapped' })
+  amount0: number;
+
+  @ApiProperty({ description: 'Amount of token1 swapped' })
+  amount1: number;
+
+  @ApiProperty({ description: 'Liquidity provider address' })
+  liquidityProvider: string;
 }
