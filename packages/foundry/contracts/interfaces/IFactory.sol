@@ -2,6 +2,9 @@
 pragma solidity 0.8.26;
 
 interface IFactory {
+    error Factory_IdenticalAddresses();
+    error Factory_PoolExists();
+
     event PairCreated(
         address indexed token0,
         address indexed token1,
@@ -10,9 +13,9 @@ interface IFactory {
     );
 
     function createPair(
-        address _tokenA,
-        address _tokenB
+        address token0,
+        address token1
     ) external returns (address pair);
 
-    function getPairCount() external view returns (uint pairCount);
+    function getPairCount() external view returns (uint256 pairCount);
 }
