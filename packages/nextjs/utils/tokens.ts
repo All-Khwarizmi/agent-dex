@@ -1,5 +1,6 @@
 import { TOKENS } from "./constants";
-import { formatUnits } from "viem";
+import { get } from "http";
+import { formatUnits, parseUnits } from "viem";
 import { FormattedPool, TokenMetadata } from "~~/types/tokens";
 
 const MORALIS_API_KEY = process.env.NEXT_PUBLIC_MORALIS_API_KEY;
@@ -98,4 +99,24 @@ export function formatTokensAccordingToDecimals(symbol: (typeof TOKENS)[number][
     return amount?.toString();
   }
   return formatUnits(amount, token.decimals);
+}
+
+export function parseUserInput(value: string) {
+  const regex = /^[0-9]*\.?[0-9]*$/;
+  if (!regex.test(value)) {
+    return 0;
+  }
+  return parseFloat(value);
+}
+
+export function getDecimalsFromSymbol(symbol: (typeof TOKENS)[number]["symbol"]) {
+  const token = TOKENS.find(token => token.symbol === symbol);
+  if (!token) {
+    return 0;
+  }
+  return token.decimals;
+}
+
+export function parseTokenAmountToBaseUnit(amount: string, symbol: (typeof TOKENS)[number]["symbol"]) {
+  return parseUnits(amount.toString(), getDecimalsFromSymbol(symbol));
 }

@@ -32,8 +32,6 @@ export default function ManageLiquidity() {
       writeContractError,
       balanceTokenA,
       balanceTokenB,
-      isLoadingBalanceTokenA,
-      isLoadingBalanceTokenB,
     },
     functions: {
       setTokenAddresses,
@@ -42,8 +40,6 @@ export default function ManageLiquidity() {
       setLiquidityToRemove,
       handleAddLiquidity,
       handleRemoveLiquidity,
-      refetchBalanceTokenA,
-      refetchBalanceTokenB,
     },
   } = useManageLiquidity();
 

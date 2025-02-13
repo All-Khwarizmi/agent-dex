@@ -3,7 +3,7 @@ import { Abi, erc20Abi } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { FACTORY_CONTRACT_NAME, PAIR_CONTRACT_NAME } from "~~/utils/constants";
-import { formatTokensAccordingToDecimals, getSymbolFromAddress } from "~~/utils/tokens";
+import { formatTokensAccordingToDecimals, getSymbolFromAddress, parseTokenAmountToBaseUnit } from "~~/utils/tokens";
 
 function useManageLiquidity() {
   const [addresses, setAddresses] = useState<[string, string]>(["", ""]);
@@ -133,14 +133,18 @@ function useManageLiquidity() {
   const handleAddLiquidity = async () => {
     if (!pairAddr) return;
     if (!amountA || !amountB) return;
+    const parsedAmountA = parseTokenAmountToBaseUnit(amountA, getSymbolFromAddress(addresses[0]) || "WETH");
+    const parsedAmountB = parseTokenAmountToBaseUnit(amountB, getSymbolFromAddress(addresses[1]) || "WETH");
 
-    const result = await setupAddLiquidity(BigInt(amountA), BigInt(amountB));
+    console.log(parsedAmountA, parsedAmountB);
+
+    const result = await setupAddLiquidity(parsedAmountA, parsedAmountB);
     if (!result) return;
 
     writeContract({
       address: pairAddr,
       functionName: "addLiquidity",
-      args: [BigInt(amountA), BigInt(amountB)],
+      args: [parsedAmountA, parsedAmountB],
       abi: deployedPairContractData?.abi as Abi,
     });
   };
@@ -190,7 +194,7 @@ function useManageLiquidity() {
       amountA,
       amountB,
       pairAddr,
-      poolBalance,
+      poolBalance: formatTokensAccordingToDecimals("WETH", (poolBalance as bigint) || 0n),
       liquidityToRemove,
       writeContractError,
       userLiquidity,
