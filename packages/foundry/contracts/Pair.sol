@@ -11,9 +11,31 @@ import "forge-std/console.sol";
 import "./interfaces/IUniswapFactory.sol";
 import "./interfaces/IUniswapRouter.sol";
 
+// Layout of Contract:
+// version
+// imports
+// errors
+// interfaces, libraries, contracts
+// Type declarations
+// State variables
+// Events
+// Modifiers
+// Functions
+
+// Layout of Functions:
+// constructor
+// receive function (if exists)
+// fallback function (if exists)
+// external
+// public
+// internal
+// private
+// internal & private view & pure functions
+// external & public view & pure functions
+
 contract Pair is ERC20 {
-    IUniswapV2Factory private uniswapFactory;
-    IUniswapV2Router private uniswapRouter;
+    IUniswapV2Factory private immutable i_uniswapV2Factory;
+    IUniswapV2Router private immutable i_uniswapV2Router;
 
     address public factory;
     address public token0;
@@ -78,8 +100,8 @@ contract Pair is ERC20 {
         token0 = _token0;
         token1 = _token1;
         factory = msg.sender;
-        uniswapFactory = IUniswapV2Factory(_factory);
-        uniswapRouter = IUniswapV2Router(_router);
+        i_uniswapV2Factory = IUniswapV2Factory(_factory);
+        i_uniswapV2Router = IUniswapV2Router(_router);
     }
 
     modifier lock() {
@@ -181,7 +203,7 @@ contract Pair is ERC20 {
         address[] memory path = new address[](2);
         path[0] = fromToken;
         path[1] = targetToken;
-        uint[] memory amounts = uniswapRouter.getAmountsOut(amountIn, path);
+        uint[] memory amounts = i_uniswapV2Router.getAmountsOut(amountIn, path);
         uniswapAmount = amounts[amounts.length - 1];
 
         shouldSwapWithUniswap = amountOut < uniswapAmount;
@@ -339,14 +361,14 @@ contract Pair is ERC20 {
             uniswapAmount = uniswapAmount - fees;
 
             // Approve the router to spend the amountIn
-            ERC20(fromToken).approve(address(uniswapRouter), amountIn);
+            ERC20(fromToken).approve(address(i_uniswapV2Router), amountIn);
 
             uint256 amountOutMin = (uniswapAmount * 999) / 1000;
             address[] memory path = new address[](2);
             path[0] = fromToken;
             path[1] = targetToken;
 
-            uint[] memory amounts = uniswapRouter.swapExactTokensForTokens(
+            uint[] memory amounts = i_uniswapV2Router.swapExactTokensForTokens(
                 amountIn,
                 amountOutMin,
                 path,

@@ -13,7 +13,7 @@ contract FactoryTest is Test {
         factory = new Factory();
     }
 
-    function testCreatePair() public {
+    function testCreatePairDeploysPair() public {
         address tokenA = address(0x1);
         address tokenB = address(0x2);
         address pair = factory.createPair(tokenA, tokenB);
@@ -21,29 +21,21 @@ contract FactoryTest is Test {
         assertEq(factory.getPair(tokenB, tokenA), pair);
     }
 
-    // function testCreatePairEmitsPairCreatedEvent() public {
-    //     address tokenA = address(0x1);
-    //     address tokenB = address(0x2);
-    //     vm.expectEmit(true, true, true, true);
-    //     emit IFactory.PairCreated(tokenA, tokenB, address(0), 0);
-    //     factory.createPair(tokenA, tokenB);
-    // }
-
-    function testCreatePairFails() public {
+    function testCreatePairRevertsWhenIdenticalAddresses() public {
         address tokenA = address(0x1);
-        vm.expectRevert("IDENTICAL_ADDRESSES");
+        vm.expectRevert(IFactory.Factory_IdenticalAddresses.selector);
         factory.createPair(tokenA, tokenA);
     }
 
-    function testCreatePairFailsIfPairExists() public {
+    function testCreatePairFailsIfPairExistsAlready() public {
         address tokenA = address(0x1);
         address tokenB = address(0x2);
         factory.createPair(tokenA, tokenB);
-        vm.expectRevert("POOL_EXISTS");
+        vm.expectRevert(IFactory.Factory_PoolExists.selector);
         factory.createPair(tokenA, tokenB);
     }
 
-    function testGetPairCount() public {
+    function testGetPairCountReturnsExpectedValue() public {
         address tokenA = address(0x1);
         address tokenB = address(0x2);
         factory.createPair(tokenA, tokenB);
