@@ -62,7 +62,6 @@ export class EventPoolService {
       eventNames: ['Mint', 'Burn', 'Swap'],
       onLogs: async (logs: any) => {
         for (const log of logs) {
-          // await this.handlePoolEvent(log);
           //TODO
           switch (log.eventName) {
             case 'Mint':
