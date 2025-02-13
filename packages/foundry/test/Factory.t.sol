@@ -8,37 +8,34 @@ import "../contracts/Pair.sol";
 
 contract FactoryTest is Test {
     Factory public factory;
+    address token0;
+    address token1;
 
     function setUp() public {
         factory = new Factory();
+        token0 = address(0x1);
+        token1 = address(0x2);
     }
 
     function testCreatePairDeploysPair() public {
-        address tokenA = address(0x1);
-        address tokenB = address(0x2);
-        address pair = factory.createPair(tokenA, tokenB);
-        assertEq(factory.getPair(tokenA, tokenB), pair);
-        assertEq(factory.getPair(tokenB, tokenA), pair);
+        address pair = factory.createPair(token0, token1);
+        assertEq(factory.getPair(token0, token1), pair);
+        assertEq(factory.getPair(token1, token0), pair);
     }
 
     function testCreatePairRevertsWhenIdenticalAddresses() public {
-        address tokenA = address(0x1);
         vm.expectRevert(IFactory.Factory_IdenticalAddresses.selector);
-        factory.createPair(tokenA, tokenA);
+        factory.createPair(token0, token0);
     }
 
     function testCreatePairFailsIfPairExistsAlready() public {
-        address tokenA = address(0x1);
-        address tokenB = address(0x2);
-        factory.createPair(tokenA, tokenB);
+        factory.createPair(token0, token1);
         vm.expectRevert(IFactory.Factory_PoolExists.selector);
-        factory.createPair(tokenA, tokenB);
+        factory.createPair(token0, token1);
     }
 
     function testGetPairCountReturnsExpectedValue() public {
-        address tokenA = address(0x1);
-        address tokenB = address(0x2);
-        factory.createPair(tokenA, tokenB);
+        factory.createPair(token0, token1);
 
         uint pairCount = factory.getPairCount();
         assertEq(pairCount, 1);
@@ -46,15 +43,15 @@ contract FactoryTest is Test {
 
     function testGetPairCountAfterTenPairs() public {
         for (uint i = 0; i < 10; i++) {
-            address tokenA = address(
+            address _tokenA = address(
                 uint160(uint256(keccak256(abi.encodePacked(vm.toString(i)))))
             );
-            address tokenB = address(
+            address _tokenB = address(
                 uint160(
                     uint256(keccak256(abi.encodePacked(vm.toString(i + 1))))
                 )
             );
-            factory.createPair(tokenA, tokenB);
+            factory.createPair(_tokenA, _tokenB);
         }
 
         uint pairCount = factory.getPairCount();
