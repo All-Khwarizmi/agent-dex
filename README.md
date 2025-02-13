@@ -48,7 +48,6 @@ AgentDEX is a decentralized exchange that combines traditional DEX functionality
       - [Contracts](#contracts)
   - [Usage](#usage)
     - [Traditional Interface](#traditional-interface)
-    - [AI Agent Interface](#ai-agent-interface-1)
   - [Protocol Design](#protocol-design)
     - [Smart Contracts](#smart-contracts)
     - [Events](#events)
@@ -100,6 +99,9 @@ yarn nest:start
 
 # Start frontend
 yarn start
+
+# Fund user wallet with ETH - DAI - USDC - WETH
+cd packages/foundry && make fund xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
 ```
 
 ### Addresses
@@ -124,15 +126,6 @@ yarn start
 2. Select tokens for swap
 3. Enter amount
 4. Confirm transaction
-
-### AI Agent Interface
-
-1. Connect your wallet
-2. Open agent chat interface
-3. Type natural language commands like:
-   - "Swap 100 DAI for ETH"
-   - "Show my liquidity positions"
-   - "What's the best time to add liquidity?"
 
 ## Protocol Design
 
