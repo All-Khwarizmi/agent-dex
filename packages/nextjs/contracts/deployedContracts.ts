@@ -564,6 +564,24 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getTokensDecimals",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "name",
           inputs: [],
           outputs: [
@@ -571,6 +589,53 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "normalizeAmount",
+          inputs: [
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "currentDecimals",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "targetDecimals",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "normalizeReserves",
+          inputs: [],
+          outputs: [
+            {
+              name: "normalizedReserve0",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "normalizedReserve1",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "view",
@@ -1624,6 +1689,24 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getTokensDecimals",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "name",
           inputs: [],
           outputs: [
@@ -1631,6 +1714,53 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "normalizeAmount",
+          inputs: [
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "currentDecimals",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "targetDecimals",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "normalizeReserves",
+          inputs: [],
+          outputs: [
+            {
+              name: "normalizedReserve0",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "normalizedReserve1",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "view",
@@ -2339,7 +2469,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739447104.json",
+      deploymentFile: "run-1739469354.json",
       deploymentScript: "Deploy.s.sol",
     },
     Pair: {
@@ -2550,6 +2680,24 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "getTokensDecimals",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "name",
           inputs: [],
           outputs: [
@@ -2557,6 +2705,53 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "normalizeAmount",
+          inputs: [
+            {
+              name: "amount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "currentDecimals",
+              type: "uint8",
+              internalType: "uint8",
+            },
+            {
+              name: "targetDecimals",
+              type: "uint8",
+              internalType: "uint8",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "normalizeReserves",
+          inputs: [],
+          outputs: [
+            {
+              name: "normalizedReserve0",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "normalizedReserve1",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "view",
@@ -3129,7 +3324,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739447104.json",
+      deploymentFile: "run-1739469354.json",
       deploymentScript: "Deploy.s.sol",
     },
   },
