@@ -122,10 +122,8 @@ contract Pair is PairCore, ERC20 {
                 ? normalizedAmount1 - amount1Optimal
                 : amount1Optimal - normalizedAmount1;
 
-            require(
-                difference * 100 <= amount1Optimal,
-                "AgentDEX: INVALID_RATIO"
-            );
+            if (difference * 100 > amount1Optimal)
+                revert Pair_InvalidPairRatio();
 
             // Calculate LP tokens to mint
             // We use the minimum of both ratios to ensure fair distribution

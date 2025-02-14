@@ -11,6 +11,7 @@ abstract contract PairCore {
     error Pair_InsufficientInitialLiquidity();
     error Pair_InsufficientInput();
     error Pair_ZeroAmount();
+    error Pair_InvalidPairRatio();
 
     IUniswapV2Factory internal immutable i_uniswapV2Factory;
     IUniswapV2Router internal immutable i_uniswapV2Router;
