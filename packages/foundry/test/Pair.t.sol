@@ -44,27 +44,19 @@ contract PairTest is Test {
     }
 
     function _setupTokens() internal {
-        // WETH whale
-        address wethWhale = 0xF04a5cC80B1E94C69B48f5ee68a08CD2F09A7c3E;
-        address usdcWhale = 0x37305B1cD40574E4C5Ce33f8e8306Be057fD7341;
+        uint256 usdcAmount = 25_000_000_000_000;
+        uint256 wethAmount = 8_000_000 * 1e18;
 
-        uint256 usdcAmount = 2_000_000 * 1e6;
-        uint256 wethAmount = 600 * 1e18;
-
-        // Transfer WETH to alice from whale
-        vm.startPrank(wethWhale);
-        weth.transfer(alice, wethAmount);
-        weth.transfer(bob, wethAmount);
-        vm.stopPrank();
-
-        // Transfer USDC to alice from whale
-        vm.startPrank(usdcWhale);
-        usdc.transfer(alice, usdcAmount);
-        usdc.transfer(bob, usdcAmount);
-        vm.stopPrank();
+        deal(address(usdc), alice, usdcAmount);
+        deal(address(weth), alice, wethAmount);
+        deal(address(usdc), bob, usdcAmount);
+        deal(address(weth), bob, wethAmount);
 
         // Approve USDC and WETH to be used by the pair contract
         vm.startPrank(alice);
+        usdc.approve(address(pair), type(uint256).max);
+        weth.approve(address(pair), type(uint256).max);
+        vm.startPrank(bob);
         usdc.approve(address(pair), type(uint256).max);
         weth.approve(address(pair), type(uint256).max);
         vm.stopPrank();
@@ -99,7 +91,8 @@ contract PairTest is Test {
         assertEq(_reserve1, 1500, "Reserve1 should be updated");
     }
 
-    function testShouldRevertWithOneInsufficient() public {
+    function testShouldRevertWithOneInsufficientTokenInput() public {
+        vm.startPrank(alice);
         vm.expectRevert("AgentDEX: INSUFFICIENT_INITIAL_LIQUIDITY");
         pair.addLiquidity(1500, 100); // One value below MINIMUM_LIQUIDITY
 
@@ -107,40 +100,19 @@ contract PairTest is Test {
         pair.addLiquidity(100, 1500); // Other value below MINIMUM_LIQUIDITY
     }
 
-    function testAddLiquidityWithDifferentUser() public {
-        vm.startPrank(alice);
-
-        // Alice approves pair
-        usdc.approve(address(pair), type(uint256).max);
-        weth.approve(address(pair), type(uint256).max);
-
-        // Alice adds liquidity
-        pair.addLiquidity(1500, 1500);
-
-        vm.stopPrank();
-    }
-
-    function testMultipleUsers() public {
-        // Test multiple users adding liquidity
-        // Setup Alice
-        vm.prank(alice);
-        usdc.approve(address(pair), type(uint256).max);
-        vm.prank(alice);
-        weth.approve(address(pair), type(uint256).max);
-
-        // Setup Bob
-        vm.prank(bob);
-        usdc.approve(address(pair), type(uint256).max);
-        vm.prank(bob);
-        weth.approve(address(pair), type(uint256).max);
-
+    function testAddLiquidityWithMultipleUsers() public {
+        uint256 usdcLiquidity = 1_000_000 * 1e6;
+        uint256 wethLiquidity = 500 * 1e18;
         // Alice adds initial liquidity
         vm.prank(alice);
-        pair.addLiquidity(2000, 2000);
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
 
         // Bob adds more liquidity
         vm.prank(bob);
-        pair.addLiquidity(1000, 1000);
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+
+        assertTrue(pair.balanceOf(alice) > 0, "Alice should have liquidity");
+        assertTrue(pair.balanceOf(bob) > 0, "Bob should have liquidity");
     }
 
     // Remove Liquidity
@@ -228,52 +200,6 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
-    // function testPartialLiquidityRemoval() public {
-    //     vm.startPrank(alice);
-
-    //     // Add initial liquidity
-    //     uint256 initialAmount = 10000;
-    //     pair.addLiquidity(initialAmount, initialAmount);
-
-    //     // Get LP tokens balance
-    //     uint256 lpBalance = pair.balanceOf(alice);
-    //     uint256 removeAmount = lpBalance / 20;
-
-    //     // Record initial reserves
-    //     (uint256 initialReserve0, uint256 initialReserve1) = pair.getReserves();
-
-    //     // Remove half of liquidity
-    //     pair.removeLiquidity(removeAmount);
-
-    //     // Verify final state
-    //     assertEq(
-    //         pair.balanceOf(alice),
-    //         lpBalance - removeAmount,
-    //         "Should have half LP tokens remaining"
-    //     );
-
-    //     // Get final reserves
-    //     (uint256 finalReserve0, uint256 finalReserve1) = pair.getReserves();
-
-    //     // The tolerance should be in basis points (1 = 0.01%)
-    //     uint256 tolerance = 1e15; // 0.1% in basis points
-
-    //     assertApproxEqRel(
-    //         finalReserve0,
-    //         initialReserve0 / 20,
-    //         tolerance,
-    //         "Reserve0 should be approximately divided by 20"
-    //     );
-    //     assertApproxEqRel(
-    //         finalReserve1,
-    //         initialReserve1 / 20,
-    //         tolerance,
-    //         "Reserve1 should be approximately divided by 20"
-    //     );
-
-    //     vm.stopPrank();
-    // }
-
     function testCannotRemoveZeroLiquidity() public {
         vm.startPrank(alice);
         // Setup with proper decimals
@@ -330,24 +256,24 @@ contract PairTest is Test {
     function testSwap() public {
         vm.startPrank(alice);
 
-        // Setup with proper decimals
-        uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
-        uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
+        // Setup with Uniswap-like liquidity (from the logs)
+        uint256 usdcLiquidity = 21381921535549; // ~21,381 USDC (6 decimals)
+        uint256 wethLiquidity = 7944862667241816919899; // ~7,944 WETH (18 decimals)
 
         // Add liquidity
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
 
-        // Prepare swap
+        // Prepare swap - keep same test amount
         uint256 swapAmount = 100 * 1e6; // 100 USDC
 
-        // Record pre-swap balances (full precision)
+        // Record pre-swap balances
         uint256 usdcBeforeSwap = usdc.balanceOf(alice);
         uint256 wethBeforeSwap = weth.balanceOf(alice);
 
         // Execute swap
         pair.swap(address(weth), address(usdc), swapAmount);
 
-        // Get post-swap balances (full precision)
+        // Get post-swap balances
         uint256 usdcAfterSwap = usdc.balanceOf(alice);
         uint256 wethAfterSwap = weth.balanceOf(alice);
 
@@ -358,22 +284,14 @@ contract PairTest is Test {
         console.log("\n=== Swap Results (Human Readable) ===");
         console.log("USDC spent: %s USDC", usdcSpent / 1e6);
 
-        // Raw values for verification
         console.log("\n=== Raw Values ===");
         console.log("USDC spent (raw): %s", usdcSpent);
         console.log("WETH received (raw): %s", wethReceived);
 
-        // Calculate and display price
-        uint256 effectivePrice = (usdcSpent * 1e18) / wethReceived;
-        console.log("\n=== Price Analysis ===");
-        console.log("Effective price: %s USDC per WETH", effectivePrice / 1e6);
+        // Compare with Uniswap amount from logs
+        uint256 expectedWethReceived = 37045272717580447; // From Uniswap logs
 
-        // Expected values from logs:
-        // Initial WETH: 100000000000000000000 (100 WETH)
-        // Final WETH:   100049845030450464088 (~100.05 WETH)
-        uint256 expectedWethReceived = 49845030450464088; // ~0.049845 WETH
-
-        // Verify exact amounts
+        // Verify amounts
         assertEq(usdcSpent, swapAmount, "Incorrect USDC spent");
         assertApproxEqRel(
             wethReceived,
@@ -382,9 +300,53 @@ contract PairTest is Test {
             "Incorrect WETH received"
         );
 
-        // Verify no precision loss
-        assertTrue(wethReceived > 0, "Should receive non-zero WETH");
-        assertTrue(effectivePrice > 0, "Should have non-zero price");
+        vm.stopPrank();
+    }
+
+    // Get Reserves
+    function testGetReserves() public {
+        vm.startPrank(alice);
+
+        // Setup with proper decimals
+        uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
+        uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
+
+        // Add liquidity
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+
+        // Get reserves
+        (uint256 reserve0, uint256 reserve1) = pair.getReserves();
+
+        // Verify reserves
+        assertEq(reserve0, usdcLiquidity, "Incorrect reserve0");
+        assertEq(reserve1, wethLiquidity, "Incorrect reserve1");
+
+        vm.stopPrank();
+    }
+
+    // Pool Balance
+    function testPoolBalanceAfterAddingLiquidityOneTime() public {
+        vm.startPrank(alice);
+
+        // Setup with proper decimals
+        uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
+        uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
+
+        // Add liquidity
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+
+        (uint256 reserve0, uint256 reserve1) = pair.normalizeReserves();
+
+        // Get pool balance
+        uint256 poolBalance = pair.poolBalance();
+
+        // Verify pool balance
+        assertApproxEqRel(
+            poolBalance,
+            Math.sqrt(reserve0 * reserve1),
+            1e5,
+            "Incorrect pool balance"
+        );
 
         vm.stopPrank();
     }
