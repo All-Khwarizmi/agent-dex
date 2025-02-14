@@ -221,7 +221,7 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
-    function testCannotRemoveZeroLiquidity() public {
+    function testRemoveLiquidityZeroAmount() public {
         vm.startPrank(alice);
         // Setup with proper decimals
         uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
@@ -231,13 +231,13 @@ contract PairTest is Test {
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
 
         // Try to remove zero liquidity
-        vm.expectRevert("AgentDEX: INSUFFICIENT_INPUT");
+        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
         pair.removeLiquidity(0);
 
         vm.stopPrank();
     }
 
-    function testCannotRemoveMoreThanAvailable() public {
+    function testRemoveLiquidityMoreThanAvailable() public {
         vm.startPrank(alice);
 
         // Initial liquidity
@@ -248,7 +248,7 @@ contract PairTest is Test {
         uint256 lpBalance = pair.balanceOf(alice);
 
         // Try to remove more than available
-        vm.expectRevert("AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE");
+        vm.expectRevert(PairCore.Pair_InsufficientBalance.selector);
         pair.removeLiquidity(lpBalance + 1);
 
         vm.stopPrank();
@@ -356,7 +356,7 @@ contract PairTest is Test {
         // Add liquidity
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
 
-        (uint256 reserve0, uint256 reserve1) = pair.normalizeReserves();
+        (uint256 reserve0, uint256 reserve1) = pair.normalizedReserves();
 
         // Get pool balance
         uint256 poolBalance = pair.poolBalance();

@@ -77,7 +77,7 @@ contract Pair is PairCore, ERC20 {
         (
             uint256 normalizedReserve0,
             uint256 normalizedReserve1
-        ) = normalizeReserves();
+        ) = normalizedReserves();
 
         uint256 _totalSupply = totalSupply();
 
@@ -132,7 +132,7 @@ contract Pair is PairCore, ERC20 {
                 (normalizedAmount0 * _totalSupply) / normalizedReserve0,
                 (normalizedAmount1 * _totalSupply) / normalizedReserve1
             );
-            require(liquidity > 0, "AgentDEX: INSUFFICIENT_LIQUIDITY_MINTED");
+            if (liquidity == 0) revert Pair_InsufficientLiquidityMinted();
 
             _mint(msg.sender, liquidity);
             _safeTransferFrom(token0, msg.sender, address(this), amount0);
@@ -147,16 +147,13 @@ contract Pair is PairCore, ERC20 {
     }
 
     function removeLiquidity(uint256 amount) external lock {
-        require(amount > 0, "AgentDEX: INSUFFICIENT_INPUT");
+        if (amount == 0) revert Pair_InsufficientInput();
 
         uint256 _totalSupply = totalSupply();
 
         uint256 liquidity = balanceOf(msg.sender);
+        if (liquidity < amount) revert Pair_InsufficientBalance();
 
-        require(
-            liquidity >= amount,
-            "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE"
-        );
         // Check the amount do not exceed 10% of the total supply
         console.log("Total Supply:", _totalSupply);
         console.log("Amount:", amount);
@@ -168,10 +165,8 @@ contract Pair is PairCore, ERC20 {
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
 
-        require(
-            amount0 > 0 && amount1 > 0,
-            "AgentDEX: INSUFFICIENT_LIQUIDITY_BURNED"
-        );
+        if (amount0 == 0 || amount1 == 0)
+            revert Pair_InsufficientLiquidityBurnt();
 
         _burn(msg.sender, amount);
         _safeTransfer(token0, msg.sender, amount0);
@@ -395,7 +390,7 @@ contract Pair is PairCore, ERC20 {
     }
 
     // Normalize reserves to 18 decimals
-    function normalizeReserves()
+    function normalizedReserves()
         public
         view
         returns (uint256 normalizedReserve0, uint256 normalizedReserve1)
