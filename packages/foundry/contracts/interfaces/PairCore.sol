@@ -13,8 +13,9 @@ abstract contract PairCore {
     error Pair_InsufficientLiquidityBurnt();
     error Pair_InsufficientInitialLiquidity();
     error Pair_InsufficientInput();
-    error Pair_ZeroAmount();
+    error Pair_InsufficientOutput();
     error Pair_InvalidPairRatio();
+    error Pair_TransferFailed();
 
     IUniswapV2Factory internal immutable i_uniswapV2Factory;
     IUniswapV2Router internal immutable i_uniswapV2Router;

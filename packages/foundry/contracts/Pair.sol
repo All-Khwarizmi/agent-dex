@@ -55,7 +55,7 @@ contract Pair is PairCore, ERC20 {
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
-        if (amount0 == 0 || amount1 == 0) revert Pair_ZeroAmount();
+        if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
         (
             uint8 currentDecimalsToken0,
@@ -157,10 +157,9 @@ contract Pair is PairCore, ERC20 {
         // Check the amount do not exceed 10% of the total supply
         console.log("Total Supply:", _totalSupply);
         console.log("Amount:", amount);
-        require(
-            (amount * 10000) / _totalSupply < 1000,
-            "AgentDEX: INSUFFICIENT_LIQUIDITY_BALANCE"
-        );
+
+        if ((amount * 10000) / _totalSupply > 1000)
+            revert Pair_InsufficientLiquidityBurnt();
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
@@ -185,7 +184,7 @@ contract Pair is PairCore, ERC20 {
         address fromToken,
         uint amountIn
     ) external lock {
-        require(amountIn > 0, "AgentDEX: INSUFFICIENT_INPUT_AMOUNT");
+        if (amountIn == 0) revert Pair_InsufficientInput();
 
         uint256 normalizedAmountIn = normalizeAmount(
             amountIn,
@@ -206,7 +205,8 @@ contract Pair is PairCore, ERC20 {
             fromToken,
             normalizedAmountIn
         );
-        require(amountOut > 0, "AgentDEX: INSUFFICIENT_OUTPUT_AMOUNT");
+
+        if (amountOut == 0) revert Pair_InsufficientOutput();
 
         // 1. Check if uniswapV2 has better price
         (bool shouldSwapLocally, uint256 uniswapAmount) = uniswapHasBetterPrice(
@@ -301,27 +301,13 @@ contract Pair is PairCore, ERC20 {
         // First transfer FROM user TO pair
         _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
 
-        // Verify first transfer
-        require(
-            ERC20(fromToken).balanceOf(address(this)) >= amountIn,
-            "AgentDEX: INPUT_TRANSFER_FAILED"
-        );
-
         // Then transfer FROM pair TO user
-        require(
-            ERC20(targetToken).balanceOf(address(this)) >= amountOut,
-            "AgentDEX: INSUFFICIENT_TARGET_BALANCE"
-        );
-
         _safeTransfer(targetToken, msg.sender, amountOut);
-
-        // Verify second transfer
-        uint256 userTargetBalance = ERC20(targetToken).balanceOf(msg.sender);
-        require(userTargetBalance > 0, "AgentDEX: OUTPUT_TRANSFER_FAILED");
 
         // Update reserves based on final balances
         uint256 balance0 = ERC20(token0).balanceOf(address(this));
         uint256 balance1 = ERC20(token1).balanceOf(address(this));
+        if (balance0 == 0 || balance1 == 0) revert Pair_InsufficientLiquidity();
 
         console.log("\n=== Post-Transfer Balances ===");
         console.log(
@@ -341,11 +327,6 @@ contract Pair is PairCore, ERC20 {
         reserve0 = balance0;
         reserve1 = balance1;
 
-        require(
-            reserve0 > 0 && reserve1 > 0,
-            "AgentDEX: INSUFFICIENT_LIQUIDITY"
-        );
-
         emit Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
     }
 
@@ -353,10 +334,8 @@ contract Pair is PairCore, ERC20 {
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSelector(SELECTOR, to, value)
         );
-        require(
-            success && (data.length == 0 || abi.decode(data, (bool))),
-            "AgentDEX: TRANSFER_FAILED"
-        );
+        if (!success || data.length == 0 || !abi.decode(data, (bool)))
+            revert Pair_TransferFailed();
     }
 
     function _safeTransferFrom(
@@ -368,10 +347,8 @@ contract Pair is PairCore, ERC20 {
         (bool success, bytes memory data) = token.call(
             abi.encodeWithSelector(ERC20.transferFrom.selector, from, to, value)
         );
-        require(
-            success && (data.length == 0 || abi.decode(data, (bool))),
-            "AgentDEX: TRANSFER_FAILED"
-        );
+        if (!success || data.length == 0 || !abi.decode(data, (bool)))
+            revert Pair_TransferFailed();
     }
 
     // Normalize amount to 18 decimals
@@ -525,7 +502,7 @@ contract Pair is PairCore, ERC20 {
             fromToken,
             normalizedAmountIn
         );
-        require(amountOut > 0, "INSUFFICIENT_OUTPUT_AMOUNT");
+        if (amountOut == 0) revert Pair_InsufficientOutput();
 
         uint256 priceImpact = (normalizedAmountIn * 10000) / reserveIn;
 
