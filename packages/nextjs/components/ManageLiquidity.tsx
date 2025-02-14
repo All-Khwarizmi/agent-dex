@@ -48,7 +48,7 @@ export default function ManageLiquidity() {
   }, [tokenA, tokenB, setTokenAddresses]);
 
   const isPairInitialized = pairAddr && pairAddr !== zeroAddress;
-  const hasUserLiquidity = userLiquidity && BigInt(userLiquidity as string) > 0;
+  const hasUserLiquidity = userLiquidity && Number(userLiquidity) > 0;
 
   return (
     <Card>

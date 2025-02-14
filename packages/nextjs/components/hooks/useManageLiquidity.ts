@@ -197,7 +197,7 @@ function useManageLiquidity() {
       poolBalance: formatTokensAccordingToDecimals("WETH", (poolBalance as bigint) || 0n),
       liquidityToRemove,
       writeContractError,
-      userLiquidity,
+      userLiquidity: formatTokensAccordingToDecimals("WETH", (userLiquidity as bigint) ?? 0n),
       isLoadingContract,
       balanceTokenA: formatTokensAccordingToDecimals(
         getSymbolFromAddress(addresses[0]) || "WETH",
