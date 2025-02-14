@@ -12,28 +12,6 @@ import "./interfaces/IUniswapFactory.sol";
 import "./interfaces/IUniswapRouter.sol";
 import "./interfaces/PairCore.sol";
 
-// Layout of Contract:
-// version
-// imports
-// errors
-// interfaces, libraries, contracts
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// internal & private view & pure functions
-// external & public view & pure functions
-
 contract Pair is PairCore, ERC20 {
     //TODO: remove pairFactory?
     address private immutable pairFactory;
@@ -330,45 +308,9 @@ contract Pair is PairCore, ERC20 {
         emit Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
     }
 
-    function _safeTransfer(address token, address to, uint256 value) private {
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(SELECTOR, to, value)
-        );
-        if (!success || data.length == 0 || !abi.decode(data, (bool)))
-            revert Pair_TransferFailed();
-    }
-
-    function _safeTransferFrom(
-        address token,
-        address from,
-        address to,
-        uint value
-    ) private {
-        (bool success, bytes memory data) = token.call(
-            abi.encodeWithSelector(ERC20.transferFrom.selector, from, to, value)
-        );
-        if (!success || data.length == 0 || !abi.decode(data, (bool)))
-            revert Pair_TransferFailed();
-    }
-
-    // Normalize amount to 18 decimals
-    function normalizeAmount(
-        uint256 amount,
-        uint8 currentDecimals,
-        uint8 targetDecimals
-    ) public pure returns (uint256) {
-        if (currentDecimals == targetDecimals) {
-            return amount;
-        }
-        if (currentDecimals > targetDecimals) {
-            return amount / (10 ** (currentDecimals - targetDecimals));
-        }
-        return amount * (10 ** (targetDecimals - currentDecimals));
-    }
-
     // Normalize reserves to 18 decimals
     function normalizedReserves()
-        public
+        internal
         view
         returns (uint256 normalizedReserve0, uint256 normalizedReserve1)
     {
