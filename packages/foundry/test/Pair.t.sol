@@ -63,6 +63,27 @@ contract PairTest is Test {
     }
 
     // Add Liquidity
+    function testAddLiquidityShouldRevertWhenAmount0IsZero() public {
+        vm.startPrank(alice);
+        vm.expectRevert(PairCore.Pair_ZeroAmount.selector);
+        pair.addLiquidity(0, 10000);
+        vm.stopPrank();
+    }
+
+    function testAddLiquidityShouldRevertWhenAmount1IsZero() public {
+        vm.startPrank(alice);
+        vm.expectRevert(PairCore.Pair_ZeroAmount.selector);
+        pair.addLiquidity(10000, 0);
+        vm.stopPrank();
+    }
+
+    function testAddLiquidityShouldRevertWhenBothAmountsAreZero() public {
+        vm.startPrank(alice);
+        vm.expectRevert(PairCore.Pair_ZeroAmount.selector);
+        pair.addLiquidity(0, 0);
+        vm.stopPrank();
+    }
+
     function testShouldRevertWhenAddLiquidityWithInsufficientInput() public {
         // First verify we're testing initial liquidity (totalSupply = 0)
         uint256 totalSupply = pair.totalSupply();

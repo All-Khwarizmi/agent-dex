@@ -10,7 +10,7 @@ import "forge-std/console.sol";
 
 import "./interfaces/IUniswapFactory.sol";
 import "./interfaces/IUniswapRouter.sol";
-import "./interfaces/IPair.sol";
+import "./interfaces/PairCore.sol";
 
 // Layout of Contract:
 // version
@@ -34,48 +34,28 @@ import "./interfaces/IPair.sol";
 // internal & private view & pure functions
 // external & public view & pure functions
 
-contract Pair is IPair, ERC20 {
-    IUniswapV2Factory private immutable i_uniswapV2Factory;
-    IUniswapV2Router private immutable i_uniswapV2Router;
-
-    address public pairFactory;
+contract Pair is PairCore, ERC20 {
+    //TODO: remove pairFactory?
+    address private immutable pairFactory;
     address public token0;
     address public token1;
 
     uint256 private reserve0;
     uint256 private reserve1;
 
-    uint256 public constant MINIMUM_LIQUIDITY = 10 ** 3;
-    bytes4 private constant SELECTOR =
-        bytes4(keccak256(bytes("transfer(address,uint256)")));
-
-    uint256 private constant FEE_NUMERATOR = 997;
-    uint256 private constant FEE_DENOMINATOR = 1000;
-
-    uint private unlocked = 1;
-
-    modifier lock() {
-        if (unlocked == 0) revert Pair_Locked();
-        unlocked = 0;
-        _;
-        unlocked = 1;
-    }
-
     constructor(
         address _token0,
         address _token1,
         address _factory,
         address _router
-    ) ERC20("AgentDEX LP", "LP") {
+    ) ERC20("AgentDEX LP", "LP") PairCore(_factory, _router) {
         token0 = _token0;
         token1 = _token1;
         pairFactory = msg.sender;
-        i_uniswapV2Factory = IUniswapV2Factory(_factory);
-        i_uniswapV2Router = IUniswapV2Router(_router);
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
-        require(amount0 > 0 && amount1 > 0, "AgentDEX: INSUFFICIENT_INPUT");
+        if (amount0 == 0 || amount1 == 0) revert Pair_ZeroAmount();
 
         (
             uint8 currentDecimalsToken0,
