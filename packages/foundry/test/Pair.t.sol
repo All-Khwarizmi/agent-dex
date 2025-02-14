@@ -63,38 +63,7 @@ contract PairTest is Test {
     }
 
     // Add Liquidity
-    function testAddLiquidityShouldRevertWhenAmount0IsZero() public {
-        vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
-        pair.addLiquidity(0, 10000);
-        vm.stopPrank();
-    }
-
-    function testAddLiquidityShouldRevertWhenAmount1IsZero() public {
-        vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
-        pair.addLiquidity(10000, 0);
-        vm.stopPrank();
-    }
-
-    function testAddLiquidityShouldRevertWhenBothAmountsAreZero() public {
-        vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
-        pair.addLiquidity(0, 0);
-        vm.stopPrank();
-    }
-
-    function testShouldRevertWhenAddLiquidityWithInsufficientInput() public {
-        // First verify we're testing initial liquidity (totalSupply = 0)
-        uint256 totalSupply = pair.totalSupply();
-        assertEq(totalSupply, 0, "Total supply should be 0");
-
-        // Test adding liquidity with values below MINIMUM_LIQUIDITY (1000)
-        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
-        pair.addLiquidity(100, 100); // 100 < MINIMUM_LIQUIDITY so this should revert
-    }
-
-    function testShouldSucceedWithSufficientInitialLiquidity() public {
+    function testPairAddLiquiditySuccessfully() public {
         vm.startPrank(alice);
 
         // Add initial liquidity
@@ -112,16 +81,7 @@ contract PairTest is Test {
         assertEq(_reserve1, 1500, "Reserve1 should be updated");
     }
 
-    function testShouldRevertWithOneInsufficientTokenInput() public {
-        vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
-        pair.addLiquidity(1500, 100); // One value below MINIMUM_LIQUIDITY
-
-        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
-        pair.addLiquidity(100, 1500); // Other value below MINIMUM_LIQUIDITY
-    }
-
-    function testAddLiquidityWithMultipleUsers() public {
+    function testPairAddLiquidityWithMultipleUsers() public {
         uint256 usdcLiquidity = 1_000_000 * 1e6;
         uint256 wethLiquidity = 500 * 1e18;
         // Alice adds initial liquidity
@@ -136,8 +96,50 @@ contract PairTest is Test {
         assertTrue(pair.balanceOf(bob) > 0, "Bob should have liquidity");
     }
 
+    function testPairAddLiquidityRevertsWhenAmount0IsZero() public {
+        vm.startPrank(alice);
+        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
+        pair.addLiquidity(0, 10000);
+        vm.stopPrank();
+    }
+
+    function testPairAddLiquidityRevertsWhenAmount1IsZero() public {
+        vm.startPrank(alice);
+        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
+        pair.addLiquidity(10000, 0);
+        vm.stopPrank();
+    }
+
+    function testPairAddLiquidityRevertsWhenBothAmountsAreZero() public {
+        vm.startPrank(alice);
+        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
+        pair.addLiquidity(0, 0);
+        vm.stopPrank();
+    }
+
+    function testPairAddLiquidityRevertsWhenInsufficientEitherTokenInput()
+        public
+    {
+        vm.startPrank(alice);
+        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
+        pair.addLiquidity(1500, 100); // One value below MINIMUM_LIQUIDITY
+
+        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
+        pair.addLiquidity(100, 1500); // Other value below MINIMUM_LIQUIDITY
+    }
+
+    function testPairAddLiquidityRevertsWhenInsufficientInput() public {
+        // First verify we're testing initial liquidity (totalSupply = 0)
+        uint256 totalSupply = pair.totalSupply();
+        assertEq(totalSupply, 0, "Total supply should be 0");
+
+        // Test adding liquidity with values below MINIMUM_LIQUIDITY (1000)
+        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
+        pair.addLiquidity(100, 100); // 100 < MINIMUM_LIQUIDITY so this should revert
+    }
+
     // Remove Liquidity
-    function testRemoveLiquidity() public {
+    function testPairRemoveLiquidity() public {
         vm.startPrank(alice);
 
         // Setup with proper decimals
@@ -221,7 +223,7 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
-    function testRemoveLiquidityZeroAmount() public {
+    function testPairRemoveLiquidityRevertsWhenZeroAmount() public {
         vm.startPrank(alice);
         // Setup with proper decimals
         uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
@@ -237,7 +239,7 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
-    function testRemoveLiquidityMoreThanAvailable() public {
+    function testPairRemoveLiquidityRevertsWhenMoreThanAvailable() public {
         vm.startPrank(alice);
 
         // Initial liquidity
@@ -274,7 +276,7 @@ contract PairTest is Test {
         );
     }
 
-    function testSwap() public {
+    function testPairSwap() public {
         vm.startPrank(alice);
 
         // Setup with Uniswap-like liquidity (from the logs)

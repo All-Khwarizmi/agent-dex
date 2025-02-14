@@ -12,6 +12,28 @@ import "./interfaces/IUniswapFactory.sol";
 import "./interfaces/IUniswapRouter.sol";
 import "./interfaces/PairCore.sol";
 
+// Layout of Contract:
+// version
+// imports
+// errors
+// interfaces, libraries, contracts
+// Type declarations
+// State variables
+// Events
+// Modifiers
+// Functions
+
+// Layout of Functions:
+// constructor
+// receive function (if exists)
+// fallback function (if exists)
+// external
+// public
+// internal
+// private
+// internal & private view & pure functions
+// external & public view & pure functions
+
 contract Pair is PairCore, ERC20 {
     //TODO: remove pairFactory?
     address private immutable pairFactory;
@@ -310,7 +332,7 @@ contract Pair is PairCore, ERC20 {
 
     // Normalize reserves to 18 decimals
     function normalizedReserves()
-        internal
+        public
         view
         returns (uint256 normalizedReserve0, uint256 normalizedReserve1)
     {

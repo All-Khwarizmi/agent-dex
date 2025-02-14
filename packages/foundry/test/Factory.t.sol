@@ -18,36 +18,36 @@ contract FactoryTest is Test {
         token1 = address(0x2);
     }
 
-    function testCreatePairDeploysPair() public {
+    function testFactoryCreatePairDeploysPair() public {
         address pair = factory.createPair(token0, token1);
         assertEq(factory.getPair(token0, token1), pair);
         assertEq(factory.getPair(token1, token0), pair);
     }
 
-    function testCreatePairRevertsWhenIdenticalAddresses() public {
+    function testFactoryCreatePairRevertsWhenIdenticalAddresses() public {
         vm.expectRevert(IFactory.Factory_IdenticalAddresses.selector);
         factory.createPair(token0, token0);
     }
 
-    function testCreatePairRevertsWhenZeroAddresses() public {
+    function testFactoryCreatePairRevertsWhenZeroAddresses() public {
         vm.expectRevert(IFactory.Factory_ZeroAddress.selector);
         factory.createPair(ZERO_ADDRESS, ZERO_ADDRESS);
     }
 
-    function testCreatePairFailsIfPairExistsAlready() public {
+    function testFactoryCreatePairReversIfPairExistsAlready() public {
         factory.createPair(token0, token1);
         vm.expectRevert(IFactory.Factory_PoolExists.selector);
         factory.createPair(token0, token1);
     }
 
-    function testGetPairCountReturnsExpectedValue() public {
+    function testFactoryGetPairCountReturnsExpectedValue() public {
         factory.createPair(token0, token1);
 
         uint pairCount = factory.getPairCount();
         assertEq(pairCount, 1);
     }
 
-    function testGetPairCountAfterTenPairs() public {
+    function testFactoryGetPairCountAfterTenPairs() public {
         for (uint i = 0; i < 10; i++) {
             address _tokenA = address(
                 uint160(uint256(keccak256(abi.encodePacked(vm.toString(i)))))
