@@ -90,7 +90,7 @@ contract PairTest is Test {
         assertEq(totalSupply, 0, "Total supply should be 0");
 
         // Test adding liquidity with values below MINIMUM_LIQUIDITY (1000)
-        vm.expectRevert("AgentDEX: INSUFFICIENT_INITIAL_LIQUIDITY");
+        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
         pair.addLiquidity(100, 100); // 100 < MINIMUM_LIQUIDITY so this should revert
     }
 
@@ -114,10 +114,10 @@ contract PairTest is Test {
 
     function testShouldRevertWithOneInsufficientTokenInput() public {
         vm.startPrank(alice);
-        vm.expectRevert("AgentDEX: INSUFFICIENT_INITIAL_LIQUIDITY");
+        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
         pair.addLiquidity(1500, 100); // One value below MINIMUM_LIQUIDITY
 
-        vm.expectRevert("AgentDEX: INSUFFICIENT_INITIAL_LIQUIDITY");
+        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
         pair.addLiquidity(100, 1500); // Other value below MINIMUM_LIQUIDITY
     }
 

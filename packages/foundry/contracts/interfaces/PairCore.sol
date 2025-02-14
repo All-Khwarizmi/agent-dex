@@ -8,6 +8,7 @@ abstract contract PairCore {
     error Pair_IdenticalAddress();
     error Pair_Locked();
     error Pair_InsufficientLiquidity();
+    error Pair_InsufficientInitialLiquidity();
     error Pair_InsufficientInput();
     error Pair_ZeroAmount();
 

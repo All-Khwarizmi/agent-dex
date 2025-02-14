@@ -84,10 +84,8 @@ contract Pair is PairCore, ERC20 {
         if (_totalSupply == 0) {
             // First liquidity provision
             // Require minimum amounts to prevent dust attacks
-            require(
-                amount0 >= MINIMUM_LIQUIDITY && amount1 >= MINIMUM_LIQUIDITY,
-                "AgentDEX: INSUFFICIENT_INITIAL_LIQUIDITY"
-            );
+            if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY)
+                revert Pair_InsufficientInitialLiquidity();
 
             // Initial LP tokens = sqrt(normalizedAmount0 * amount1)
             // This formula ensures that the initial deposit sets the price
