@@ -43,7 +43,9 @@ export class LiquidityProviderService {
   async mint(lpAddress: string, poolAddress: string, mintedLiquidity: number) {
     const isNum = isNumber(mintedLiquidity);
     if (!isNumber) {
-      throw new Error('Invalid mintedLiquidity');
+      throw new Error(
+        'Invalid mintedLiquidity type' + ' ' + typeof mintedLiquidity,
+      );
     }
     let liquidityProvider = await this.findLPByAddress(lpAddress);
     if (!liquidityProvider) {

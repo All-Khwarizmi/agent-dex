@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { PoolsService } from './pools.service';
-import { CreatePoolDTO } from './pool.dto';
+import { CreatePoolDTO } from './types/pool.dto';
 @ApiTags('pools')
 @Controller('pools')
 export class PoolsController {

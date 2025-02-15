@@ -2,8 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { REPOSITORIES } from 'src/utils/constants';
 import { Repository } from 'typeorm';
 import { Pool } from '../entities/pool.entity';
-import { CreatePoolDTO } from './pool.dto';
-import { poolReservesSchema } from './pool.schema';
+import { CreatePoolDTO, PoolDTO } from './types/pool.dto';
+import { poolReservesSchema } from './types/pool.schema';
 
 @Injectable()
 export class PoolsService {
@@ -30,18 +30,12 @@ export class PoolsService {
     burn = false,
     swap = false,
   ) {
-    const pool = await this.findByAddress(poolAddress.toLowerCase());
-    if (!pool) {
-      throw new Error('Pool not found');
-    }
+    const poolRaw = await this.findByAddress(poolAddress.toLowerCase());
+    const pool = PoolDTO.from(poolRaw);
 
-    const reservesFromDbCheck = poolReservesSchema.safeParse({
-      reserve0: pool.reserve0,
-      reserve1: pool.reserve1,
-    });
     const reservesFromLogCheck = poolReservesSchema.safeParse(reserves);
-    if (!reservesFromDbCheck.success || !reservesFromLogCheck.success) {
-      throw new Error('Invalid reserves');
+    if (!reservesFromLogCheck.success) {
+      throw new Error(reservesFromLogCheck.error.message);
     }
     const newReserves = {
       reserve0: burn
@@ -55,7 +49,7 @@ export class PoolsService {
 
     console.log('Updating pool reserves', newReserves);
 
-    return this.poolRepository.update(pool.id, newReserves);
+    return this.poolRepository.update(poolRaw.id, newReserves);
   }
 
   async create(createPoolDto: Partial<CreatePoolDTO>) {
