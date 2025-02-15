@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { isNumber } from 'class-validator';
+import { format } from 'path';
 import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
 import { UsersService } from 'src/users/users.service';
 import { REPOSITORIES } from 'src/utils/constants';
+import { formatNumber } from 'src/utils/utilities/format-number';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -41,16 +43,12 @@ export class LiquidityProviderService {
   }
 
   async mint(lpAddress: string, poolAddress: string, mintedLiquidity: number) {
-    const isNum = isNumber(mintedLiquidity);
-    if (!isNumber) {
-      throw new Error(
-        'Invalid mintedLiquidity type' + ' ' + typeof mintedLiquidity,
-      );
-    }
     let liquidityProvider = await this.findLPByAddress(lpAddress);
+
     if (!liquidityProvider) {
       console.log('Creating new liquidity provider');
       let user = await this.usersService.findByAddress(lpAddress.toUpperCase());
+
       if (!user) {
         console.log('Creating new user');
         user = await this.usersService.create({
@@ -59,11 +57,13 @@ export class LiquidityProviderService {
             address: lpAddress,
           },
         });
+
         if (!user) {
           throw new Error('User not found and could not be created');
         }
       }
-      liquidityProvider = this.liquidityProviderRepository.create({
+
+      liquidityProvider = await this.liquidityProviderRepository.save({
         address: lpAddress,
         totalShares: mintedLiquidity,
         poolLiquidity: {
@@ -71,8 +71,7 @@ export class LiquidityProviderService {
         },
         user,
       });
-      liquidityProvider =
-        await this.liquidityProviderRepository.save(liquidityProvider);
+
       console.log('LP created', liquidityProvider);
       if (!liquidityProvider) {
         throw new Error(
@@ -81,18 +80,20 @@ export class LiquidityProviderService {
       }
       return liquidityProvider;
     }
+
     console.log('LP found', liquidityProvider);
-    const newShares = liquidityProvider.totalShares + mintedLiquidity;
+    const newShares =
+      formatNumber(liquidityProvider.totalShares) + mintedLiquidity;
 
     const newPoolLiquidity = {
       ...liquidityProvider.poolLiquidity,
       [poolAddress]:
-        liquidityProvider.poolLiquidity[poolAddress] + mintedLiquidity,
+        formatNumber(liquidityProvider.poolLiquidity[poolAddress]) +
+        mintedLiquidity,
     };
 
     console.log('Updating liquidity provider', newShares, newPoolLiquidity);
     return await this.liquidityProviderRepository.update(liquidityProvider.id, {
-      ...liquidityProvider,
       totalShares: newShares,
       poolLiquidity: newPoolLiquidity,
     });
@@ -105,11 +106,12 @@ export class LiquidityProviderService {
     }
     // Update the liquidity provider's total shares
     liquidityProvider.totalShares =
-      liquidityProvider.totalShares - burntLiquidity;
+      formatNumber(liquidityProvider.totalShares) - burntLiquidity;
 
     // Update the pool's liquidity
     liquidityProvider.poolLiquidity[poolAddress] =
-      liquidityProvider.poolLiquidity[poolAddress] - burntLiquidity;
+      formatNumber(liquidityProvider.poolLiquidity[poolAddress]) -
+      burntLiquidity;
     await this.update(liquidityProvider.id, liquidityProvider);
   }
 }
