@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { LiquidityProvider } from 'src/entities/liquidityProvider.entity';
+import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
 import { UsersService } from 'src/users/users.service';
 import { REPOSITORIES } from 'src/utils/constants';
 import { Repository } from 'typeorm';

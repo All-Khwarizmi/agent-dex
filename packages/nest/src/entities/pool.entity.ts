@@ -27,7 +27,7 @@ export class Pool {
     type: 'numeric',
     precision: 78,
     scale: 18,
-    default: '0',
+    default: 0,
   })
   reserve0: number;
 

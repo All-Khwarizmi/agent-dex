@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   OneToOne,
 } from 'typeorm';
-import { LiquidityProvider } from './liquidityProvider.entity';
+import { LiquidityProvider } from './liquidity-provider.entity';
 
 export enum UserStatus {
   ACTIVE = 'active',

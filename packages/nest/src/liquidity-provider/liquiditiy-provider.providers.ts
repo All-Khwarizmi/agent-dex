@@ -1,4 +1,4 @@
-import { LiquidityProvider } from 'src/entities/liquidityProvider.entity';
+import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { DataSource } from 'typeorm';
 

@@ -139,6 +139,7 @@ contract PairTest is Test {
     }
 
     // Remove Liquidity
+    //? single responsibility
     function testPairRemoveLiquidity() public {
         vm.startPrank(alice);
 
@@ -276,6 +277,7 @@ contract PairTest is Test {
         );
     }
 
+    //? single responsibility
     function testPairSwap() public {
         vm.startPrank(alice);
 

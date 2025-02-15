@@ -387,19 +387,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "MINIMUM_LIQUIDITY",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "addLiquidity",
           inputs: [
             {
@@ -564,24 +551,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "getTokensDecimals",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "name",
           inputs: [],
           outputs: [
@@ -595,36 +564,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "normalizeAmount",
-          inputs: [
-            {
-              name: "amount",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "currentDecimals",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "targetDecimals",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "normalizeReserves",
+          name: "normalizedReserves",
           inputs: [],
           outputs: [
             {
@@ -636,19 +576,6 @@ const deployedContracts = {
               name: "normalizedReserve1",
               type: "uint256",
               internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "pairFactory",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -863,7 +790,7 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "shouldSwapWithUniswap",
+              name: "shouldSwapLocally",
               type: "bool",
               internalType: "bool",
             },
@@ -1198,7 +1125,52 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Pair_InsufficientBalance",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientInitialLiquidity",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientInput",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidity",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidityBurnt",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidityMinted",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientOutput",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InvalidPairRatio",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "Pair_Locked",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_TransferFailed",
           inputs: [],
         },
         {
@@ -1512,19 +1484,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "MINIMUM_LIQUIDITY",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "addLiquidity",
           inputs: [
             {
@@ -1689,24 +1648,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "getTokensDecimals",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "name",
           inputs: [],
           outputs: [
@@ -1720,36 +1661,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "normalizeAmount",
-          inputs: [
-            {
-              name: "amount",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "currentDecimals",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "targetDecimals",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "normalizeReserves",
+          name: "normalizedReserves",
           inputs: [],
           outputs: [
             {
@@ -1761,19 +1673,6 @@ const deployedContracts = {
               name: "normalizedReserve1",
               type: "uint256",
               internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "pairFactory",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -1988,7 +1887,7 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "shouldSwapWithUniswap",
+              name: "shouldSwapLocally",
               type: "bool",
               internalType: "bool",
             },
@@ -2323,7 +2222,52 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Pair_InsufficientBalance",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientInitialLiquidity",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientInput",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidity",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidityBurnt",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidityMinted",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientOutput",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InvalidPairRatio",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "Pair_Locked",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_TransferFailed",
           inputs: [],
         },
         {
@@ -2469,7 +2413,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739469354.json",
+      deploymentFile: "run-1739607161.json",
       deploymentScript: "Deploy.s.sol",
     },
     Pair: {
@@ -2500,19 +2444,6 @@ const deployedContracts = {
             },
           ],
           stateMutability: "nonpayable",
-        },
-        {
-          type: "function",
-          name: "MINIMUM_LIQUIDITY",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
         },
         {
           type: "function",
@@ -2680,24 +2611,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "getTokensDecimals",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "name",
           inputs: [],
           outputs: [
@@ -2711,36 +2624,7 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "normalizeAmount",
-          inputs: [
-            {
-              name: "amount",
-              type: "uint256",
-              internalType: "uint256",
-            },
-            {
-              name: "currentDecimals",
-              type: "uint8",
-              internalType: "uint8",
-            },
-            {
-              name: "targetDecimals",
-              type: "uint8",
-              internalType: "uint8",
-            },
-          ],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "pure",
-        },
-        {
-          type: "function",
-          name: "normalizeReserves",
+          name: "normalizedReserves",
           inputs: [],
           outputs: [
             {
@@ -2752,19 +2636,6 @@ const deployedContracts = {
               name: "normalizedReserve1",
               type: "uint256",
               internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
-          name: "pairFactory",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "address",
-              internalType: "address",
             },
           ],
           stateMutability: "view",
@@ -2979,7 +2850,7 @@ const deployedContracts = {
           ],
           outputs: [
             {
-              name: "shouldSwapWithUniswap",
+              name: "shouldSwapLocally",
               type: "bool",
               internalType: "bool",
             },
@@ -3314,7 +3185,52 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Pair_InsufficientBalance",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientInitialLiquidity",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientInput",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidity",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidityBurnt",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientLiquidityMinted",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InsufficientOutput",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_InvalidPairRatio",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "Pair_Locked",
+          inputs: [],
+        },
+        {
+          type: "error",
+          name: "Pair_TransferFailed",
           inputs: [],
         },
         {
@@ -3324,7 +3240,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739469354.json",
+      deploymentFile: "run-1739607161.json",
       deploymentScript: "Deploy.s.sol",
     },
   },

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { LiquidityProvider } from 'src/entities/liquidityProvider.entity';
+import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
 import { LiquidityProviderService } from './liquidity-provider.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
