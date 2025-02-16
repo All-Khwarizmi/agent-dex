@@ -5,6 +5,7 @@ import { Abi, erc20Abi, zeroAddress } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { FACTORY_CONTRACT_NAME, PAIR_CONTRACT_NAME, TOKENS } from "~~/utils/constants";
+import { getSymbolFromAddress, parseTokenAmountToBaseUnit, parseUserInput } from "~~/utils/tokens";
 
 function getTokenAddr(tokenSymbol: string) {
   return TOKENS.find(token => token.symbol === tokenSymbol)?.address || "";
@@ -48,10 +49,10 @@ function useSwap() {
   useEffect(() => {
     if (amountA && reserveData) {
       const [reserve0, reserve1] = reserveData as [bigint, bigint];
-      const amountOut = calculateAmountOut(BigInt(amountA), reserve0, reserve1);
+      const amountOut = calculateAmountOut(parseTokenAmountToBaseUnit(amountA, tokenA), reserve0, reserve1);
       setAmountB(amountOut.toString());
     }
-  }, [amountA, reserveData]);
+  }, [amountA, reserveData, tokenA]);
 
   const calculateAmountOut = (amountIn: bigint, reserveIn: bigint, reserveOut: bigint) => {
     const amountInWithFee = amountIn * BigInt(997);
@@ -62,24 +63,26 @@ function useSwap() {
 
   const handleSwap = async () => {
     if (!pairAddr || !account) return;
+    const amount = parseTokenAmountToBaseUnit(amountA, tokenA);
 
     try {
       await writeContractAsync({
         address: getTokenAddr(tokenA),
         abi: erc20Abi,
         functionName: "approve",
-        args: [pairAddr as string, BigInt(amountA)],
+        args: [pairAddr as string, amount],
       });
+
+      console.log("Token A", tokenA);
 
       // Perform swap
       await writeContractAsync({
         address: pairAddr as string,
         abi: deployedPairData?.abi as Abi,
         functionName: "swap",
-        args: [getTokenAddr(tokenB), getTokenAddr(tokenA), BigInt(amountA)],
+        args: [getTokenAddr(tokenB), getTokenAddr(tokenA), amount],
       });
 
-    
       setAmountA("");
       setAmountB("");
     } catch (error) {
