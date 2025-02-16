@@ -12,6 +12,7 @@ abstract contract PairCore {
     error Pair_InsufficientBalance();
     error Pair_InsufficientLiquidityMinted();
     error Pair_InsufficientLiquidityBurnt();
+    error Pair_ExceededMaxLiquidityRemoval();
     error Pair_InsufficientInitialLiquidity();
     error Pair_InsufficientInput();
     error Pair_InsufficientOutput();
@@ -113,6 +114,4 @@ abstract contract PairCore {
         if (!success || data.length == 0 || !abi.decode(data, (bool)))
             revert Pair_TransferFailed();
     }
-
-    
 }

@@ -1120,6 +1120,11 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Pair_ExceededMaxLiquidityRemoval",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "Pair_IdenticalAddress",
           inputs: [],
         },
@@ -2217,6 +2222,11 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Pair_ExceededMaxLiquidityRemoval",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "Pair_IdenticalAddress",
           inputs: [],
         },
@@ -2413,7 +2423,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739607161.json",
+      deploymentFile: "run-1739614432.json",
       deploymentScript: "Deploy.s.sol",
     },
     Pair: {
@@ -3180,6 +3190,11 @@ const deployedContracts = {
         },
         {
           type: "error",
+          name: "Pair_ExceededMaxLiquidityRemoval",
+          inputs: [],
+        },
+        {
+          type: "error",
           name: "Pair_IdenticalAddress",
           inputs: [],
         },
@@ -3240,7 +3255,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1739607161.json",
+      deploymentFile: "run-1739614432.json",
       deploymentScript: "Deploy.s.sol",
     },
   },

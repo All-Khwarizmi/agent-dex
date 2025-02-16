@@ -166,6 +166,8 @@ contract PairTest is Test {
         // Record initial balances
         uint256 initialUSDCBalance = usdc.balanceOf(alice);
         uint256 initialWETHBalance = weth.balanceOf(alice);
+        console.log("\n=== Initial Reserves ===");
+
         (uint256 initialReserveUSDC, uint256 initialReserveWETH) = pair
             .getReserves();
 

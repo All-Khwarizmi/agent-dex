@@ -159,10 +159,13 @@ contract Pair is PairCore, ERC20 {
         console.log("Amount:", amount);
 
         if ((amount * 10000) / _totalSupply > 1000)
-            revert Pair_InsufficientLiquidityBurnt();
+            revert Pair_ExceededMaxLiquidityRemoval();
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
+
+        console.log("Amount0:", amount0);
+        console.log("Amount1:", amount1);
 
         if (amount0 == 0 || amount1 == 0)
             revert Pair_InsufficientLiquidityBurnt();
