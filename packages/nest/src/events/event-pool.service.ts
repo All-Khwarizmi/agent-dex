@@ -29,18 +29,7 @@ export class EventPoolService {
 
   /**
    * Watch for events related to a specific pool
-   *   - When a new mint event is received,
-   *     - Save the event to the database
-   *   - When a new burn event is received,
-   *     - Save the event to the database
-   *   - When a new swap event is received,
-   *     - Save the event to the database
-   *   - When a new swap forwarded event is received,
-   *     - Save the event to the database
-   *   - When a new investment event is received,
-   *     - Save the event to the database
-   *   - When a new divestment event is received,
-   *     - Save the event to the database
+  
    *   
    … */
   async watchPoolEvents(poolAddress: string) {
@@ -64,7 +53,6 @@ export class EventPoolService {
       eventNames: ['Mint', 'Burn', 'Swap'],
       onLogs: async (logs: any) => {
         for (const log of logs) {
-          //TODO
           switch (log.eventName) {
             case 'Mint':
               await this.handleMintEvent(log);
@@ -119,31 +107,19 @@ export class EventPoolService {
   private async handleBurnEvent(log: any) {
     console.log('Received burn event', log);
     try {
-      //TODO: refactor this into a method: (EventStoreService)
-      // Save log to database
-      const event = this.eventRepository.create({
-        type: EventType.BURN,
-        sender: log.args.sender,
-        poolAddress: log.address,
-        amount0: fromBigIntToNumber(log.args.amount0),
-        amount1: fromBigIntToNumber(log.args.amount1),
-        transactionHash: log.transactionHash,
-        blockNumber: Number(log.blockNumber),
-      });
-
       const asyncBatch = [
-        await this.eventRepository.save(event),
+        await this.eventGlobalService.router(EventType.BURN, log),
 
         // Update the liquidity provider's total shares
         await this.liquidityProviderService.burn(
-          event.sender,
-          event.poolAddress,
+          log.args.sender,
+          log.address,
           fromBigIntToNumber(log.args.burntLiquidity),
         ),
 
         // Update the pool's liquidity
         await this.poolsService.updatePoolReserves(
-          event.poolAddress,
+          log.address,
           {
             reserve0: fromBigIntToNumber(log.args.amount0),
             reserve1: fromBigIntToNumber(log.args.amount1),
@@ -165,19 +141,9 @@ export class EventPoolService {
 
   private async handleSwap(log: any) {
     try {
-      console.log('Received swap event', log);
-      const event = this.eventRepository.create({
-        type: EventType.SWAP,
-        sender: log.args.sender,
-        poolAddress: log.args.poolAddress,
-        amount0: fromBigIntToNumber(log.args.amountIn),
-        amount1: fromBigIntToNumber(log.args.amountOut),
-        transactionHash: log.transactionHash,
-        blockNumber: Number(log.blockNumber),
-      });
       // Save log and update user swaps
       const asyncBatch = [
-        this.eventRepository.save(event),
+        this.eventGlobalService.router(EventType.SWAP, log),
         this.usersService.updateUserSwaps(log.args.sender),
       ];
 
@@ -214,19 +180,9 @@ export class EventPoolService {
   }
   private async handleSwapForwarded(log: any) {
     try {
-      console.log('Received swap forwarded event', log);
-      const event = this.eventRepository.create({
-        type: EventType.SWAP_FORWARDED,
-        sender: log.args.user,
-        poolAddress: log.address,
-        amount0: fromBigIntToNumber(log.args.amountIn),
-        amount1: fromBigIntToNumber(log.args.amountOut),
-        transactionHash: log.transactionHash,
-        blockNumber: Number(log.blockNumber),
-      });
       // Save log and update user swaps
       const asyncBatch = [
-        this.eventRepository.save(event),
+        this.eventGlobalService.router(EventType.SWAP_FORWARDED, log),
         this.usersService.updateUserSwaps(log.args.user),
       ];
 

@@ -6,6 +6,7 @@ import { REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
 import { PoolsService } from 'src/pools/pools.service';
 import { EventPoolService } from './event-pool.service';
+import { EventGlobalService } from './event-global.service';
 config();
 
 @Injectable()
@@ -17,6 +18,7 @@ export class EventsService implements OnModuleInit {
     @Inject(REPOSITORIES.EVENT)
     private eventRepository: Repository<Event>,
     private poolsService: PoolsService,
+    private eventGlobalService: EventGlobalService,
     private eventPoolService: EventPoolService,
   ) {
     this.client = createPublicClient({
@@ -54,25 +56,12 @@ export class EventsService implements OnModuleInit {
           console.log('Received log:', log);
 
           try {
-            //TODO: refactor this into a method
             // Save log to database
-            const event = this.eventRepository.create({
-              type: EventType.PAIR_CREATED,
-              sender: log.address,
-              poolAddress: log.args.pair,
-              token0: log.args.token0,
-              token1: log.args.token1,
-              transactionHash: log.transactionHash,
-              blockNumber: Number(log.blockNumber),
-            });
+            await this.eventGlobalService.router(EventType.PAIR_CREATED, log);
 
-            await this.eventRepository.save(event);
-
-            //TODO: refactor this into a method
             // Save new pool to database
-            const poolAddress = log.args.pair;
             const pool = await this.poolsService.create({
-              address: poolAddress,
+              address: log.args.pair,
               token0: log.args.token0,
               token1: log.args.token1,
             });
@@ -80,7 +69,7 @@ export class EventsService implements OnModuleInit {
             console.log('New pool created:', pool);
 
             // Start watching this pool's events
-            await this.eventPoolService.watchPoolEvents(poolAddress);
+            await this.eventPoolService.watchPoolEvents(log.args.pair);
           } catch (error) {
             console.error('Error creating pool:', error);
           }
