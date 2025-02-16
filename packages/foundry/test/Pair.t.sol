@@ -45,7 +45,7 @@ contract PairTest is Test {
 
     function _setupTokens() internal {
         uint256 usdcAmount = 25_000_000_000_000;
-        uint256 wethAmount = 8_000_000 * 1e18;
+        uint256 wethAmount = 8_000_000_000_000 * 1e18;
 
         deal(address(usdc), alice, usdcAmount);
         deal(address(weth), alice, wethAmount);
@@ -224,6 +224,68 @@ contract PairTest is Test {
         );
 
         vm.stopPrank();
+    }
+
+    function testPairRemoveLiquidityCanCollectsFees() public {
+        // Setup initial liquidity
+        uint256 usdcLiquidity = 21381921535549; // ~21,381 USDC (6 decimals)
+        uint256 wethLiquidity = 7944862667241816919899; // ~7,944 WETH (18 decimals)
+
+        // Alice adds liquidity
+        vm.startPrank(alice);
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+        vm.stopPrank();
+
+        // Record Bob's initial balances
+        uint256 bobUsdcBalance = usdc.balanceOf(bob);
+        uint256 bobWethBalance = weth.balanceOf(bob);
+
+        // Bob adds liquidity
+        vm.startPrank(bob);
+        usdc.approve(address(pair), usdcLiquidity / 2);
+        weth.approve(address(pair), wethLiquidity / 2);
+        pair.addLiquidity(usdcLiquidity / 2, wethLiquidity / 2);
+        vm.stopPrank();
+
+        // Alice makes a swap to generate fees
+        vm.startPrank(alice);
+        pair.swap(address(weth), address(usdc), 10000 * 1e6);
+        pair.swap(address(weth), address(usdc), 10000 * 1e6);
+        pair.swap(address(weth), address(usdc), 1000000 * 1e6);
+        pair.swap(address(weth), address(usdc), 10000 * 1e6);
+        pair.swap(address(usdc), address(weth), 10 * 1e18);
+        pair.swap(address(usdc), address(weth), 10 * 1e18);
+        pair.swap(address(usdc), address(weth), 10 * 1e18);
+        pair.swap(address(usdc), address(weth), 10 * 1e18);
+        pair.swap(address(usdc), address(weth), 100 * 1e18);
+
+        vm.stopPrank();
+
+        // Bob removes liquidity
+        vm.startPrank(bob);
+        uint256 bobLPBalance = pair.balanceOf(bob);
+        console.log("Bob's LP Balance:", bobLPBalance);
+
+        // Approve pair to burn LP tokens
+        pair.approve(address(pair), bobLPBalance);
+
+        // Remove liquidity
+        pair.removeLiquidity(bobLPBalance);
+        vm.stopPrank();
+
+        // Verify Bob received more tokens due to fees
+        console.log("Bob USDC balance:", bobUsdcBalance);
+        console.log("Bob USDC balance after removal:", usdc.balanceOf(bob));
+        assertGt(
+            usdc.balanceOf(bob),
+            bobUsdcBalance,
+            "Bob USDC balance should be greater"
+        );
+        assertGt(
+            weth.balanceOf(bob),
+            bobWethBalance,
+            "Bob WETH balance should be greater"
+        );
     }
 
     function testPairRemoveLiquidityRevertsWhenZeroAmount() public {

@@ -152,13 +152,13 @@ contract Pair is PairCore, ERC20 {
         uint256 _totalSupply = totalSupply();
 
         uint256 liquidity = balanceOf(msg.sender);
+        console.log("Total Supply:", _totalSupply);
+        console.log("Account Balance:", liquidity);
+        console.log("Amount:", amount);
         if (liquidity < amount) revert Pair_InsufficientBalance();
 
-        // Check the amount do not exceed 10% of the total supply
-        console.log("Total Supply:", _totalSupply);
-        console.log("Amount:", amount);
-
-        if ((amount * 10000) / _totalSupply > 1000)
+        // Check the amount do not exceed 50% of the total supply
+        if ((amount * 10000) / _totalSupply > 5000)
             revert Pair_ExceededMaxLiquidityRemoval();
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
@@ -230,16 +230,17 @@ contract Pair is PairCore, ERC20 {
         if (!shouldSwapLocally || !_shouldSwap) {
             // First transfer FROM user TO pair
             _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
-
+            console.log("Transfer From:ok");
             // Calculate fees
-            uint256 fees = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
+            uint256 fees = amountIn - (amountIn * 999) / FEE_DENOMINATOR;
+            console.log("fees:", fees);
+            console.log("amountIn:", amountIn);
             amountIn = amountIn - fees;
-            uniswapAmount = uniswapAmount - fees;
 
             // Approve the router to spend the amountIn
             ERC20(fromToken).approve(address(i_uniswapV2Router), amountIn);
 
-            uint256 amountOutMin = (uniswapAmount * 999) / 1000;
+            uint256 amountOutMin = (uniswapAmount * 995) / 1000;
             address[] memory path = new address[](2);
             path[0] = fromToken;
             path[1] = targetToken;
@@ -251,9 +252,12 @@ contract Pair is PairCore, ERC20 {
                 address(this),
                 block.timestamp
             );
-
+            amountOut =
+                amounts[amounts.length - 1] -
+                (amounts[amounts.length - 1] * 999) /
+                FEE_DENOMINATOR;
             // Transfer tokens to user
-            ERC20(targetToken).transfer(msg.sender, amounts[1]);
+            ERC20(targetToken).transfer(msg.sender, amountOut);
 
             console.log("\n=== Post-Transfer Balances ===");
             console.log("amount from uniswap:", amounts[amounts.length - 1]);

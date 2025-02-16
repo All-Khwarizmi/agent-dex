@@ -17,7 +17,6 @@ export default function DEXInterface() {
     amountA,
     amountB,
     setAmountA,
-    setAmountB,
     isSwapping,
     swapError,
     handleSwap,
