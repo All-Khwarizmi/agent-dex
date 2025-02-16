@@ -34,7 +34,6 @@ export class PoolsController {
     try {
       console.log(createPoolDto);
       const pool = await this.poolsService.create(createPoolDto);
-      console.log(pool);
       return pool;
     } catch (error) {
       console.log(error);
