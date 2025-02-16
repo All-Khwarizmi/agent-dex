@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Event } from 'src/entities/event.entity';
 import { createPublicClient, http, parseAbiItem } from 'viem';
 import { fromBigIntToNumber } from 'src/utils/utilities/formatters';
+import { EventGlobalService } from './event-global.service';
 
 @Injectable()
 export class EventPoolService {
@@ -16,6 +17,7 @@ export class EventPoolService {
   constructor(
     @Inject(REPOSITORIES.EVENT)
     private eventRepository: Repository<Event>,
+    private eventGlobalService: EventGlobalService,
     private poolsService: PoolsService,
     private usersService: UsersService,
     private liquidityProviderService: LiquidityProviderService,
@@ -85,26 +87,14 @@ export class EventPoolService {
   private async handleMintEvent(log: any) {
     console.log('Received mint event', log);
     try {
-      //TODO: refactor this into a method: (EventStoreService)
-      // Save log to database
-      const event = this.eventRepository.create({
-        type: EventType.MINT,
-        sender: log.args.sender,
-        poolAddress: log.address,
-        amount0: log.args.amount0,
-        amount1: log.args.amount1,
-        transactionHash: log.transactionHash,
-        blockNumber: Number(log.blockNumber),
-      });
-      console.log(event);
-
       const asyncBatch = [
-        this.eventRepository.save(event),
+        // Save log to database
+        this.eventGlobalService.router(EventType.MINT, log),
 
         //Update the liquidity provider's total shares
         this.liquidityProviderService.mint(
-          event.sender,
-          event.poolAddress,
+          log.args.sender,
+          log.address,
           fromBigIntToNumber(log.args.mintedLiquidity),
         ),
 

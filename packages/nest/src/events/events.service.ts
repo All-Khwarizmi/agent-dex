@@ -5,7 +5,7 @@ import { Event, EventType } from '../entities/event.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
 import { PoolsService } from 'src/pools/pools.service';
-import { EventPoolService } from './event-pool-service';
+import { EventPoolService } from './event-pool.service';
 config();
 
 @Injectable()
