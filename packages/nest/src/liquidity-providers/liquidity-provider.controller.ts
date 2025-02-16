@@ -34,7 +34,6 @@ export class LiquidityProvidersController {
     description: 'Liquidity provider created successfully.',
   })
   create(@Body() createLiquidityProviderDto: Partial<LiquidityProvider>) {
-    console.log(createLiquidityProviderDto);
     return this.liquidityProviderService.create(createLiquidityProviderDto);
   }
 

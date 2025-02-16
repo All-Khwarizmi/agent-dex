@@ -1,9 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
-import { REPOSITORIES } from 'src/utils/constants';
+import { REPOSITORIES } from '../utils/constants';
 import { CreateUserDTO } from './user.dto';
-import { formatNumber } from 'src/utils/utilities/format-number';
+import { formatNumber } from '../utils/utilities/format-number';
 
 @Injectable()
 export class UsersService {

@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
-import { UsersService } from 'src/users/users.service';
-import { REPOSITORIES } from 'src/utils/constants';
-import { formatNumber } from 'src/utils/utilities/format-number';
+import { UsersService } from '../users/users.service';
+import { REPOSITORIES } from '../utils/constants';
+import { formatNumber } from '../utils/utilities/format-number';
 import { Repository } from 'typeorm';
 
 @Injectable()
