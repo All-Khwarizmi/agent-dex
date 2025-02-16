@@ -23,7 +23,7 @@ export class LiquidityProvider {
   @Column({ type: 'varchar', length: 42 })
   address: string;
 
-  @Column({ type: 'numeric', precision: 78, scale: 0, default: 0 })
+  @Column({ type: 'numeric', precision: 78, default: 0 })
   totalShares: number;
 
   // An object that maps the liquidity of each pool to the amount of shares

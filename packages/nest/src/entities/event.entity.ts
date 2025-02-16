@@ -38,7 +38,6 @@ export class Event {
   @Column({
     type: 'numeric',
     precision: 78,
-    scale: 0,
     nullable: true,
     default: 0,
   })
@@ -47,7 +46,6 @@ export class Event {
   @Column({
     type: 'numeric',
     precision: 78,
-    scale: 0,
     nullable: true,
     default: 0,
   })

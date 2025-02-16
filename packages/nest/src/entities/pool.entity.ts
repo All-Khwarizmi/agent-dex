@@ -26,7 +26,6 @@ export class Pool {
   @Column({
     type: 'numeric',
     precision: 78,
-    scale: 6,
     default: 0,
   })
   reserve0: number;
@@ -34,7 +33,6 @@ export class Pool {
   @Column({
     type: 'numeric',
     precision: 78,
-    scale: 6,
     default: 0,
   })
   reserve1: number;
@@ -42,7 +40,6 @@ export class Pool {
   @Column({
     type: 'numeric',
     precision: 32,
-    scale: 0,
     default: 0,
   })
   swaps: number;
