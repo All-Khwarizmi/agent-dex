@@ -3,6 +3,7 @@ import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { CreateUserDTO } from './user.dto';
+import { formatNumber } from 'src/utils/utilities/format-number';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +29,9 @@ export class UsersService {
     if (!user) {
       return this.create({ address, swaps: 1 });
     }
-    return this.userRepository.update(user.id, { swaps: user.swaps + 1 });
+    return this.userRepository.update(user.id, {
+      swaps: formatNumber(user.swaps) + 1,
+    });
   }
 
   async create(createUserDto: Partial<CreateUserDTO>) {

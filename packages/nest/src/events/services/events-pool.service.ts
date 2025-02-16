@@ -1,9 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { EventType } from 'src/entities/event.entity';
 import { LiquidityProvidersService } from 'src/liquidity-providers/liquidity-providers.service';
 import { PoolsService } from 'src/pools/pools.service';
 import { UsersService } from 'src/users/users.service';
-import { EVENT_NAMES, REPOSITORIES } from 'src/utils/constants';
+import { EVENT_NAMES } from 'src/utils/constants';
 import { createPublicClient, http, parseAbiItem } from 'viem';
 import { fromBigIntToNumber } from 'src/utils/utilities/formatters';
 import { EventsGlobalService } from './events-global.service';
@@ -13,7 +13,6 @@ export class EventsPoolService {
   private client;
 
   constructor(
-    @Inject(REPOSITORIES.EVENT)
     private eventGlobalService: EventsGlobalService,
     private poolsService: PoolsService,
     private usersService: UsersService,

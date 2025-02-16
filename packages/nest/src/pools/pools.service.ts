@@ -38,12 +38,16 @@ export class PoolsService {
       throw new Error(reservesFromLogCheck.error.message);
     }
     const newReserves = {
-      reserve0: burn
-        ? pool.reserve0 - reserves.reserve0
-        : pool.reserve0 + reserves.reserve0,
-      reserve1: burn
-        ? pool.reserve1 - reserves.reserve1
-        : pool.reserve1 + reserves.reserve1,
+      reserve0: swap
+        ? reserves.reserve0
+        : burn
+          ? pool.reserve0 - reserves.reserve0
+          : pool.reserve0 + reserves.reserve0,
+      reserve1: swap
+        ? reserves.reserve1
+        : burn
+          ? pool.reserve1 - reserves.reserve1
+          : pool.reserve1 + reserves.reserve1,
       swaps: swap ? pool.swaps + 1 : pool.swaps,
     };
 
