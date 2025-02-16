@@ -3,9 +3,7 @@ import { EventType } from 'src/entities/event.entity';
 import { LiquidityProviderService } from 'src/liquidity-provider/liquidity-provider.service';
 import { PoolsService } from 'src/pools/pools.service';
 import { UsersService } from 'src/users/users.service';
-import { REPOSITORIES } from 'src/utils/constants';
-import { Repository } from 'typeorm';
-import { Event } from 'src/entities/event.entity';
+import { EVENT_NAMES, REPOSITORIES } from 'src/utils/constants';
 import { createPublicClient, http, parseAbiItem } from 'viem';
 import { fromBigIntToNumber } from 'src/utils/utilities/formatters';
 import { EventGlobalService } from './event-global.service';
@@ -16,7 +14,6 @@ export class EventPoolService {
 
   constructor(
     @Inject(REPOSITORIES.EVENT)
-    private eventRepository: Repository<Event>,
     private eventGlobalService: EventGlobalService,
     private poolsService: PoolsService,
     private usersService: UsersService,
@@ -29,8 +26,6 @@ export class EventPoolService {
 
   /**
    * Watch for events related to a specific pool
-  
-   *   
    … */
   async watchPoolEvents(poolAddress: string) {
     console.log('Watching pool events for:', poolAddress);
@@ -50,20 +45,20 @@ export class EventPoolService {
           'event SwapForwarded(address user,address tokenIn,address tokenOut,uint amountIn,uint amountOut)',
         ),
       ],
-      eventNames: ['Mint', 'Burn', 'Swap'],
+      eventNames: Object.values(EVENT_NAMES),
       onLogs: async (logs: any) => {
         for (const log of logs) {
           switch (log.eventName) {
-            case 'Mint':
+            case EVENT_NAMES.MINT:
               await this.handleMintEvent(log);
               break;
-            case 'Burn':
+            case EVENT_NAMES.BURN:
               await this.handleBurnEvent(log);
               break;
-            case 'Swap':
+            case EVENT_NAMES.SWAP:
               await this.handleSwap(log);
               break;
-            case 'SwapForwarded':
+            case EVENT_NAMES.SWAP_FORWARDED:
               await this.handleSwapForwarded(log);
               break;
           }
@@ -73,7 +68,6 @@ export class EventPoolService {
   }
 
   private async handleMintEvent(log: any) {
-    console.log('Received mint event', log);
     try {
       const asyncBatch = [
         // Save log to database
@@ -105,7 +99,6 @@ export class EventPoolService {
   }
 
   private async handleBurnEvent(log: any) {
-    console.log('Received burn event', log);
     try {
       const asyncBatch = [
         await this.eventGlobalService.router(EventType.BURN, log),

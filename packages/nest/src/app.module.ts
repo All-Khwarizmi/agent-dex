@@ -7,7 +7,6 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { PoolsModule } from './pools/pools.module';
 import { BlockchainModule } from './blockchain/blockchain.module';
-import { EventsModule } from './events/events.module';
 import { LiquidityProviderModule } from './liquidity-provider/liquidity-provider.module';
 
 @Module({
@@ -19,7 +18,6 @@ import { LiquidityProviderModule } from './liquidity-provider/liquidity-provider
     DatabaseModule,
     UsersModule,
     PoolsModule,
-    EventsModule,
     BlockchainModule,
     LiquidityProviderModule,
   ],

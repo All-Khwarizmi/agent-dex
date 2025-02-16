@@ -2,7 +2,7 @@ import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { createPublicClient, http, parseAbiItem } from 'viem';
 import { Event, EventType } from '../../entities/event.entity';
-import { REPOSITORIES } from 'src/utils/constants';
+import { EVENT_NAMES, REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
 import { PoolsService } from 'src/pools/pools.service';
 import { EventGlobalService } from './event-global.service';
@@ -50,7 +50,7 @@ export class EventsService implements OnModuleInit {
           'event PairCreated(address indexed token0,address indexed token1,address pair,uint poolCount)',
         ),
       ],
-      eventName: 'PairCreated',
+      eventName: EVENT_NAMES.PAIR_CREATED,
       onLogs: async (logs) => {
         for (const log of logs) {
           console.log('Received log:', log);
@@ -96,58 +96,5 @@ export class EventsService implements OnModuleInit {
     for (const pool of pools) {
       await this.eventPoolService.watchPoolEvents(pool.address);
     }
-  }
-
-  /**
-   * Start listening to events
-   *   - When a new mint event is received,
-   *     - Save the event to the database
-   * */
-  async startListening(contractAddress: string) {
-    try {
-      console.log('Starting to listen to events...');
-
-      this.unwatch = await this.client.watchContractEvent({
-        address: contractAddress,
-        abi: [
-          parseAbiItem(
-            'event Mint(address indexed sender, uint amount0, uint amount1)',
-          ),
-        ],
-        eventName: 'Mint',
-        onLogs: async (logs) => {
-          console.log('Received logs:', logs);
-
-          for (const log of logs) {
-            await this.eventRepository.save({
-              type: EventType.MINT,
-              sender: log.args.sender,
-              poolAddress: log.address,
-              amount0: log.args.amount0.toString(),
-              amount1: log.args.amount1.toString(),
-              transactionHash: log.transactionHash,
-              blockNumber: Number(log.blockNumber),
-            });
-          }
-        },
-      });
-
-      return { message: 'Started listening to events' };
-    } catch (error) {
-      console.error('Error starting listener:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Stop listening to events
-   *
-   * */
-  stopListening() {
-    if (this.unwatch) {
-      this.unwatch();
-      return { message: 'Stopped listening to events' };
-    }
-    return { message: 'No active listener to stop' };
   }
 }

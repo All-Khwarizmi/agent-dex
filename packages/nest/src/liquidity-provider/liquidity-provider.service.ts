@@ -1,6 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { isNumber } from 'class-validator';
-import { format } from 'path';
 import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
 import { UsersService } from 'src/users/users.service';
 import { REPOSITORIES } from 'src/utils/constants';
