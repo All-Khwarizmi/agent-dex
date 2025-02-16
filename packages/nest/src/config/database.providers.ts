@@ -1,5 +1,5 @@
 import { ConfigService } from '@nestjs/config';
-import { REPOSITORIES } from 'src/utils/constants';
+import { REPOSITORIES } from '../utils/constants';
 
 import { DataSource } from 'typeorm';
 

@@ -1,5 +1,5 @@
-import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
-import { REPOSITORIES } from 'src/utils/constants';
+import { LiquidityProvider } from '../entities/liquidity-provider.entity';
+import { REPOSITORIES } from '../utils/constants';
 import { DataSource } from 'typeorm';
 
 export const liquidityProvidersProviders = [

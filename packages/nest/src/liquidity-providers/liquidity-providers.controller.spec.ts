@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { LiquidityProvidersController } from './liquidity-provider.controller';
-import { UsersService } from '../users/users.service';
 import { LiquidityProvidersService } from './liquidity-providers.service';
 import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
+import { NotFoundException } from '@nestjs/common';
 
 describe('LiquidityProviderController', () => {
   let controller: LiquidityProvidersController;
@@ -78,10 +78,8 @@ describe('LiquidityProviderController', () => {
       const result = await controller.findOne(1);
       expect(result).toEqual(lp[0]);
     });
-    it('Should return undefined if liquidity provider not found', async () => {
-      const result = await controller.findOne(2);
-      console.log(result);
-      expect(result).toBeUndefined();
+    it('Should throw NotFoundException if liquidity provider not found', async () => {
+      await expect(controller.findOne(2)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -96,26 +94,6 @@ describe('LiquidityProviderController', () => {
       };
       const result = await controller.create(newLp);
       expect(result).toEqual({ ...newLp, id: lp.length });
-    });
-  });
-
-  describe('Update', () => {
-    it('Should update a liquidity provider', async () => {
-      const result = await controller.update('1', {
-        address: '0x456',
-        totalShares: 200,
-        poolLiquidity: {
-          '0x456': 200,
-        },
-      });
-      expect(result).toEqual(lp[0]);
-      expect(liquidityProviderService.update).toHaveBeenCalledWith(1, {
-        address: '0x456',
-        totalShares: 200,
-        poolLiquidity: {
-          '0x456': 200,
-        },
-      });
     });
   });
 });

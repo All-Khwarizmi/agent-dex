@@ -1,5 +1,5 @@
-import { UserStatus } from 'src/entities/user.entity';
-import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
+import { UserStatus } from '../entities/user.entity';
+import { LiquidityProvider } from '../entities/liquidity-provider.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDTO {
