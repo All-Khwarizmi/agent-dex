@@ -1,12 +1,12 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { createPublicClient, http, parseAbiItem } from 'viem';
-import { Event, EventType } from '../entities/event.entity';
+import { Event, EventType } from '../../entities/event.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { config } from 'dotenv';
 import { PoolsService } from 'src/pools/pools.service';
-import { EventPoolService } from './event-pool.service';
 import { EventGlobalService } from './event-global.service';
+import { EventPoolService } from './event-pool.service';
 config();
 
 @Injectable()
@@ -56,17 +56,28 @@ export class EventsService implements OnModuleInit {
           console.log('Received log:', log);
 
           try {
-            // Save log to database
-            await this.eventGlobalService.router(EventType.PAIR_CREATED, log);
+            const batchAsync = [
+              // Save log to database
+              this.eventGlobalService.router(EventType.PAIR_CREATED, log),
 
-            // Save new pool to database
-            const pool = await this.poolsService.create({
-              address: log.args.pair,
-              token0: log.args.token0,
-              token1: log.args.token1,
-            });
+              // Save new pool to database
+              this.poolsService.create({
+                address: log.args.pair,
+                token0: log.args.token0,
+                token1: log.args.token1,
+              }),
+            ];
 
-            console.log('New pool created:', pool);
+            const result = await Promise.allSettled(batchAsync);
+
+            for (const r of result) {
+              if (r.status === 'rejected') {
+                console.error('Error creating pool:', r.reason);
+              }
+              console.log(r);
+            }
+
+            console.log('New pool created:', log.args.pair);
 
             // Start watching this pool's events
             await this.eventPoolService.watchPoolEvents(log.args.pair);
