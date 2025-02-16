@@ -1,5 +1,6 @@
 import { Address } from "./scaffold-eth";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/Table";
+import { formatTokensAccordingToDecimals } from "~~/utils/tokens";
 
 interface LiquidityProvider {
   id: number;
@@ -30,7 +31,7 @@ export function ProvidersTable({ providers }: ProvidersTableProps) {
             <TableCell className="font-medium">
               <Address address={provider.address} />
             </TableCell>
-            <TableCell>{provider.totalShares.toLocaleString()}</TableCell>
+            <TableCell>{formatTokensAccordingToDecimals("WETH", BigInt(provider.totalShares))}</TableCell>
             <TableCell>{Object.keys(provider.poolLiquidity).length}</TableCell>
             <TableCell>{new Date(provider.created_at).toLocaleDateString()}</TableCell>
           </TableRow>

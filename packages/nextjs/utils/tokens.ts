@@ -1,5 +1,4 @@
 import { TOKENS } from "./constants";
-import { get } from "http";
 import { formatUnits, parseUnits } from "viem";
 import { FormattedPool, TokenMetadata } from "~~/types/tokens";
 
