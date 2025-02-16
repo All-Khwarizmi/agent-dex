@@ -1,20 +1,20 @@
 import { Module } from '@nestjs/common';
 import { EventsService } from './services/events.service';
-import { eventProviders } from './event.providers';
+import { eventsProviders } from './events.providers';
 import { PoolsModule } from 'src/pools/pools.module';
-import { LiquidityProviderModule } from 'src/liquidity-provider/liquidity-provider.module';
+import { LiquidityProvidersModule } from 'src/liquidity-providers/liquidity-providers.module';
 import { DatabaseModule } from 'src/config/database.module';
 import { UsersModule } from 'src/users/users.module';
-import { EventPoolService } from './services/event-pool.service';
-import { EventGlobalService } from './services/event-global.service';
+import { EventsPoolService } from './services/events-pool.service';
+import { EventsGlobalService } from './services/events-global.service';
 
 @Module({
-  imports: [PoolsModule, LiquidityProviderModule, DatabaseModule, UsersModule],
+  imports: [PoolsModule, LiquidityProvidersModule, DatabaseModule, UsersModule],
   providers: [
-    ...eventProviders,
+    ...eventsProviders,
     EventsService,
-    EventPoolService,
-    EventGlobalService,
+    EventsPoolService,
+    EventsGlobalService,
   ],
 })
 export class EventsModule {}

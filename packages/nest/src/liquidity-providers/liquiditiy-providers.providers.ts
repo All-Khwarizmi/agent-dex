@@ -2,7 +2,7 @@ import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
 import { REPOSITORIES } from 'src/utils/constants';
 import { DataSource } from 'typeorm';
 
-export const liquidityProviderProviders = [
+export const liquidityProvidersProviders = [
   {
     provide: REPOSITORIES.LIQUIDITY_PROVIDER,
     useFactory: (dataSource: DataSource) =>

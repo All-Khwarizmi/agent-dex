@@ -1,25 +1,21 @@
-import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { createPublicClient, http, parseAbiItem } from 'viem';
-import { Event, EventType } from '../../entities/event.entity';
-import { EVENT_NAMES, REPOSITORIES } from 'src/utils/constants';
+import { EventType } from '../../entities/event.entity';
+import { EVENT_NAMES } from 'src/utils/constants';
 import { config } from 'dotenv';
 import { PoolsService } from 'src/pools/pools.service';
-import { EventGlobalService } from './event-global.service';
-import { EventPoolService } from './event-pool.service';
+import { EventsGlobalService } from './events-global.service';
+import { EventsPoolService } from './events-pool.service';
 config();
 
 @Injectable()
 export class EventsService implements OnModuleInit {
   private client;
-  private unwatch?: () => void;
 
   constructor(
-    @Inject(REPOSITORIES.EVENT)
-    private eventRepository: Repository<Event>,
     private poolsService: PoolsService,
-    private eventGlobalService: EventGlobalService,
-    private eventPoolService: EventPoolService,
+    private eventGlobalService: EventsGlobalService,
+    private eventPoolService: EventsPoolService,
   ) {
     this.client = createPublicClient({
       transport: http(process.env.RPC_URL),

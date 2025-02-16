@@ -6,7 +6,7 @@ import { Event } from 'src/entities/event.entity';
 import { fromBigIntToNumber } from 'src/utils/utilities/formatters';
 
 @Injectable()
-export class EventGlobalService {
+export class EventsGlobalService {
   constructor(
     @Inject(REPOSITORIES.EVENT)
     private eventRepository: Repository<Event>,

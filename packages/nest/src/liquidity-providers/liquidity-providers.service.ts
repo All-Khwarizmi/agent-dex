@@ -6,7 +6,7 @@ import { formatNumber } from 'src/utils/utilities/format-number';
 import { Repository } from 'typeorm';
 
 @Injectable()
-export class LiquidityProviderService {
+export class LiquidityProvidersService {
   constructor(
     @Inject(REPOSITORIES.LIQUIDITY_PROVIDER)
     private liquidityProviderRepository: Repository<LiquidityProvider>,

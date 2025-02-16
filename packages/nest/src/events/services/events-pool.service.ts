@@ -1,23 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EventType } from 'src/entities/event.entity';
-import { LiquidityProviderService } from 'src/liquidity-provider/liquidity-provider.service';
+import { LiquidityProvidersService } from 'src/liquidity-providers/liquidity-providers.service';
 import { PoolsService } from 'src/pools/pools.service';
 import { UsersService } from 'src/users/users.service';
 import { EVENT_NAMES, REPOSITORIES } from 'src/utils/constants';
 import { createPublicClient, http, parseAbiItem } from 'viem';
 import { fromBigIntToNumber } from 'src/utils/utilities/formatters';
-import { EventGlobalService } from './event-global.service';
+import { EventsGlobalService } from './events-global.service';
 
 @Injectable()
-export class EventPoolService {
+export class EventsPoolService {
   private client;
 
   constructor(
     @Inject(REPOSITORIES.EVENT)
-    private eventGlobalService: EventGlobalService,
+    private eventGlobalService: EventsGlobalService,
     private poolsService: PoolsService,
     private usersService: UsersService,
-    private liquidityProviderService: LiquidityProviderService,
+    private liquidityProviderService: LiquidityProvidersService,
   ) {
     this.client = createPublicClient({
       transport: http(process.env.RPC_URL),

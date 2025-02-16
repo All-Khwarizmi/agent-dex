@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { LiquidityProvider } from 'src/entities/liquidity-provider.entity';
-import { LiquidityProviderService } from './liquidity-provider.service';
+import { LiquidityProvidersService } from './liquidity-providers.service';
 import { ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('liquidity-provider')
-export class LiquidityProviderController {
+export class LiquidityProvidersController {
   constructor(
-    private readonly liquidityProviderService: LiquidityProviderService,
+    private readonly liquidityProviderService: LiquidityProvidersService,
   ) {}
 
   @Get()
