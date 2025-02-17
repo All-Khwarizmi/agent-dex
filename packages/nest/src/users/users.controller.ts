@@ -44,8 +44,9 @@ export class UsersController {
         throw new NotFoundException('User not found');
       }
       return user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      throw new NotFoundException(error.message);
+      throw new NotFoundException();
     }
   }
 
@@ -55,8 +56,9 @@ export class UsersController {
   create(@Body() createUserDto: CreateUserDTO) {
     try {
       return this.usersService.create(createUserDto);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
-      throw new NotFoundException(error.message);
+      throw new NotFoundException();
     }
   }
 }
