@@ -27,6 +27,7 @@ contract PairTest is Test {
         alice = makeAddr("alice");
         bob = makeAddr("bob");
         vm.deal(alice, 100 ether);
+        vm.deal(bob, 100 ether);
 
         // Setup token instances
         // Real mainnet token addresses
@@ -63,10 +64,9 @@ contract PairTest is Test {
     }
 
     // Add Liquidity
-    function testPairAddLiquiditySuccessfully() public {
+    function testPairAddLiquidity() public {
         vm.startPrank(alice);
 
-        // Add initial liquidity
         uint256 amount = 1500;
         pair.addLiquidity(amount, amount);
 
@@ -76,9 +76,29 @@ contract PairTest is Test {
             "Total supply should be greater than 0"
         );
 
+        vm.stopPrank();
+    }
+
+    function _setLiquidity()
+        internal
+        returns (uint256 usdcLiquidity, uint256 wethLiquidity)
+    {
+        usdcLiquidity = 1_000_000 * 1e6;
+        wethLiquidity = 500 * 1e18;
+
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+    }
+
+    function testPairAddLiquiditySetReserves() public {
+        vm.startPrank(alice);
+
+        (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
+
         (uint256 _reserve0, uint256 _reserve1) = pair.getReserves();
-        assertEq(_reserve0, 1500, "Reserve0 should be updated");
-        assertEq(_reserve1, 1500, "Reserve1 should be updated");
+        assertEq(_reserve0, usdcLiquidity, "Incorrect reserve0");
+        assertEq(_reserve1, wethLiquidity, "Incorrect reserve1");
+
+        vm.stopPrank();
     }
 
     function testPairAddLiquidityWithMultipleUsers() public {

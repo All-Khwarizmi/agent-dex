@@ -108,7 +108,7 @@ describe('Users Controller (e2e)', () => {
       });
   });
 
-  it('/users/:id (GET)', () => {
+  it('/users/:id (GET) => 404', () => {
     return request(app.getHttpServer())
       .get('/users/42')
       .expect(404)
