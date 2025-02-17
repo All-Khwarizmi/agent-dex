@@ -89,6 +89,24 @@ contract PairTest is Test {
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
     }
 
+    function testPairAddLiquidityEmitsMintEvent() public {
+        vm.startPrank(alice);
+
+        (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
+
+        vm.expectEmit(true, true, true, false);
+        emit PairCore.Mint(
+            alice,
+            usdcLiquidity,
+            wethLiquidity,
+            Math.sqrt(usdcLiquidity * wethLiquidity)
+        );
+
+        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+
+        vm.stopPrank();
+    }
+
     function testPairAddLiquiditySetReserves() public {
         vm.startPrank(alice);
 
@@ -159,7 +177,6 @@ contract PairTest is Test {
     }
 
     // Remove Liquidity
-    //? single responsibility
     function testPairRemoveLiquidity() public {
         vm.startPrank(alice);
 
@@ -192,6 +209,25 @@ contract PairTest is Test {
             aliceWETHBalance,
             "WETH balance should increase"
         );
+
+        vm.stopPrank();
+    }
+
+    function testPairRemoveLiquidityEmitsBurnEvent() public {
+        vm.startPrank(alice);
+
+        (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
+
+        vm.expectEmit(true, true, true, false);
+        emit PairCore.Burn(
+            alice,
+            usdcLiquidity,
+            wethLiquidity,
+            alice,
+            Math.sqrt(usdcLiquidity * wethLiquidity)
+        );
+
+        pair.removeLiquidity(ERC20(pair).balanceOf(alice) * 50 / 1000);
 
         vm.stopPrank();
     }
