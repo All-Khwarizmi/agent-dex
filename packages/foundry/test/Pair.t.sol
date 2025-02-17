@@ -95,7 +95,7 @@ contract PairTest is Test {
         (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
 
         vm.expectEmit(true, true, true, false);
-        emit PairCore.Mint(
+        emit PairCore.Pair_Mint(
             alice,
             usdcLiquidity,
             wethLiquidity,
@@ -219,7 +219,7 @@ contract PairTest is Test {
         (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
 
         vm.expectEmit(true, true, true, false);
-        emit PairCore.Burn(
+        emit PairCore.Pair_Burn(
             alice,
             usdcLiquidity,
             wethLiquidity,
@@ -227,7 +227,7 @@ contract PairTest is Test {
             Math.sqrt(usdcLiquidity * wethLiquidity)
         );
 
-        pair.removeLiquidity(ERC20(pair).balanceOf(alice) * 50 / 1000);
+        pair.removeLiquidity((ERC20(pair).balanceOf(alice) * 50) / 1000);
 
         vm.stopPrank();
     }
@@ -294,7 +294,7 @@ contract PairTest is Test {
         );
     }
 
-    function _testPairRemoveLiquidityTransferExpectedAmountsToLiquidityProvider()
+    function testPairRemoveLiquidityTransferExpectedAmountsToLiquidityProvider()
         public
     {
         vm.startPrank(alice);
@@ -426,6 +426,104 @@ contract PairTest is Test {
     }
 
     // Swap
+    function testPairSwapEmitsSwapEvent() public {
+        vm.startPrank(alice);
+
+        _setUniswapLiquidity();
+
+        uint amountIn = 100 * 1e6;
+        vm.expectEmit(true, true, true, false);
+        emit PairCore.Pair_Swap(
+            alice,
+            address(usdc),
+            address(weth),
+            amountIn,
+            100 * 1e18
+        );
+
+        pair.swap(address(weth), address(usdc), amountIn);
+
+        vm.stopPrank();
+    }
+
+    function testPairSwapFromToken0ToToken1() public {
+        vm.startPrank(alice);
+        _setUniswapLiquidity();
+
+        uint amountIn = 100 * 1e6;
+
+        // Get pre-swap balances
+        uint256 usdcBeforeSwap = usdc.balanceOf(alice);
+        uint256 wethBeforeSwap = weth.balanceOf(alice);
+
+        // Swap
+        pair.swap(address(weth), address(usdc), amountIn);
+
+        // Get post-swap balances
+        uint256 usdcAfterSwap = usdc.balanceOf(alice);
+        uint256 wethAfterSwap = weth.balanceOf(alice);
+
+        // Calculate changes
+        uint256 usdcSpent = usdcBeforeSwap - usdcAfterSwap;
+
+        assertEq(usdcSpent, amountIn, "Incorrect USDC spent");
+        assertGt(wethAfterSwap, wethBeforeSwap, "Incorrect WETH received");
+
+        vm.stopPrank();
+    }
+
+    function testPairSwapFromToken1ToToken0() public {
+        vm.startPrank(alice);
+        _setUniswapLiquidity();
+
+        uint amountIn = 10 * 1e18;
+
+        // Get pre-swap balances
+        uint256 usdcBeforeSwap = usdc.balanceOf(alice);
+        uint256 wethBeforeSwap = weth.balanceOf(alice);
+
+        // Swap
+        pair.swap(address(usdc), address(weth), amountIn);
+
+        // Get post-swap balances
+        uint256 usdcAfterSwap = usdc.balanceOf(alice);
+        uint256 wethAfterSwap = weth.balanceOf(alice);
+
+        // Calculate changes
+        uint256 wethSpent = wethBeforeSwap - wethAfterSwap;
+
+        assertEq(wethSpent, amountIn, "Incorrect WETH spent");
+        assertGt(usdcAfterSwap, usdcBeforeSwap, "Incorrect USDC received");
+
+        vm.stopPrank();
+    }
+
+    function testPairSwapForwardSwapToUniswap() public {
+        vm.startPrank(alice);
+
+        // Setup low liquidity to test forward swap
+        _setLiquidity();
+
+        vm.stopPrank();
+
+        vm.startPrank(bob);
+
+        uint amountIn = 1_000_000 * 1e6;
+
+        vm.expectEmit(true, true, true, false);
+        emit PairCore.Pair_SwapForwarded(
+            bob,
+            address(usdc),
+            address(weth),
+            amountIn,
+            100 * 1e6
+        );
+
+        pair.swap(address(usdc), address(weth), amountIn);
+
+        vm.stopPrank();
+    }
+
     function _getExpectedAmounts(
         uint256 swapAmount
     ) internal view returns (uint256 uniswapOut, uint256 ourAmountOut) {
@@ -445,55 +543,15 @@ contract PairTest is Test {
         );
     }
 
-    //? single responsibility
-    function testPairSwap() public {
-        vm.startPrank(alice);
-
-        // Setup with Uniswap-like liquidity (from the logs)
-        uint256 usdcLiquidity = 21381921535549; // ~21,381 USDC (6 decimals)
-        uint256 wethLiquidity = 7944862667241816919899; // ~7,944 WETH (18 decimals)
+    function _setUniswapLiquidity()
+        internal
+        returns (uint256 usdcLiquidity, uint256 wethLiquidity)
+    {
+        usdcLiquidity = 21381921535549; // ~21,381 USDC (6 decimals)
+        wethLiquidity = 7944862667241816919899; // ~7,944 WETH (18 decimals)
 
         // Add liquidity
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
-
-        // Prepare swap - keep same test amount
-        uint256 swapAmount = 100 * 1e6; // 100 USDC
-
-        // Record pre-swap balances
-        uint256 usdcBeforeSwap = usdc.balanceOf(alice);
-        uint256 wethBeforeSwap = weth.balanceOf(alice);
-
-        // Execute swap
-        pair.swap(address(weth), address(usdc), swapAmount);
-
-        // Get post-swap balances
-        uint256 usdcAfterSwap = usdc.balanceOf(alice);
-        uint256 wethAfterSwap = weth.balanceOf(alice);
-
-        // Calculate changes
-        uint256 usdcSpent = usdcBeforeSwap - usdcAfterSwap;
-        uint256 wethReceived = wethAfterSwap - wethBeforeSwap;
-
-        console.log("\n=== Swap Results (Human Readable) ===");
-        console.log("USDC spent: %s USDC", usdcSpent / 1e6);
-
-        console.log("\n=== Raw Values ===");
-        console.log("USDC spent (raw): %s", usdcSpent);
-        console.log("WETH received (raw): %s", wethReceived);
-
-        // Compare with Uniswap amount from logs
-        uint256 expectedWethReceived = 37045272717580447; // From Uniswap logs
-
-        // Verify amounts
-        assertEq(usdcSpent, swapAmount, "Incorrect USDC spent");
-        assertApproxEqRel(
-            wethReceived,
-            expectedWethReceived,
-            20 * 1e18,
-            "Incorrect WETH received"
-        );
-
-        vm.stopPrank();
     }
 
     // Get Reserves

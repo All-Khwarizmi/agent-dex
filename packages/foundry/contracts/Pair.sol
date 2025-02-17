@@ -78,7 +78,7 @@ contract Pair is PairCore, ERC20 {
             reserve0 = amount0;
             reserve1 = amount1;
 
-            emit Mint(msg.sender, amount0, amount1, liquidity);
+            emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
         } else {
             // Subsequent liquidity provisions
 
@@ -111,7 +111,7 @@ contract Pair is PairCore, ERC20 {
             reserve0 += amount0;
             reserve1 += amount1;
 
-            emit Mint(msg.sender, amount0, amount1, liquidity);
+            emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
         }
     }
 
@@ -141,7 +141,7 @@ contract Pair is PairCore, ERC20 {
         reserve0 -= amount0;
         reserve1 -= amount1;
 
-        emit Burn(msg.sender, amount0, amount1, msg.sender, amount);
+        emit Pair_Burn(msg.sender, amount0, amount1, msg.sender, amount);
     }
 
     function swap(
@@ -210,7 +210,7 @@ contract Pair is PairCore, ERC20 {
             // Transfer tokens to user
             ERC20(targetToken).transfer(msg.sender, amountOut);
 
-            emit SwapForwarded(
+            emit Pair_SwapForwarded(
                 msg.sender,
                 fromToken,
                 targetToken,
@@ -235,7 +235,7 @@ contract Pair is PairCore, ERC20 {
         reserve0 = balance0;
         reserve1 = balance1;
 
-        emit Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
+        emit Pair_Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
     }
 
     /* ========== VIEWS ========== */

@@ -30,27 +30,27 @@ abstract contract PairCore {
     uint256 internal constant FEE_DENOMINATOR = 1000;
     uint8 internal unlocked = 1;
 
-    event Mint(
+    event Pair_Mint(
         address indexed sender,
         uint amount0,
         uint amount1,
         uint mintedLiquidity
     );
-    event Burn(
+    event Pair_Burn(
         address indexed sender,
         uint amount0,
         uint amount1,
         address indexed to,
         uint burntLiquidity
     );
-    event Swap(
+    event Pair_Swap(
         address indexed sender,
         address tokenIn,
         address tokenOut,
         uint amountIn,
         uint amountOut
     );
-    event SwapForwarded(
+    event Pair_SwapForwarded(
         address user,
         address tokenIn,
         address tokenOut,
