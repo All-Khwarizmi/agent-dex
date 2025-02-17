@@ -1,8 +1,16 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  NotFoundException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 import { PoolsService } from './pools.service';
 import { CreatePoolDTO } from './types/pool.dto';
+import { Pool } from '../entities/pool.entity';
 @ApiTags('pools')
 @Controller('pools')
 export class PoolsController {
@@ -15,15 +23,28 @@ export class PoolsController {
     description: '  List of pools fetched successfully.',
   })
   findAll() {
-    return this.poolsService.findAll();
+    try {
+      return this.poolsService.findAll();
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a pool by ID' })
-  @ApiResponse({ status: 200, description: 'Pool found.' })
+  @ApiResponse({
+    status: 200,
+    description: 'Pool found.',
+    type: Pool,
+    example: Pool,
+  })
   @ApiResponse({ status: 404, description: 'Pool not found.' })
   findOne(@Param('id') id: string) {
-    return this.poolsService.findOne(+id);
+    try {
+      return this.poolsService.findOne(+id);
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
   @Post()
@@ -32,9 +53,7 @@ export class PoolsController {
   @ApiResponse({ status: 400, description: 'Validation error.' })
   async create(@Body() createPoolDto: CreatePoolDTO) {
     try {
-      console.log(createPoolDto);
-      const pool = await this.poolsService.create(createPoolDto);
-      return pool;
+      return this.poolsService.create(createPoolDto);
     } catch (error) {
       console.log(error);
       return { error: error.message };

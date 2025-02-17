@@ -1,7 +1,15 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  NotFoundException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './user.dto';
+import { User } from '../entities/user.entity';
 
 @ApiTags('users')
 @Controller('users')
@@ -13,25 +21,42 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'List of users fetched successfully.',
-    type: CreateUserDTO,
+    type: User,
     isArray: true,
   })
+  @ApiResponse({ status: 404, description: 'Users not found.' })
   findAll() {
-    return this.usersService.findAll();
+    try {
+      return this.usersService.findAll();
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
   @ApiResponse({ status: 200, description: 'User found.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    try {
+      const user = await this.usersService.findOne(+id);
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+      return user;
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 
   @Post()
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully.' })
   create(@Body() createUserDto: CreateUserDTO) {
-    return this.usersService.create(createUserDto);
+    try {
+      return this.usersService.create(createUserDto);
+    } catch (error) {
+      throw new NotFoundException(error.message);
+    }
   }
 }
