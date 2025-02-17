@@ -1,6 +1,6 @@
 import { DataSource } from 'typeorm';
 import { Pool } from '../entities/pool.entity';
-import { REPOSITORIES } from 'src/utils/constants';
+import { REPOSITORIES } from '../utils/constants';
 
 export const poolProviders = [
   {

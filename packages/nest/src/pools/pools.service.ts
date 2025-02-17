@@ -57,13 +57,6 @@ export class PoolsService {
   }
 
   async create(createPoolDto: Partial<CreatePoolDTO>) {
-    const pool = this.poolRepository.create({
-      address: createPoolDto.address.toLowerCase(),
-      token0: createPoolDto.token0,
-      token1: createPoolDto.token1,
-      reserve0: createPoolDto.reserve0,
-      reserve1: createPoolDto.reserve1,
-    });
-    return this.poolRepository.save(pool);
+    return this.poolRepository.save(createPoolDto);
   }
 }
