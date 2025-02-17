@@ -58,15 +58,6 @@ abstract contract PairCore {
         uint amountOut
     );
 
-    event Investment(
-        address indexed liquidityProvider,
-        uint256 indexed sharesPurchased
-    );
-    event Divestment(
-        address indexed liquidityProvider,
-        uint256 indexed sharesBurned
-    );
-
     modifier lock() {
         if (unlocked == 0) revert Pair_Locked();
         unlocked = 0;

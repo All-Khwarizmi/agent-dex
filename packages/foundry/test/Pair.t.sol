@@ -163,41 +163,56 @@ contract PairTest is Test {
     function testPairRemoveLiquidity() public {
         vm.startPrank(alice);
 
-        // Setup with proper decimals
-        uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
-        uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
-
-        console.log("\n=== Initial Setup ===");
-        console.log("USDC liquidity: %s USDC", usdcLiquidity / 1e6);
-        console.log("WETH liquidity: %s WETH", wethLiquidity / 1e18);
-
-        // Add liquidity
-        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+        _setLiquidity();
 
         // Get LP tokens balance
         uint256 lpBalance = pair.balanceOf(alice);
-        console.log("LP tokens received: %s", lpBalance);
 
-        // Remove 80% of LP tokens
-        uint256 removeAmount = (lpBalance * 50) / 1000; // 5%
-        console.log("\n=== Removing Liquidity ===");
-        console.log("Removing %s LP tokens (%s%%)", removeAmount, 5);
+        // Alice balances
+        uint256 aliceUSDCBalance = usdc.balanceOf(alice);
+        uint256 aliceWETHBalance = weth.balanceOf(alice);
+
+        // Remove 6% of LP tokens
+        uint256 removeAmount = (lpBalance * 60) / 1000;
+
+        // Remove liquidity
+        pair.removeLiquidity(removeAmount);
+
+        // Alice balances
+        uint256 aliceUSDCBalanceAfter = usdc.balanceOf(alice);
+        uint256 aliceWETHBalanceAfter = weth.balanceOf(alice);
+
+        assertGt(
+            aliceUSDCBalanceAfter,
+            aliceUSDCBalance,
+            "USDC balance should increase"
+        );
+        assertGt(
+            aliceWETHBalanceAfter,
+            aliceWETHBalance,
+            "WETH balance should increase"
+        );
+
+        vm.stopPrank();
+    }
+
+    function testPairRemoveLiquidityUpdatesReserves() public {
+        vm.startPrank(alice);
+
+        _setLiquidity();
+
+        // Get LP tokens balance
+        uint256 lpBalance = pair.balanceOf(alice);
 
         // Record initial balances
         uint256 initialUSDCBalance = usdc.balanceOf(alice);
         uint256 initialWETHBalance = weth.balanceOf(alice);
-        console.log("\n=== Initial Reserves ===");
 
         (uint256 initialReserveUSDC, uint256 initialReserveWETH) = pair
             .getReserves();
 
-        // Calculate expected returns
-        uint256 expectedUSDC = (usdcLiquidity * removeAmount) / lpBalance;
-        uint256 expectedWETH = (wethLiquidity * removeAmount) / lpBalance;
-
-        console.log("\n=== Expected Returns ===");
-        console.log("Expected USDC: %s", expectedUSDC / 1e6);
-        console.log("Expected WETH: %s", expectedWETH / 1e18);
+        // Remove 5% of LP tokens
+        uint256 removeAmount = (lpBalance * 10) / 1000; // 5% of LP tokens
 
         // Remove liquidity
         pair.removeLiquidity(removeAmount);
@@ -205,18 +220,10 @@ contract PairTest is Test {
         // Calculate actual returns
         uint256 usdcReceived = usdc.balanceOf(alice) - initialUSDCBalance;
         uint256 wethReceived = weth.balanceOf(alice) - initialWETHBalance;
+
         (uint256 finalReserveUSDC, uint256 finalReserveWETH) = pair
             .getReserves();
 
-        console.log("\n=== Actual Returns ===");
-        console.log("USDC received: %s", usdcReceived / 1e6);
-        console.log("WETH received: %s", wethReceived / 1e18);
-
-        console.log("\n=== Final Reserves ===");
-        console.log("USDC reserve: %s", finalReserveUSDC / 1e6);
-        console.log("WETH reserve: %s", finalReserveWETH / 1e18);
-
-        // Verify final state
         assertEq(
             finalReserveUSDC,
             initialReserveUSDC - usdcReceived,
@@ -227,11 +234,58 @@ contract PairTest is Test {
             initialReserveWETH - wethReceived,
             "WETH reserve should match expected"
         );
+
+        vm.stopPrank();
+    }
+
+    function testPairRemoveLiquidityUpdateLiquidityProviderBalance() public {
+        vm.startPrank(alice);
+
+        _setLiquidity();
+
+        // Get LP tokens balance
+        uint256 lpBalance = pair.balanceOf(alice);
+
+        // Remove 30% of LP tokens
+        uint256 removeAmount = (lpBalance * 300) / 1000;
+
+        // Remove liquidity
+        pair.removeLiquidity(removeAmount);
         assertEq(
             pair.balanceOf(alice),
             lpBalance - removeAmount,
             "LP balance should match remaining amount"
         );
+    }
+
+    function _testPairRemoveLiquidityTransferExpectedAmountsToLiquidityProvider()
+        public
+    {
+        vm.startPrank(alice);
+
+        (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
+
+        // Get LP tokens balance
+        uint256 lpBalance = pair.balanceOf(alice);
+
+        // Remove 5% of LP tokens
+        uint256 removeAmount = (lpBalance * 50) / 1000;
+
+        // Record initial balances
+        uint256 initialUSDCBalance = usdc.balanceOf(alice);
+        uint256 initialWETHBalance = weth.balanceOf(alice);
+
+        // Calculate expected returns
+        uint256 expectedUSDC = (usdcLiquidity * removeAmount) / lpBalance;
+        uint256 expectedWETH = (wethLiquidity * removeAmount) / lpBalance;
+
+        // Remove liquidity
+        pair.removeLiquidity(removeAmount);
+
+        // Calculate actual returns
+        uint256 usdcReceived = usdc.balanceOf(alice) - initialUSDCBalance;
+        uint256 wethReceived = weth.balanceOf(alice) - initialWETHBalance;
+
         assertEq(
             usdcReceived,
             expectedUSDC,
@@ -284,7 +338,6 @@ contract PairTest is Test {
         // Bob removes liquidity
         vm.startPrank(bob);
         uint256 bobLPBalance = pair.balanceOf(bob);
-        console.log("Bob's LP Balance:", bobLPBalance);
 
         // Approve pair to burn LP tokens
         pair.approve(address(pair), bobLPBalance);
@@ -294,8 +347,7 @@ contract PairTest is Test {
         vm.stopPrank();
 
         // Verify Bob received more tokens due to fees
-        console.log("Bob USDC balance:", bobUsdcBalance);
-        console.log("Bob USDC balance after removal:", usdc.balanceOf(bob));
+
         assertGt(
             usdc.balanceOf(bob),
             bobUsdcBalance,
@@ -310,12 +362,8 @@ contract PairTest is Test {
 
     function testPairRemoveLiquidityRevertsWhenZeroAmount() public {
         vm.startPrank(alice);
-        // Setup with proper decimals
-        uint256 usdcLiquidity = 1_000_000 * 1e6; // 1M USDC (6 decimals)
-        uint256 wethLiquidity = 500 * 1e18; // 500 WETH (18 decimals)
 
-        // Add liquidity
-        pair.addLiquidity(usdcLiquidity, wethLiquidity);
+        _setLiquidity();
 
         // Try to remove zero liquidity
         vm.expectRevert(PairCore.Pair_InsufficientInput.selector);

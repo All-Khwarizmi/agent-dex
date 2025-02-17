@@ -12,31 +12,7 @@ import "./interfaces/IUniswapFactory.sol";
 import "./interfaces/IUniswapRouter.sol";
 import "./interfaces/PairCore.sol";
 
-// Layout of Contract:
-// version
-// imports
-// errors
-// interfaces, libraries, contracts
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// internal & private view & pure functions
-// external & public view & pure functions
-
 contract Pair is PairCore, ERC20 {
-    //TODO: remove pairFactory?
-    address private immutable pairFactory;
     address public token0;
     address public token1;
 
@@ -51,7 +27,6 @@ contract Pair is PairCore, ERC20 {
     ) ERC20("AgentDEX LP", "LP") PairCore(_factory, _router) {
         token0 = _token0;
         token1 = _token1;
-        pairFactory = msg.sender;
     }
 
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
@@ -94,11 +69,8 @@ contract Pair is PairCore, ERC20 {
                 normalizedAmount0 * normalizedAmount1
             );
 
-            // Lock minimum liquidity forever by burning it
-            // This prevents the pool from being fully drained and price manipulation
-            _mint(address(this), liquidity); // Lock minimum liquidity forever by burning to address(0)
-            _burn(address(this), MINIMUM_LIQUIDITY);
-            this.transfer(msg.sender, liquidity - MINIMUM_LIQUIDITY);
+            _mint(address(this), liquidity);
+            this.transfer(msg.sender, liquidity);
 
             _safeTransferFrom(token0, msg.sender, address(this), amount0);
             _safeTransferFrom(token1, msg.sender, address(this), amount1);
@@ -106,13 +78,11 @@ contract Pair is PairCore, ERC20 {
             reserve0 = amount0;
             reserve1 = amount1;
 
-            emit Investment(msg.sender, liquidity);
             emit Mint(msg.sender, amount0, amount1, liquidity);
         } else {
             // Subsequent liquidity provisions
 
             // Calculate the optimal ratio based on current reserves
-            // amount1Optimal = normalizedAmount0 * (reserve1 / reserve0)
             uint256 amount1Optimal = (normalizedAmount0 * normalizedReserve1) /
                 normalizedReserve0;
 
@@ -141,7 +111,6 @@ contract Pair is PairCore, ERC20 {
             reserve0 += amount0;
             reserve1 += amount1;
 
-            emit Investment(msg.sender, liquidity);
             emit Mint(msg.sender, amount0, amount1, liquidity);
         }
     }
@@ -152,9 +121,7 @@ contract Pair is PairCore, ERC20 {
         uint256 _totalSupply = totalSupply();
 
         uint256 liquidity = balanceOf(msg.sender);
-        console.log("Total Supply:", _totalSupply);
-        console.log("Account Balance:", liquidity);
-        console.log("Amount:", amount);
+
         if (liquidity < amount) revert Pair_InsufficientBalance();
 
         // Check the amount do not exceed 50% of the total supply
@@ -163,9 +130,6 @@ contract Pair is PairCore, ERC20 {
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
-
-        console.log("Amount0:", amount0);
-        console.log("Amount1:", amount1);
 
         if (amount0 == 0 || amount1 == 0)
             revert Pair_InsufficientLiquidityBurnt();
@@ -176,8 +140,6 @@ contract Pair is PairCore, ERC20 {
 
         reserve0 -= amount0;
         reserve1 -= amount1;
-
-        emit Divestment(msg.sender, amount);
 
         emit Burn(msg.sender, amount0, amount1, msg.sender, amount);
     }
@@ -195,14 +157,6 @@ contract Pair is PairCore, ERC20 {
             this.decimals()
         );
 
-        // Log initial state with token addresses
-        console.log("\n=== Pre-Swap State ===");
-        console.log("From Token:", fromToken);
-        console.log("Target Token:", targetToken);
-        console.log("Token0:", token0);
-        console.log("Token1:", token1);
-
-        // Calculate amount out
         uint256 amountOut = getAmountOut(
             targetToken,
             fromToken,
@@ -219,10 +173,6 @@ contract Pair is PairCore, ERC20 {
             amountOut
         );
 
-        console.log("\n=== Should Swap With Uniswap? ===");
-        console.log("Should Swap With Uniswap:", !shouldSwapLocally);
-        console.log("Uniswap Amount:", uniswapAmount);
-
         // 2. And if we can swap locally
         bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
 
@@ -230,17 +180,16 @@ contract Pair is PairCore, ERC20 {
         if (!shouldSwapLocally || !_shouldSwap) {
             // First transfer FROM user TO pair
             _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
-            console.log("Transfer From:ok");
-            // Calculate fees
+
+            // Getting fees twice to balance token fees collection
             uint256 fees = amountIn - (amountIn * 999) / FEE_DENOMINATOR;
-            console.log("fees:", fees);
-            console.log("amountIn:", amountIn);
             amountIn = amountIn - fees;
 
             // Approve the router to spend the amountIn
             ERC20(fromToken).approve(address(i_uniswapV2Router), amountIn);
 
-            uint256 amountOutMin = (uniswapAmount * 995) / 1000;
+            // Allow for 1% variation in the tokens we get from uniswap
+            uint256 amountOutMin = (uniswapAmount * 99) / 1000;
             address[] memory path = new address[](2);
             path[0] = fromToken;
             path[1] = targetToken;
@@ -252,31 +201,14 @@ contract Pair is PairCore, ERC20 {
                 address(this),
                 block.timestamp
             );
+
             amountOut =
                 amounts[amounts.length - 1] -
                 (amounts[amounts.length - 1] * 999) /
                 FEE_DENOMINATOR;
+
             // Transfer tokens to user
             ERC20(targetToken).transfer(msg.sender, amountOut);
-
-            console.log("\n=== Post-Transfer Balances ===");
-            console.log("amount from uniswap:", amounts[amounts.length - 1]);
-            console.log(
-                "Pair From Token:",
-                ERC20(fromToken).balanceOf(address(this))
-            );
-            console.log(
-                "Pair Target Token:",
-                ERC20(targetToken).balanceOf(address(this))
-            );
-            console.log(
-                "User From Token:",
-                ERC20(fromToken).balanceOf(msg.sender)
-            );
-            console.log(
-                "User Target Token:",
-                ERC20(targetToken).balanceOf(msg.sender)
-            );
 
             emit SwapForwarded(
                 msg.sender,
@@ -289,22 +221,6 @@ contract Pair is PairCore, ERC20 {
             return;
         }
 
-        // Log pre-transfer balances
-        console.log("\n=== Pre-Transfer Balances ===");
-        console.log(
-            "Pair From Token:",
-            ERC20(fromToken).balanceOf(address(this))
-        );
-        console.log(
-            "Pair Target Token:",
-            ERC20(targetToken).balanceOf(address(this))
-        );
-        console.log("User From Token:", ERC20(fromToken).balanceOf(msg.sender));
-        console.log(
-            "User Target Token:",
-            ERC20(targetToken).balanceOf(msg.sender)
-        );
-
         // First transfer FROM user TO pair
         _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
 
@@ -316,25 +232,68 @@ contract Pair is PairCore, ERC20 {
         uint256 balance1 = ERC20(token1).balanceOf(address(this));
         if (balance0 == 0 || balance1 == 0) revert Pair_InsufficientLiquidity();
 
-        console.log("\n=== Post-Transfer Balances ===");
-        console.log(
-            "Pair From Token:",
-            ERC20(fromToken).balanceOf(address(this))
-        );
-        console.log(
-            "Pair Target Token:",
-            ERC20(targetToken).balanceOf(address(this))
-        );
-        console.log("User From Token:", ERC20(fromToken).balanceOf(msg.sender));
-        console.log(
-            "User Target Token:",
-            ERC20(targetToken).balanceOf(msg.sender)
-        );
-
         reserve0 = balance0;
         reserve1 = balance1;
 
         emit Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
+    }
+
+    /* ========== VIEWS ========== */
+    function getTokensDecimals() private view returns (uint8, uint8) {
+        return (ERC20(token0).decimals(), ERC20(token1).decimals());
+    }
+
+    function getReserveFromToken(
+        address token
+    ) private view returns (uint256 reserve) {
+        if (token == token0) {
+            return reserve0;
+        } else if (token == token1) {
+            return reserve1;
+        }
+    }
+
+    function getReserveNormalizedFromToken(
+        address token
+    ) private view returns (uint256 reserve) {
+        return
+            normalizeAmount(
+                getReserveFromToken(token),
+                ERC20(token).decimals(),
+                this.decimals()
+            );
+    }
+
+    /* *
+     * @notice getAmountOut
+     * @description This function calculates the amount of tokens that will be received when swapping
+     * from the `fromToken` to the `targetToken` using the current reserves.
+     * @dev This normalizes the amounts to 18 decimals before performing the calculations. And then
+     * normalizes the result back to the original decimals.
+     * @param targetToken
+     * @param fromToken
+     * @param amountIn the normalized (18 decimals) amount of tokens to be swapped
+     * @return amountOut the denormalized (original token decimals) amount of tokens that will be received
+     */
+    function getAmountOut(
+        address targetToken,
+        address fromToken,
+        uint256 amountIn
+    ) public view returns (uint256 amountOut) {
+        uint256 reserveIn = getReserveNormalizedFromToken(fromToken);
+        uint256 reserveOut = getReserveNormalizedFromToken(targetToken);
+
+        uint256 amountInWithFee = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
+        uint256 numerator = amountInWithFee * reserveOut;
+        uint256 denominator = reserveIn + amountInWithFee;
+        amountOut = numerator / denominator;
+
+        // Normalize to target token decimals
+        amountOut = normalizeAmount(
+            amountOut,
+            this.decimals(),
+            ERC20(targetToken).decimals()
+        );
     }
 
     // Normalize reserves to 18 decimals
@@ -358,85 +317,6 @@ contract Pair is PairCore, ERC20 {
         return (normalizedReserve0, normalizedReserve1);
     }
 
-    /* ========== VIEWS ========== */
-    function getTokensDecimals() private view returns (uint8, uint8) {
-        return (ERC20(token0).decimals(), ERC20(token1).decimals());
-    }
-
-    function getReserves()
-        external
-        view
-        returns (uint256 _reserve0, uint256 _reserve1)
-    {
-        return (reserve0, reserve1);
-    }
-
-    function poolBalance() external view returns (uint256) {
-        return totalSupply();
-    }
-
-    function getReservesFromToken(
-        address token
-    ) public view returns (uint256 reserves) {
-        if (token == token0) {
-            return reserve0;
-        } else if (token == token1) {
-            return reserve1;
-        }
-    }
-
-    function getReservesNormalizedFromToken(
-        address token
-    ) private view returns (uint256 reserves) {
-        if (token == token0) {
-            return
-                normalizeAmount(
-                    reserve0,
-                    ERC20(token0).decimals(),
-                    this.decimals()
-                );
-        } else if (token == token1) {
-            return
-                normalizeAmount(
-                    reserve1,
-                    ERC20(token1).decimals(),
-                    this.decimals()
-                );
-        }
-    }
-
-    /* *
-     * @notice getAmountOut
-     * @description This function calculates the amount of tokens that will be received when swapping
-     * from the `fromToken` to the `targetToken` using the current reserves.
-     * @dev This normalizes the amounts to 18 decimals before performing the calculations. And then
-     * normalizes the result back to the original decimals.
-     * @param targetToken
-     * @param fromToken
-     * @param amountIn the normalized (18 decimals) amount of tokens to be swapped
-     * @return amountOut the denormalized (original token decimals) amount of tokens that will be received
-     */
-    function getAmountOut(
-        address targetToken,
-        address fromToken,
-        uint256 amountIn
-    ) public view returns (uint256 amountOut) {
-        uint256 reserveIn = getReservesNormalizedFromToken(fromToken);
-        uint256 reserveOut = getReservesNormalizedFromToken(targetToken);
-
-        uint256 amountInWithFee = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
-        uint256 numerator = amountInWithFee * reserveOut;
-        uint256 denominator = reserveIn + amountInWithFee;
-        amountOut = numerator / denominator;
-
-        // Normalize to target token decimals
-        amountOut = normalizeAmount(
-            amountOut,
-            this.decimals(),
-            ERC20(targetToken).decimals()
-        );
-    }
-
     /* *
      * @notice shouldSwap
      * @description This function checks if the amount of tokens received when swapping from the
@@ -453,20 +333,13 @@ contract Pair is PairCore, ERC20 {
         uint256 amountIn
     ) public view returns (bool) {
         // Get reserves and normalize amounts to 18 decimals
-        uint256 reserveIn = getReservesNormalizedFromToken(fromToken);
-        uint256 reserveOut = getReservesNormalizedFromToken(targetToken);
+        uint256 reserveIn = getReserveNormalizedFromToken(fromToken);
+        uint256 reserveOut = getReserveNormalizedFromToken(targetToken);
         uint256 normalizedAmountIn = normalizeAmount(
             amountIn,
             ERC20(fromToken).decimals(),
             this.decimals()
         );
-
-        // Log initial values
-        console.log("\n=== Should Swap Check ===");
-        console.log("Input Amount:", amountIn);
-        console.log("Input Amount Normalized:", normalizedAmountIn);
-        console.log("Reserve In (normalized):", reserveIn / 1e18);
-        console.log("Reserve Out (normalized):", reserveOut / 1e18);
 
         uint256 amountOut = getAmountOut(
             targetToken,
@@ -479,18 +352,9 @@ contract Pair is PairCore, ERC20 {
 
         uint256 reserveRatio = (amountOut * 10000) / reserveOut;
 
-        console.log("Amount Out:", amountOut);
-        console.log("Price Impact (bps):", priceImpact);
-        console.log("Reserve Ratio (bps):", reserveRatio);
-
         bool sufficientReserves = amountOut <= reserveOut / 2;
         bool acceptablePriceImpact = priceImpact <= 25; // 0.25%
         bool acceptableReserveRatio = reserveRatio <= 10; // 0.1%
-
-        console.log("\n=== Swap Checks ===");
-        console.log("Sufficient Reserves:", sufficientReserves);
-        console.log("Acceptable Price Impact:", acceptablePriceImpact);
-        console.log("Acceptable Reserve Ratio:", acceptableReserveRatio);
 
         return
             sufficientReserves &&
@@ -514,6 +378,17 @@ contract Pair is PairCore, ERC20 {
         uniswapAmount = amounts[amounts.length - 1];
 
         shouldSwapLocally = amountOut >= uniswapAmount;
-        console.log("Better than Uniswap: %s", shouldSwapLocally);
+    }
+
+    function getReserves()
+        external
+        view
+        returns (uint256 _reserve0, uint256 _reserve1)
+    {
+        return (reserve0, reserve1);
+    }
+
+    function poolBalance() external view returns (uint256) {
+        return totalSupply();
     }
 }
