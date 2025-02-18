@@ -12,39 +12,7 @@ export const DEFAULT_ALCHEMY_API_KEY = "oKxs-03sij-U_N0iOlrSsZFr29-IqbuF";
 
 const scaffoldConfig = {
   // The networks on which your DApp is live
-  targetNetworks: [
-    chains.foundry,
-    // chains.mainnet,
-    // {
-    //   id: 1,
-    //   name: "Foundry",
-    //   nativeCurrency: {
-    //     decimals: 18,
-    //     name: "Ether",
-    //     symbol: "ETH",
-    //   },
-    //   rpcUrls: {
-    //     default: {
-    //       http: ["http://127.0.0.1:8545"],
-    //       webSocket: ["ws://127.0.0.1:8545"],
-    //     },
-    //   },
-    // },
-    // {
-    //   id: 17357,
-    //   name: "Virtual Mainnet",
-    //   nativeCurrency: { name: "VETH", symbol: "VETH", decimals: 18 },
-    //   rpcUrls: {
-    //     default: { http: ["https://virtual.mainnet.rpc.tenderly.co/3f622031-ff0f-431b-bf1f-39ebd9a4b17b"] },
-    //   },
-    //   blockExplorers: {
-    //     default: {
-    //       name: "Tenderly Explorer",
-    //       url: "https://virtual.mainnet.rpc.tenderly.co/4706254f-c36c-4de9-8a82-6db916adf321",
-    //     },
-    //   },
-    // },
-  ],
+  targetNetworks: [chains.foundry],
 
   // The interval at which your front-end polls the RPC servers for new data
   // it has no effect if you only target the local network (default is 4000)

@@ -20,7 +20,7 @@
     "nest:start": "yarn workspace @se-2/nest start",
     "nest:dev": "yarn workspace @se-2/nest start:dev",
     "nest:build": "yarn workspace @se-2/nest build",
-    "nest:test": "yarn workspace @se-2/nest test",
+    "nest:test": "yarn workspace @se-2/nest test && yarn workspace @se-2/nest test:e2e",
     "format": "yarn next:format && yarn foundry:format",
     "foundry:account": "yarn workspace @se-2/foundry account",
     "foundry:abi": "yarn workspace @se-2/foundry abi",

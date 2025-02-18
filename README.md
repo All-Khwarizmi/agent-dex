@@ -42,6 +42,7 @@ AgentDEX is a decentralized exchange that combines traditional DEX functionality
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
     - [Local Development](#local-development)
+      - [Test](#test)
     - [Addresses](#addresses)
       - [Tokens](#tokens)
       - [Users](#users)
@@ -79,8 +80,12 @@ yarn install
 ### Local Development
 
 ```bash
+
 # Let’s start by forking mainnet
-anvil --fork-url https://mainnet.infura.io/v3/$INFURA_KEY
+anvil --fork-url https://mainnet.infura.io/v3/$INFURA_KEY --chain-id 31337
+
+# Compile contracts
+yarn compile
 
 # Deploy contracts
 yarn deploy
@@ -101,6 +106,17 @@ yarn start
 
 # Fund user wallet with ETH - DAI - USDC - WETH
 cd packages/foundry && make fund USER_ADDRESS=xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
+
+```
+
+#### Test
+
+```bash
+# Contracts tests
+yarn test
+
+# Backend tests
+yarn nest:test
 ```
 
 ### Addresses
