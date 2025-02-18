@@ -90,6 +90,7 @@ yarn compile
 # Deploy contracts
 yarn deploy
 
+
 # Add factory contract address to .env in nest package
 
 # Setup database
