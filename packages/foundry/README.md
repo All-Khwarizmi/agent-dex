@@ -22,7 +22,7 @@ yarn fork # or yarn chain
 yarn test
 
 # Fund user wallet
-make fund xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
+make fund USER_ADDRESS=xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
 
 # Deploy contracts
 yarn deploy --network localhost --file Deploy.s.sol

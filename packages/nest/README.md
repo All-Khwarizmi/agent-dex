@@ -15,6 +15,9 @@ API for AgentDEX protocol.
 # Installation
 yarn install
 
+# Make sure to setup .env.local
+yarn setup-env # You need to update the factory contract address! 
+
 # Start PostgreSQL
 yarn db
 
