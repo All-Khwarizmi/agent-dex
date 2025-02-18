@@ -7,11 +7,7 @@ USER_ADDRESS ?= 0xDcc4E41072017A20101B68B9500630A3ab6fE2fF
 
 # Fund user on local chain
 fund:
-	@if [ "$(USER_ADDRESS)" = "0x0" ]; then \
-		forge script $(FUND_SCRIPT) --rpc-url localhost --broadcast --legacy; \
-	else \
-		forge script $(FUND_SCRIPT) $(USER_ADDRESS) --rpc-url localhost --broadcast -vvvvv; \
-	fi
+	./fund_account.sh ${USER_ADDRESS}
 
 # setup wallet for anvil
 setup-anvil-wallet:

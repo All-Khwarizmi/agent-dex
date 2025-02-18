@@ -92,6 +92,10 @@ yarn deploy
 
 
 # Add factory contract address to .env in nest package
+# You can find the address in packages/nextjs/contracts/deployedContracts.ts (after deployment) 
+# Be careful to select the right chain!
+# AND
+# on the frontend under /debug
 
 # Setup database
 yarn db
