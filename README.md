@@ -63,6 +63,7 @@ AgentDEX is a decentralized exchange that combines traditional DEX functionality
 
 - Make sure to set the env variables
 - Node.js >= 16
+- Docker
 - MetaMask or other Web3 wallet
 
 ### Installation
@@ -79,7 +80,7 @@ yarn install
 
 ```bash
 # Let’s start by forking mainnet
-yarn fork
+anvil --fork-url https://mainnet.infura.io/v3/$INFURA_KEY
 
 # Deploy contracts
 yarn deploy

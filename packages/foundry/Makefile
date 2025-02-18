@@ -26,16 +26,6 @@ chain: setup-anvil-wallet
 fork: setup-anvil-wallet
 	anvil --fork-url ${FORK_URL} --chain-id 31337
 
-# Fund user on local chain
-fund:
-	@if [ "$(USER_ADDRESS)" = "0x0" ]; then \
-		./fund_account.sh $(USER_ADDRESS); \
-	else \
-		./fund_account.sh $(USER_ADDRESS); \
-	fi
-
-		
-
 
 # Deploy the contracts
 deploy:
