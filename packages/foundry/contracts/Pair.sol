@@ -6,10 +6,6 @@ import "./interfaces/IFactory.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-import "forge-std/console.sol";
-
-import "./interfaces/IUniswapFactory.sol";
-import "./interfaces/IUniswapRouter.sol";
 import "./interfaces/PairCore.sol";
 
 contract Pair is PairCore, ERC20 {
