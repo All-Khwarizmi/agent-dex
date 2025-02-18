@@ -78,10 +78,6 @@ yarn install
 ### Local Development
 
 ```bash
-
-```
-
-```bash
 # Let’s start by forking mainnet
 yarn fork
 
@@ -174,4 +170,3 @@ MIT
 
 - Uniswap V2 team for protocol inspiration
 - OpenZeppelin for security patterns
-- The Graph protocol for data indexing
