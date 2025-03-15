@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.26;
-import "../contracts/Pair.sol";
-import "@forge-std/Test.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "../contracts/interfaces/IUniswapFactory.sol";
-import "../contracts/interfaces/IUniswapRouter.sol";
+
+import { Pair, IPair } from "../contracts/Pair.sol";
+import { Test } from "@forge-std/Test.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract PairTest is Test {
     Pair public pair;
@@ -12,9 +12,6 @@ contract PairTest is Test {
     address public bob;
     ERC20 public usdc;
     ERC20 public weth;
-
-    address constant ROUTER = 0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D;
-    address constant FACTORY = 0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f;
 
     address constant ZERO_ADDRESS = address(0);
 
@@ -38,7 +35,7 @@ contract PairTest is Test {
 
     function _deployPair() internal {
         vm.startPrank(alice);
-        pair = new Pair(address(usdc), address(weth), FACTORY, ROUTER);
+        pair = new Pair(address(usdc), address(weth));
         vm.stopPrank();
     }
 
@@ -68,19 +65,12 @@ contract PairTest is Test {
         uint256 amount = 1500;
         pair.addLiquidity(amount, amount);
 
-        assertGt(
-            pair.totalSupply(),
-            0,
-            "Total supply should be greater than 0"
-        );
+        assertGt(pair.totalSupply(), 0, "Total supply should be greater than 0");
 
         vm.stopPrank();
     }
 
-    function _setLiquidity()
-        internal
-        returns (uint256 usdcLiquidity, uint256 wethLiquidity)
-    {
+    function _setLiquidity() internal returns (uint256 usdcLiquidity, uint256 wethLiquidity) {
         usdcLiquidity = 1_000_000 * 1e6;
         wethLiquidity = 500 * 1e18;
 
@@ -93,12 +83,7 @@ contract PairTest is Test {
         (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
 
         vm.expectEmit(true, true, true, false);
-        emit PairCore.Pair_Mint(
-            alice,
-            usdcLiquidity,
-            wethLiquidity,
-            Math.sqrt(usdcLiquidity * wethLiquidity)
-        );
+        emit IPair.Pair_Mint(alice, usdcLiquidity, wethLiquidity, Math.sqrt(usdcLiquidity * wethLiquidity));
 
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
 
@@ -134,33 +119,31 @@ contract PairTest is Test {
 
     function testPairAddLiquidityRevertsWhenAmount0IsZero() public {
         vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
+        vm.expectRevert(IPair.Pair_InsufficientInput.selector);
         pair.addLiquidity(0, 10000);
         vm.stopPrank();
     }
 
     function testPairAddLiquidityRevertsWhenAmount1IsZero() public {
         vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
+        vm.expectRevert(IPair.Pair_InsufficientInput.selector);
         pair.addLiquidity(10000, 0);
         vm.stopPrank();
     }
 
     function testPairAddLiquidityRevertsWhenBothAmountsAreZero() public {
         vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
+        vm.expectRevert(IPair.Pair_InsufficientInput.selector);
         pair.addLiquidity(0, 0);
         vm.stopPrank();
     }
 
-    function testPairAddLiquidityRevertsWhenInsufficientEitherTokenInput()
-        public
-    {
+    function testPairAddLiquidityRevertsWhenInsufficientEitherTokenInput() public {
         vm.startPrank(alice);
-        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
+        vm.expectRevert(IPair.Pair_InsufficientInitialLiquidity.selector);
         pair.addLiquidity(1500, 100); // One value below MINIMUM_LIQUIDITY
 
-        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
+        vm.expectRevert(IPair.Pair_InsufficientInitialLiquidity.selector);
         pair.addLiquidity(100, 1500); // Other value below MINIMUM_LIQUIDITY
     }
 
@@ -170,7 +153,7 @@ contract PairTest is Test {
         assertEq(totalSupply, 0, "Total supply should be 0");
 
         // Test adding liquidity with values below MINIMUM_LIQUIDITY (1000)
-        vm.expectRevert(PairCore.Pair_InsufficientInitialLiquidity.selector);
+        vm.expectRevert(IPair.Pair_InsufficientInitialLiquidity.selector);
         pair.addLiquidity(100, 100); // 100 < MINIMUM_LIQUIDITY so this should revert
     }
 
@@ -197,16 +180,8 @@ contract PairTest is Test {
         uint256 aliceUSDCBalanceAfter = usdc.balanceOf(alice);
         uint256 aliceWETHBalanceAfter = weth.balanceOf(alice);
 
-        assertGt(
-            aliceUSDCBalanceAfter,
-            aliceUSDCBalance,
-            "USDC balance should increase"
-        );
-        assertGt(
-            aliceWETHBalanceAfter,
-            aliceWETHBalance,
-            "WETH balance should increase"
-        );
+        assertGt(aliceUSDCBalanceAfter, aliceUSDCBalance, "USDC balance should increase");
+        assertGt(aliceWETHBalanceAfter, aliceWETHBalance, "WETH balance should increase");
 
         vm.stopPrank();
     }
@@ -217,13 +192,7 @@ contract PairTest is Test {
         (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
 
         vm.expectEmit(true, true, true, false);
-        emit PairCore.Pair_Burn(
-            alice,
-            usdcLiquidity,
-            wethLiquidity,
-            alice,
-            Math.sqrt(usdcLiquidity * wethLiquidity)
-        );
+        emit IPair.Pair_Burn(alice, usdcLiquidity, wethLiquidity, alice, Math.sqrt(usdcLiquidity * wethLiquidity));
 
         pair.removeLiquidity((ERC20(pair).balanceOf(alice) * 50) / 1000);
 
@@ -242,8 +211,7 @@ contract PairTest is Test {
         uint256 initialUSDCBalance = usdc.balanceOf(alice);
         uint256 initialWETHBalance = weth.balanceOf(alice);
 
-        (uint256 initialReserveUSDC, uint256 initialReserveWETH) = pair
-            .getReserves();
+        (uint256 initialReserveUSDC, uint256 initialReserveWETH) = pair.getReserves();
 
         // Remove 5% of LP tokens
         uint256 removeAmount = (lpBalance * 10) / 1000; // 5% of LP tokens
@@ -255,19 +223,10 @@ contract PairTest is Test {
         uint256 usdcReceived = usdc.balanceOf(alice) - initialUSDCBalance;
         uint256 wethReceived = weth.balanceOf(alice) - initialWETHBalance;
 
-        (uint256 finalReserveUSDC, uint256 finalReserveWETH) = pair
-            .getReserves();
+        (uint256 finalReserveUSDC, uint256 finalReserveWETH) = pair.getReserves();
 
-        assertEq(
-            finalReserveUSDC,
-            initialReserveUSDC - usdcReceived,
-            "USDC reserve should match expected"
-        );
-        assertEq(
-            finalReserveWETH,
-            initialReserveWETH - wethReceived,
-            "WETH reserve should match expected"
-        );
+        assertEq(finalReserveUSDC, initialReserveUSDC - usdcReceived, "USDC reserve should match expected");
+        assertEq(finalReserveWETH, initialReserveWETH - wethReceived, "WETH reserve should match expected");
 
         vm.stopPrank();
     }
@@ -285,16 +244,10 @@ contract PairTest is Test {
 
         // Remove liquidity
         pair.removeLiquidity(removeAmount);
-        assertEq(
-            pair.balanceOf(alice),
-            lpBalance - removeAmount,
-            "LP balance should match remaining amount"
-        );
+        assertEq(pair.balanceOf(alice), lpBalance - removeAmount, "LP balance should match remaining amount");
     }
 
-    function testPairRemoveLiquidityTransferExpectedAmountsToLiquidityProvider()
-        public
-    {
+    function testPairRemoveLiquidityTransferExpectedAmountsToLiquidityProvider() public {
         vm.startPrank(alice);
 
         (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
@@ -320,16 +273,8 @@ contract PairTest is Test {
         uint256 usdcReceived = usdc.balanceOf(alice) - initialUSDCBalance;
         uint256 wethReceived = weth.balanceOf(alice) - initialWETHBalance;
 
-        assertEq(
-            usdcReceived,
-            expectedUSDC,
-            "Should get back expected USDC amount"
-        );
-        assertEq(
-            wethReceived,
-            expectedWETH,
-            "Should get back expected WETH amount"
-        );
+        assertEq(usdcReceived, expectedUSDC, "Should get back expected USDC amount");
+        assertEq(wethReceived, expectedWETH, "Should get back expected WETH amount");
 
         vm.stopPrank();
     }
@@ -382,16 +327,8 @@ contract PairTest is Test {
 
         // Verify Bob received more tokens due to fees
 
-        assertGt(
-            usdc.balanceOf(bob),
-            bobUsdcBalance,
-            "Bob USDC balance should be greater"
-        );
-        assertGt(
-            weth.balanceOf(bob),
-            bobWethBalance,
-            "Bob WETH balance should be greater"
-        );
+        assertGt(usdc.balanceOf(bob), bobUsdcBalance, "Bob USDC balance should be greater");
+        assertGt(weth.balanceOf(bob), bobWethBalance, "Bob WETH balance should be greater");
     }
 
     function testPairRemoveLiquidityRevertsWhenZeroAmount() public {
@@ -400,7 +337,7 @@ contract PairTest is Test {
         _setLiquidity();
 
         // Try to remove zero liquidity
-        vm.expectRevert(PairCore.Pair_InsufficientInput.selector);
+        vm.expectRevert(IPair.Pair_InsufficientInput.selector);
         pair.removeLiquidity(0);
 
         vm.stopPrank();
@@ -417,14 +354,14 @@ contract PairTest is Test {
         uint256 lpBalance = pair.balanceOf(alice);
 
         // Try to remove more than available
-        vm.expectRevert(PairCore.Pair_InsufficientBalance.selector);
+        vm.expectRevert(IPair.Pair_InsufficientBalance.selector);
         pair.removeLiquidity(lpBalance + 1);
 
         vm.stopPrank();
     }
 
     // Swap
-    // All swaps being forwarded to Uniswap V2 router? 
+    // All swaps being forwarded to Uniswap V2 router?
     // function testPairSwapEmitsSwapEvent() public {
     //     vm.startPrank(alice);
 
@@ -432,7 +369,7 @@ contract PairTest is Test {
 
     //     uint amountIn = 100 * 1e6;
     //     vm.expectEmit(true, true, true, false);
-    //     emit PairCore.Pair_Swap(
+    //     emit IPair.Pair_Swap(
     //         alice,
     //         address(usdc),
     //         address(weth),
@@ -449,7 +386,7 @@ contract PairTest is Test {
         vm.startPrank(alice);
         _setUniswapLiquidity();
 
-        uint amountIn = 100 * 1e6;
+        uint256 amountIn = 100 * 1e6;
 
         // Get pre-swap balances
         uint256 usdcBeforeSwap = usdc.balanceOf(alice);
@@ -475,7 +412,7 @@ contract PairTest is Test {
         vm.startPrank(alice);
         _setUniswapLiquidity();
 
-        uint amountIn = 10 * 1e18;
+        uint256 amountIn = 10 * 1e18;
 
         // Get pre-swap balances
         uint256 usdcBeforeSwap = usdc.balanceOf(alice);
@@ -507,45 +444,17 @@ contract PairTest is Test {
 
         vm.startPrank(bob);
 
-        uint amountIn = 1_000_000 * 1e6;
+        uint256 amountIn = 1_000_000 * 1e6;
 
         vm.expectEmit(true, true, true, false);
-        emit PairCore.Pair_SwapForwarded(
-            bob,
-            address(usdc),
-            address(weth),
-            amountIn,
-            100 * 1e6
-        );
+        emit IPair.Pair_SwapForwarded(bob, address(usdc), address(weth), amountIn, 100 * 1e6);
 
         pair.swap(address(usdc), address(weth), amountIn);
 
         vm.stopPrank();
     }
 
-    function _getExpectedAmounts(
-        uint256 swapAmount
-    ) internal view returns (uint256 uniswapOut, uint256 ourAmountOut) {
-        address[] memory path = new address[](2);
-        path[0] = address(usdc);
-        path[1] = address(weth);
-
-        uint[] memory amounts = IUniswapV2Router(ROUTER).getAmountsOut(
-            swapAmount,
-            path
-        );
-        uniswapOut = amounts[1];
-        ourAmountOut = pair.getAmountOut(
-            address(weth),
-            address(usdc),
-            swapAmount
-        );
-    }
-
-    function _setUniswapLiquidity()
-        internal
-        returns (uint256 usdcLiquidity, uint256 wethLiquidity)
-    {
+    function _setUniswapLiquidity() internal returns (uint256 usdcLiquidity, uint256 wethLiquidity) {
         usdcLiquidity = 21381921535549; // ~21,381 USDC (6 decimals)
         wethLiquidity = 7944862667241816919899; // ~7,944 WETH (18 decimals)
 
@@ -591,12 +500,7 @@ contract PairTest is Test {
         uint256 poolBalance = pair.poolBalance();
 
         // Verify pool balance
-        assertApproxEqRel(
-            poolBalance,
-            Math.sqrt(reserve0 * reserve1),
-            1e5,
-            "Incorrect pool balance"
-        );
+        assertApproxEqRel(poolBalance, Math.sqrt(reserve0 * reserve1), 1e5, "Incorrect pool balance");
 
         vm.stopPrank();
     }
