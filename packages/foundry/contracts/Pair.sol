@@ -55,15 +55,7 @@ contract Pair is IPair, ERC20 {
             // and subsequent deposits must match this ratio
             uint256 liquidity = Math.sqrt(amount0 * amount1);
 
-            IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
-            IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
-
-            _mint(msg.sender, liquidity);
-
-            reserve0 = amount0;
-            reserve1 = amount1;
-
-            emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
+            _addLiquidity(amount0, amount1, liquidity);
         } else {
             // Subsequent liquidity provisions
 
@@ -84,17 +76,20 @@ contract Pair is IPair, ERC20 {
             uint256 liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
 
             if (liquidity == 0) revert Pair_InsufficientLiquidityMinted();
-
-            IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
-            IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
-
-            reserve0 += amount0;
-            reserve1 += amount1;
-
-            _mint(msg.sender, liquidity);
-
-            emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
+            _addLiquidity(amount0, amount1, liquidity);
         }
+    }
+
+    function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal {
+        IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
+        IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
+
+        reserve0 += amount0;
+        reserve1 += amount1;
+
+        _mint(msg.sender, liquidity);
+
+        emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
     }
 
     function removeLiquidity(uint256 amount) external lock {
@@ -112,9 +107,7 @@ contract Pair is IPair, ERC20 {
         }
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
-        console.log("amount0", amount0);
         uint256 amount1 = (amount * reserve1) / _totalSupply;
-        console.log("amount1", amount1);
 
         if (amount0 == 0 || amount1 == 0) {
             revert Pair_InsufficientLiquidityBurnt();
