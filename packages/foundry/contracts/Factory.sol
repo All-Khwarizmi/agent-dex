@@ -10,11 +10,16 @@ import { Pair, IUniswapV2Factory, IUniswapV2Router } from "./Pair.sol";
  * @notice Contract responsible for creating and getting pairs
  */
 contract Factory is IFactory {
-    IUniswapV2Factory immutable i_uniswapV2Factory = IUniswapV2Factory(0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f);
-    IUniswapV2Router immutable i_uniswapV2Router = IUniswapV2Router(0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D);
+    IUniswapV2Factory immutable i_uniswapV2Factory;
+    IUniswapV2Router immutable i_uniswapV2Router;
 
     address[] public allPairs;
     mapping(address => mapping(address => address)) public getPair;
+
+    constructor(address uniswapFactory, address uniswapRouter) {
+        i_uniswapV2Factory = IUniswapV2Factory(uniswapFactory);
+        i_uniswapV2Router = IUniswapV2Router(uniswapRouter);
+    }
 
     /**
      * @notice Function to create a pair (pool)
