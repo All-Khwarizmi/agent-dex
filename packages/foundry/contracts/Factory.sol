@@ -17,11 +17,11 @@ contract Factory is IFactory {
     mapping(address => mapping(address => address)) public getPair;
 
     /**
-     * Function to create a pair (pool)
+     * @notice Function to create a pair (pool)
      * @param token0 address of the first token
      * @param token1 address of the second token
      */
-    function createPair(address token0, address token1) public returns (address pair) {
+    function createPair(address token0, address token1) external returns (address pair) {
         if (token0 == address(0) || token1 == address(0)) {
             revert Factory_ZeroAddress();
         }
@@ -40,9 +40,10 @@ contract Factory is IFactory {
     }
 
     /**
-     * Function to get the amount of pairs that have been created
+     * @notice Function to get the amount of pairs that have been created
+     * @return poolCount the amount of pairs that have been created
      */
-    function getPairCount() public view returns (uint256 poolCount) {
+    function getPairCount() external view returns (uint256 poolCount) {
         poolCount = allPairs.length;
     }
 }
