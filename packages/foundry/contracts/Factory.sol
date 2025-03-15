@@ -18,22 +18,21 @@ contract Factory is IFactory {
      * @param token0 address of the first token
      * @param token1 address of the second token
      */
-    function createPair(address token0, address token1) external returns (address pair) {
+    function createPair(address token0, address token1) external {
         if (token0 == address(0) || token1 == address(0)) {
             revert Factory_ZeroAddress();
         }
         if (token0 == token1) revert Factory_IdenticalAddresses();
-        if (getPair[token0][token1] != address(0) || getPair[token1][token0] != address(0)) revert Factory_PoolExists();
 
-        Pair _pair = new Pair(token0, token1);
-        address pairAddress = address(_pair);
-        getPair[token0][token1] = pairAddress;
-        getPair[token1][token0] = pairAddress;
+        // Checking only for one pair direction is enough
+        if (getPair[token0][token1] != address(0)) revert Factory_PoolExists();
+
+        Pair pair = new Pair(token0, token1);
+        getPair[token0][token1] = address(pair);
+        getPair[token1][token0] = address(pair);
         allPairs.push(pairAddress);
 
-        emit PairCreated(token0, token1, pairAddress, allPairs.length);
-
-        return pairAddress;
+        emit PairCreated(token0, token1, pairAddress);
     }
 
     /**
