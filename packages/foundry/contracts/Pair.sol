@@ -15,10 +15,7 @@ contract Pair is PairCore, ERC20 {
     uint256 private reserve0;
     uint256 private reserve1;
 
-    constructor(address _token0, address _token1, address _factory, address _router)
-        ERC20("AgentDEX LP", "LP")
-        PairCore(_factory, _router)
-    {
+    constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") PairCore() {
         token0 = _token0;
         token1 = _token1;
     }
