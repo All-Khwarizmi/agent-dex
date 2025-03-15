@@ -11,7 +11,7 @@ import { Pair } from "./Pair.sol";
  */
 contract Factory is IFactory {
     address[] public allPairs;
-    mapping(address => mapping(address => address)) public getPair;
+    mapping(address => mapping(address => address)) private pairs;
 
     /**
      * @notice Function to create a pair (pool)
@@ -25,11 +25,11 @@ contract Factory is IFactory {
         if (token0 == token1) revert Factory_IdenticalAddresses();
 
         // Checking only for one pair direction is enough
-        if (getPair[token0][token1] != address(0)) revert Factory_PoolExists();
+        if (pairs[token0][token1] != address(0)) revert Factory_PoolExists();
 
         Pair pair = new Pair(token0, token1);
-        getPair[token0][token1] = address(pair);
-        getPair[token1][token0] = address(pair);
+        pairs[token0][token1] = address(pair);
+        pairs[token1][token0] = address(pair);
         allPairs.push(address(pair));
 
         emit PairCreated(token0, token1, address(pair));
@@ -41,5 +41,15 @@ contract Factory is IFactory {
      */
     function getPairCount() external view returns (uint256 poolCount) {
         poolCount = allPairs.length;
+    }
+
+    /**
+     * @notice Function to get the address of a pair
+     * @param token0 address of the first token
+     * @param token1 address of the second token
+     * @return pairAddress address of the pair
+     */
+    function getPair(address token0, address token1) external view returns (address pairAddress) {
+        pairAddress = pairs[token0][token1];
     }
 }

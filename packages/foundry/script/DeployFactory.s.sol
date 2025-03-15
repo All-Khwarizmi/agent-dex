@@ -6,9 +6,17 @@ import { Script, console } from "forge-std/Script.sol";
 import { ScaffoldETHDeploy } from "./DeployHelpers.s.sol";
 import { Factory } from "../contracts/Factory.sol";
 
-contract Deploy is ScaffoldETHDeploy {
+contract DeployFactory is ScaffoldETHDeploy {
     function run() external ScaffoldEthDeployerRunner {
-        Factory factory = new Factory();
+        address factory = deployFactory();
         console.log("Factory deployed to:", address(factory));
+    }
+
+    function deployFactory() public returns (address) {
+        vm.startBroadcast();
+        Factory factory = new Factory();
+        vm.stopBroadcast();
+        console.log("Factory deployed to:", address(factory));
+        return address(factory);
     }
 }
