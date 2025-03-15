@@ -8,14 +8,28 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 import "./interfaces/PairCore.sol";
 
-contract Pair is PairCore, ERC20 {
+contract Pair is IPair, ERC20 {
     address public token0;
     address public token1;
 
     uint256 private reserve0;
     uint256 private reserve1;
 
-    constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") PairCore() {
+    uint256 internal constant MINIMUM_LIQUIDITY = 10 ** 3;
+    bytes4 internal constant SELECTOR = bytes4(keccak256(bytes("transfer(address,uint256)")));
+
+    uint256 internal constant FEE_NUMERATOR = 997;
+    uint256 internal constant FEE_DENOMINATOR = 1000;
+    uint8 internal unlocked = 1;
+
+    modifier lock() {
+        if (unlocked == 0) revert Pair_Locked();
+        unlocked = 0;
+        _;
+        unlocked = 1;
+    }
+
+    constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") IPair() {
         token0 = _token0;
         token1 = _token1;
     }
@@ -201,6 +215,35 @@ contract Pair is PairCore, ERC20 {
 
     function getReserveNormalizedFromToken(address token) private view returns (uint256 reserve) {
         return normalizeAmount(getReserveFromToken(token), ERC20(token).decimals(), this.decimals());
+    }
+
+    function normalizeAmount(uint256 amount, uint8 currentDecimals, uint8 targetDecimals)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (currentDecimals == targetDecimals) {
+            return amount;
+        }
+        if (currentDecimals > targetDecimals) {
+            return amount / (10 ** (currentDecimals - targetDecimals));
+        }
+        return amount * (10 ** (targetDecimals - currentDecimals));
+    }
+
+    function _safeTransfer(address token, address to, uint256 value) internal {
+        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(SELECTOR, to, value));
+        if (!success || data.length == 0 || !abi.decode(data, (bool))) {
+            revert Pair_TransferFailed();
+        }
+    }
+
+    function _safeTransferFrom(address token, address from, address to, uint256 value) internal {
+        (bool success, bytes memory data) =
+            token.call(abi.encodeWithSelector(ERC20.transferFrom.selector, from, to, value));
+        if (!success || data.length == 0 || !abi.decode(data, (bool))) {
+            revert Pair_TransferFailed();
+        }
     }
 
     /* *
