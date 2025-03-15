@@ -15,12 +15,10 @@ contract Pair is PairCore, ERC20 {
     uint256 private reserve0;
     uint256 private reserve1;
 
-    constructor(
-        address _token0,
-        address _token1,
-        address _factory,
-        address _router
-    ) ERC20("AgentDEX LP", "LP") PairCore(_factory, _router) {
+    constructor(address _token0, address _token1, address _factory, address _router)
+        ERC20("AgentDEX LP", "LP")
+        PairCore(_factory, _router)
+    {
         token0 = _token0;
         token1 = _token1;
     }
@@ -28,42 +26,27 @@ contract Pair is PairCore, ERC20 {
     function addLiquidity(uint256 amount0, uint256 amount1) external lock {
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
-        (
-            uint8 currentDecimalsToken0,
-            uint8 currentDecimalsToken1
-        ) = getTokensDecimals();
+        (uint8 currentDecimalsToken0, uint8 currentDecimalsToken1) = getTokensDecimals();
 
-        uint256 normalizedAmount0 = normalizeAmount(
-            amount0,
-            currentDecimalsToken0,
-            this.decimals()
-        );
+        uint256 normalizedAmount0 = normalizeAmount(amount0, currentDecimalsToken0, this.decimals());
 
-        uint256 normalizedAmount1 = normalizeAmount(
-            amount1,
-            currentDecimalsToken1,
-            this.decimals()
-        );
+        uint256 normalizedAmount1 = normalizeAmount(amount1, currentDecimalsToken1, this.decimals());
 
-        (
-            uint256 normalizedReserve0,
-            uint256 normalizedReserve1
-        ) = normalizedReserves();
+        (uint256 normalizedReserve0, uint256 normalizedReserve1) = normalizedReserves();
 
         uint256 _totalSupply = totalSupply();
 
         if (_totalSupply == 0) {
             // First liquidity provision
             // Require minimum amounts to prevent dust attacks
-            if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY)
+            if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY) {
                 revert Pair_InsufficientInitialLiquidity();
+            }
 
             // Initial LP tokens = sqrt(normalizedAmount0 * amount1)
             // This formula ensures that the initial deposit sets the price
             // and subsequent deposits must match this ratio
-            uint256 liquidity = Math.sqrt(
-                normalizedAmount0 * normalizedAmount1
-            );
+            uint256 liquidity = Math.sqrt(normalizedAmount0 * normalizedAmount1);
 
             _mint(address(this), liquidity);
             this.transfer(msg.sender, liquidity);
@@ -79,8 +62,7 @@ contract Pair is PairCore, ERC20 {
             // Subsequent liquidity provisions
 
             // Calculate the optimal ratio based on current reserves
-            uint256 amount1Optimal = (normalizedAmount0 * normalizedReserve1) /
-                normalizedReserve0;
+            uint256 amount1Optimal = (normalizedAmount0 * normalizedReserve1) / normalizedReserve0;
 
             // Check if provided amounts maintain the price ratio within tolerance
             // We allow a small deviation (e.g., 1%) to account for rounding
@@ -88,8 +70,9 @@ contract Pair is PairCore, ERC20 {
                 ? normalizedAmount1 - amount1Optimal
                 : amount1Optimal - normalizedAmount1;
 
-            if (difference * 100 > amount1Optimal)
+            if (difference * 100 > amount1Optimal) {
                 revert Pair_InvalidPairRatio();
+            }
 
             // Calculate LP tokens to mint
             // We use the minimum of both ratios to ensure fair distribution
@@ -121,14 +104,16 @@ contract Pair is PairCore, ERC20 {
         if (liquidity < amount) revert Pair_InsufficientBalance();
 
         // Check the amount do not exceed 50% of the total supply
-        if ((amount * 10000) / _totalSupply > 5000)
+        if ((amount * 10000) / _totalSupply > 5000) {
             revert Pair_ExceededMaxLiquidityRemoval();
+        }
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
 
-        if (amount0 == 0 || amount1 == 0)
+        if (amount0 == 0 || amount1 == 0) {
             revert Pair_InsufficientLiquidityBurnt();
+        }
 
         _burn(msg.sender, amount);
         _safeTransfer(token0, msg.sender, amount0);
@@ -140,34 +125,18 @@ contract Pair is PairCore, ERC20 {
         emit Pair_Burn(msg.sender, amount0, amount1, msg.sender, amount);
     }
 
-    function swap(
-        address targetToken,
-        address fromToken,
-        uint amountIn
-    ) external lock {
+    function swap(address targetToken, address fromToken, uint256 amountIn) external lock {
         if (amountIn == 0) revert Pair_InsufficientInput();
 
-        uint256 normalizedAmountIn = normalizeAmount(
-            amountIn,
-            ERC20(fromToken).decimals(),
-            this.decimals()
-        );
+        uint256 normalizedAmountIn = normalizeAmount(amountIn, ERC20(fromToken).decimals(), this.decimals());
 
-        uint256 amountOut = getAmountOut(
-            targetToken,
-            fromToken,
-            normalizedAmountIn
-        );
+        uint256 amountOut = getAmountOut(targetToken, fromToken, normalizedAmountIn);
 
         if (amountOut == 0) revert Pair_InsufficientOutput();
 
         // 1. Check if uniswapV2 has better price
-        (bool shouldSwapLocally, uint256 uniswapAmount) = uniswapHasBetterPrice(
-            amountIn,
-            fromToken,
-            targetToken,
-            amountOut
-        );
+        (bool shouldSwapLocally, uint256 uniswapAmount) =
+            uniswapHasBetterPrice(amountIn, fromToken, targetToken, amountOut);
 
         // 2. And if we can swap locally
         bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
@@ -190,29 +159,15 @@ contract Pair is PairCore, ERC20 {
             path[0] = fromToken;
             path[1] = targetToken;
 
-            uint[] memory amounts = i_uniswapV2Router.swapExactTokensForTokens(
-                amountIn,
-                amountOutMin,
-                path,
-                address(this),
-                block.timestamp
-            );
+            uint256[] memory amounts =
+                i_uniswapV2Router.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), block.timestamp);
 
-            amountOut =
-                amounts[amounts.length - 1] -
-                (amounts[amounts.length - 1] * 999) /
-                FEE_DENOMINATOR;
+            amountOut = amounts[amounts.length - 1] - (amounts[amounts.length - 1] * 999) / FEE_DENOMINATOR;
 
             // Transfer tokens to user
             ERC20(targetToken).transfer(msg.sender, amountOut);
 
-            emit Pair_SwapForwarded(
-                msg.sender,
-                fromToken,
-                targetToken,
-                amountIn,
-                amountOut
-            );
+            emit Pair_SwapForwarded(msg.sender, fromToken, targetToken, amountIn, amountOut);
 
             return;
         }
@@ -239,9 +194,7 @@ contract Pair is PairCore, ERC20 {
         return (ERC20(token0).decimals(), ERC20(token1).decimals());
     }
 
-    function getReserveFromToken(
-        address token
-    ) private view returns (uint256 reserve) {
+    function getReserveFromToken(address token) private view returns (uint256 reserve) {
         if (token == token0) {
             return reserve0;
         } else if (token == token1) {
@@ -249,15 +202,8 @@ contract Pair is PairCore, ERC20 {
         }
     }
 
-    function getReserveNormalizedFromToken(
-        address token
-    ) private view returns (uint256 reserve) {
-        return
-            normalizeAmount(
-                getReserveFromToken(token),
-                ERC20(token).decimals(),
-                this.decimals()
-            );
+    function getReserveNormalizedFromToken(address token) private view returns (uint256 reserve) {
+        return normalizeAmount(getReserveFromToken(token), ERC20(token).decimals(), this.decimals());
     }
 
     /* *
@@ -271,11 +217,11 @@ contract Pair is PairCore, ERC20 {
      * @param amountIn the normalized (18 decimals) amount of tokens to be swapped
      * @return amountOut the denormalized (original token decimals) amount of tokens that will be received
      */
-    function getAmountOut(
-        address targetToken,
-        address fromToken,
-        uint256 amountIn
-    ) public view returns (uint256 amountOut) {
+    function getAmountOut(address targetToken, address fromToken, uint256 amountIn)
+        public
+        view
+        returns (uint256 amountOut)
+    {
         uint256 reserveIn = getReserveNormalizedFromToken(fromToken);
         uint256 reserveOut = getReserveNormalizedFromToken(targetToken);
 
@@ -285,30 +231,14 @@ contract Pair is PairCore, ERC20 {
         amountOut = numerator / denominator;
 
         // Normalize to target token decimals
-        amountOut = normalizeAmount(
-            amountOut,
-            this.decimals(),
-            ERC20(targetToken).decimals()
-        );
+        amountOut = normalizeAmount(amountOut, this.decimals(), ERC20(targetToken).decimals());
     }
 
     // Normalize reserves to 18 decimals
-    function normalizedReserves()
-        public
-        view
-        returns (uint256 normalizedReserve0, uint256 normalizedReserve1)
-    {
-        normalizedReserve0 = normalizeAmount(
-            reserve0,
-            ERC20(token0).decimals(),
-            this.decimals()
-        );
+    function normalizedReserves() public view returns (uint256 normalizedReserve0, uint256 normalizedReserve1) {
+        normalizedReserve0 = normalizeAmount(reserve0, ERC20(token0).decimals(), this.decimals());
 
-        normalizedReserve1 = normalizeAmount(
-            reserve1,
-            ERC20(token1).decimals(),
-            this.decimals()
-        );
+        normalizedReserve1 = normalizeAmount(reserve1, ERC20(token1).decimals(), this.decimals());
 
         return (normalizedReserve0, normalizedReserve1);
     }
@@ -323,25 +253,13 @@ contract Pair is PairCore, ERC20 {
      * @param fromToken
      * @param amountIn
      */
-    function shouldSwap(
-        address targetToken,
-        address fromToken,
-        uint256 amountIn
-    ) public view returns (bool) {
+    function shouldSwap(address targetToken, address fromToken, uint256 amountIn) public view returns (bool) {
         // Get reserves and normalize amounts to 18 decimals
         uint256 reserveIn = getReserveNormalizedFromToken(fromToken);
         uint256 reserveOut = getReserveNormalizedFromToken(targetToken);
-        uint256 normalizedAmountIn = normalizeAmount(
-            amountIn,
-            ERC20(fromToken).decimals(),
-            this.decimals()
-        );
+        uint256 normalizedAmountIn = normalizeAmount(amountIn, ERC20(fromToken).decimals(), this.decimals());
 
-        uint256 amountOut = getAmountOut(
-            targetToken,
-            fromToken,
-            normalizedAmountIn
-        );
+        uint256 amountOut = getAmountOut(targetToken, fromToken, normalizedAmountIn);
         if (amountOut == 0) revert Pair_InsufficientOutput();
 
         uint256 priceImpact = (normalizedAmountIn * 10000) / reserveIn;
@@ -352,35 +270,24 @@ contract Pair is PairCore, ERC20 {
         bool acceptablePriceImpact = priceImpact <= 25; // 0.25%
         bool acceptableReserveRatio = reserveRatio <= 10; // 0.1%
 
-        return
-            sufficientReserves &&
-            acceptablePriceImpact &&
-            acceptableReserveRatio;
+        return sufficientReserves && acceptablePriceImpact && acceptableReserveRatio;
     }
 
-    function uniswapHasBetterPrice(
-        uint256 amountIn,
-        address fromToken,
-        address targetToken,
-        uint256 amountOut
-    ) public view returns (bool shouldSwapLocally, uint256 uniswapAmount) {
+    function uniswapHasBetterPrice(uint256 amountIn, address fromToken, address targetToken, uint256 amountOut)
+        public
+        view
+        returns (bool shouldSwapLocally, uint256 uniswapAmount)
+    {
         address[] memory path = new address[](2);
         path[0] = fromToken;
         path[1] = targetToken;
-        uint256[] memory amounts = i_uniswapV2Router.getAmountsOut(
-            amountIn,
-            path
-        );
+        uint256[] memory amounts = i_uniswapV2Router.getAmountsOut(amountIn, path);
         uniswapAmount = amounts[amounts.length - 1];
 
         shouldSwapLocally = amountOut >= uniswapAmount;
     }
 
-    function getReserves()
-        external
-        view
-        returns (uint256 _reserve0, uint256 _reserve1)
-    {
+    function getReserves() external view returns (uint256 _reserve0, uint256 _reserve1) {
         return (reserve0, reserve1);
     }
 
