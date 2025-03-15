@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-import "./interfaces/IFactory.sol";
-
-import "@openzeppelin/contracts/utils/math/Math.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
-import "./interfaces/PairCore.sol";
+import { IFactory } from "./interfaces/IFactory.sol";
+import { IPair } from "./interfaces/IPair.sol";
+import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
+import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Pair is IPair, ERC20 {
     address public token0;
