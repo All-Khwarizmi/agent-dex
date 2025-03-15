@@ -8,7 +8,7 @@ interface IFactory {
 
     event PairCreated(address indexed token0, address indexed token1, address pair);
 
-    function createPair(address token0, address token1) external returns (address pair);
+    function createPair(address token0, address token1) external;
 
     function getPairCount() external view returns (uint256 pairCount);
 }

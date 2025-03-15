@@ -14,6 +14,7 @@ interface IPair {
     error Pair_InsufficientInput();
     error Pair_InsufficientOutput();
     error Pair_InvalidPairRatio();
+    error Pair_SwapNotSupported();
     error Pair_TransferFailed();
 
     event Pair_Mint(address indexed sender, uint256 amount0, uint256 amount1, uint256 mintedLiquidity);

@@ -2,7 +2,7 @@
 pragma solidity 0.8.26;
 
 import { IFactory } from "./interfaces/IFactory.sol";
-import { Pair, IUniswapV2Factory, IUniswapV2Router } from "./Pair.sol";
+import { Pair } from "./Pair.sol";
 
 /**
  * @title Factory
@@ -30,9 +30,9 @@ contract Factory is IFactory {
         Pair pair = new Pair(token0, token1);
         getPair[token0][token1] = address(pair);
         getPair[token1][token0] = address(pair);
-        allPairs.push(pairAddress);
+        allPairs.push(address(pair));
 
-        emit PairCreated(token0, token1, pairAddress);
+        emit PairCreated(token0, token1, address(pair));
     }
 
     /**

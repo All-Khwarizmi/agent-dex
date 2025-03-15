@@ -143,42 +143,12 @@ contract Pair is IPair, ERC20 {
 
         if (amountOut == 0) revert Pair_InsufficientOutput();
 
-        // 1. Check if uniswapV2 has better price
-        (bool shouldSwapLocally, uint256 uniswapAmount) =
-            uniswapHasBetterPrice(amountIn, fromToken, targetToken, amountOut);
-
         // 2. And if we can swap locally
         bool _shouldSwap = shouldSwap(targetToken, fromToken, amountIn);
 
         // 3. If uniswap has better price or we can't swap locally, swap with uniswapV2
-        if (!shouldSwapLocally || !_shouldSwap) {
-            // First transfer FROM user TO pair
-            _safeTransferFrom(fromToken, msg.sender, address(this), amountIn);
-
-            // Getting fees twice to balance token fees collection
-            uint256 fees = amountIn - (amountIn * 999) / FEE_DENOMINATOR;
-            amountIn = amountIn - fees;
-
-            // Approve the router to spend the amountIn
-            ERC20(fromToken).approve(address(i_uniswapV2Router), amountIn);
-
-            // Allow for 1% variation in the tokens we get from uniswap
-            uint256 amountOutMin = (uniswapAmount * 99) / 1000;
-            address[] memory path = new address[](2);
-            path[0] = fromToken;
-            path[1] = targetToken;
-
-            uint256[] memory amounts =
-                i_uniswapV2Router.swapExactTokensForTokens(amountIn, amountOutMin, path, address(this), block.timestamp);
-
-            amountOut = amounts[amounts.length - 1] - (amounts[amounts.length - 1] * 999) / FEE_DENOMINATOR;
-
-            // Transfer tokens to user
-            ERC20(targetToken).transfer(msg.sender, amountOut);
-
-            emit Pair_SwapForwarded(msg.sender, fromToken, targetToken, amountIn, amountOut);
-
-            return;
+        if (!_shouldSwap) {
+            revert Pair_SwapNotSupported();
         }
 
         // First transfer FROM user TO pair
@@ -309,20 +279,6 @@ contract Pair is IPair, ERC20 {
         bool acceptableReserveRatio = reserveRatio <= 10; // 0.1%
 
         return sufficientReserves && acceptablePriceImpact && acceptableReserveRatio;
-    }
-
-    function uniswapHasBetterPrice(uint256 amountIn, address fromToken, address targetToken, uint256 amountOut)
-        public
-        view
-        returns (bool shouldSwapLocally, uint256 uniswapAmount)
-    {
-        address[] memory path = new address[](2);
-        path[0] = fromToken;
-        path[1] = targetToken;
-        uint256[] memory amounts = i_uniswapV2Router.getAmountsOut(amountIn, path);
-        uniswapAmount = amounts[amounts.length - 1];
-
-        shouldSwapLocally = amountOut >= uniswapAmount;
     }
 
     function getReserves() external view returns (uint256 _reserve0, uint256 _reserve1) {
