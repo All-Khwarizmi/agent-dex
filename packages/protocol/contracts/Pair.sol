@@ -104,7 +104,6 @@ contract Pair is IPair, ERC20 {
         // Update reserves based on final balances
         uint256 balance0 = IERC20(token0).balanceOf(address(this));
         uint256 balance1 = IERC20(token1).balanceOf(address(this));
-        if (balance0 == 0 || balance1 == 0) revert Pair_InsufficientLiquidity();
 
         reserve0 = balance0;
         reserve1 = balance1;
