@@ -20,6 +20,9 @@ contract FactoryTest is Test {
         token1 = address(0x2);
     }
 
+    /*//////////////////////////////////////////////////////////////
+                              CREATE PAIR
+    //////////////////////////////////////////////////////////////*/
     function testFactoryCreatePairDeploysPair() public {
         factory.createPair(token0, token1);
         address pair = factory.getPair(token0, token1);
@@ -42,6 +45,9 @@ contract FactoryTest is Test {
         vm.expectRevert(IFactory.Factory_PoolExists.selector);
         factory.createPair(token0, token1);
     }
+    /*//////////////////////////////////////////////////////////////
+                             GET PAIR COUNT
+    //////////////////////////////////////////////////////////////*/
 
     function testFactoryGetPairCountReturnsExpectedValue() public {
         factory.createPair(token0, token1);
@@ -59,5 +65,14 @@ contract FactoryTest is Test {
 
         uint256 pairCount = factory.getPairCount();
         assertEq(pairCount, 10);
+    }
+
+    /*//////////////////////////////////////////////////////////////
+                                GET PAIR
+    //////////////////////////////////////////////////////////////*/
+    function testFactoryGetPairReturnsExpectedValue() public view {
+        address pair = factory.getPair(token0, token1);
+        assertEq(factory.getPair(token0, token1), pair);
+        assertEq(factory.getPair(token1, token0), pair);
     }
 }
