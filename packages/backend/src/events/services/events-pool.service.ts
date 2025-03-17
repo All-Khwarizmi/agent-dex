@@ -23,7 +23,7 @@ export class EventsPoolService {
     });
   }
 
-  /**
+  /* *
    * Watch for events related to a specific pool
    … */
   async watchPoolEvents(poolAddress: string) {

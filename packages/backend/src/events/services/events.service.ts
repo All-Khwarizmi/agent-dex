@@ -26,7 +26,7 @@ export class EventsService implements OnModuleInit {
     await this.watchFactoryEvents();
     await this.watchAlreadyCreatedPools();
   }
-  /**
+  /* *
    * Watch for new pools
    *   - When a new pool is created,
    *     - Save the event to the database
