@@ -4,6 +4,9 @@ DEPLOY_SCRIPT ?= script/Deploy.s.sol
 FUND_SCRIPT ?= ./script/FundUser.sol:FundUser
 USER_ADDRESS ?= 0xDcc4E41072017A20101B68B9500630A3ab6fE2fF
 
+# Install openzeppelin contracts
+install:
+	forge install foundry-rs/forge-std --no-commit && forge install OpenZeppelin/openzeppelin-contracts --no-commit
 
 # Fund user on local chain
 fund:

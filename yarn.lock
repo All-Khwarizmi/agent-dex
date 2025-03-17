@@ -3146,9 +3146,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@se-2/nest@workspace:packages/backend":
+"@se-2/backend@workspace:packages/backend":
   version: 0.0.0-use.local
-  resolution: "@se-2/nest@workspace:packages/backend"
+  resolution: "@se-2/backend@workspace:packages/backend"
   dependencies:
     "@nestjs/cli": ^10.0.0
     "@nestjs/common": ^10.0.0
@@ -3191,9 +3191,9 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@se-2/nextjs@workspace:packages/frontend":
+"@se-2/frontend@workspace:packages/frontend":
   version: 0.0.0-use.local
-  resolution: "@se-2/nextjs@workspace:packages/frontend"
+  resolution: "@se-2/frontend@workspace:packages/frontend"
   dependencies:
     "@ai-sdk/openai": ^1.1.9
     "@heroicons/react": ~2.1.5

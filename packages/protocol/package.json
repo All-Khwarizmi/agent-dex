@@ -10,6 +10,8 @@
     "chain": "make chain",
     "abi": "forge build --silent && jq '.abi' ./out/Factory.sol/Factory.json | pbcopy",
     "compile": "make compile",
+    "lib": "make install",
+    "build": "forge build",
     "deploy": "node scripts-js/parseArgs.js",
     "flatten": "make flatten",
     "fork": "make fork FORK_URL=${1:-mainnet}",
