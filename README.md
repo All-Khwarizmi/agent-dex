@@ -117,7 +117,7 @@ cd packages/foundry && make fund USER_ADDRESS=xDcc4E41072017A20101B68B9500630A3a
 yarn test
 
 # Backend tests
-yarn nest:test
+yarn backend:test
 ```
 
 ## Usage
