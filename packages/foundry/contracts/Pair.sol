@@ -1,34 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
-// Layout of Contract:
-// version
-// imports
-// errors
-// interfaces, libraries, contracts
-// Type declarations
-// State variables
-// Events
-// Modifiers
-// Functions
-
-// Layout of Functions:
-// constructor
-// receive function (if exists)
-// fallback function (if exists)
-// external
-// public
-// internal
-// private
-// internal & private view & pure functions
-// external & public view & pure functions
-
-import { IFactory } from "./interfaces/IFactory.sol";
-import { IPair } from "./interfaces/IPair.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { ERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { console } from "forge-std/console.sol";
+import { IFactory } from "./interfaces/IFactory.sol";
+import { IPair } from "./interfaces/IPair.sol";
 
 /**
  * @title Pair
@@ -74,46 +51,11 @@ contract Pair is IPair, ERC20 {
     function addLiquidity(uint256 amount0, uint256 amount1) external {
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
-        (uint256 _reserve0, uint256 _reserve1) = getReserves();
+        uint256 liquidity = _getLiquidityToMint(amount0, amount1);
 
-        uint256 _totalSupply = totalSupply();
+        if (liquidity == 0) revert Pair_InsufficientLiquidityMinted();
 
-        if (_totalSupply == 0) {
-            // First liquidity provision
-            // Require minimum amounts to prevent dust attacks
-            if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY) {
-                revert Pair_InsufficientInitialLiquidity();
-            }
-
-            // Initial LP tokens = sqrt(amount0 * amount1)
-            // This formula ensures that the initial deposit sets the price
-            // and subsequent deposits must match this ratio
-            uint256 liquidity = Math.sqrt(amount0 * amount1);
-
-            _addLiquidity(amount0, amount1, liquidity);
-        } else {
-            // Subsequent liquidity provisions
-
-            // Calculate the optimal ratio based on current reserves
-            uint256 amount1Optimal = (amount0 * _reserve1) / _reserve0;
-
-            // Check if provided amounts maintain the price ratio within tolerance
-            // We allow a small deviation (e.g., 1%) to account for rounding
-            uint256 difference = amount1 > amount1Optimal ? amount1 - amount1Optimal : amount1Optimal - amount1;
-
-            if (difference * 100 > amount1Optimal) {
-                revert Pair_InvalidPairRatio();
-            }
-
-            // Calculate LP tokens to mint
-            // We use the minimum of both ratios to ensure fair distribution
-            // and maintain the constant product formula
-            uint256 liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
-
-            if (liquidity == 0) revert Pair_InsufficientLiquidityMinted();
-
-            _addLiquidity(amount0, amount1, liquidity);
-        }
+        _addLiquidity(amount0, amount1, liquidity);
     }
 
     function removeLiquidity(uint256 amount) external lock {
@@ -197,6 +139,49 @@ contract Pair is IPair, ERC20 {
     /*//////////////////////////////////////////////////////////////
                                 INTERNAL
     //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @notice This is an internal function to calculate the liquidity to mint.
+     * @param amount0 the amount of `token0` in the pair.
+     * @param amount1 the amount of `token1` in the pair.
+     * @return liquidity the amount of liquidity to mint
+     */
+    function _getLiquidityToMint(uint256 amount0, uint256 amount1) internal view returns (uint256 liquidity) {
+        (uint256 _reserve0, uint256 _reserve1) = getReserves();
+
+        uint256 _totalSupply = totalSupply();
+
+        if (_totalSupply == 0) {
+            // First liquidity provision
+            // Require minimum amounts to prevent dust attacks
+            if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY) {
+                revert Pair_InsufficientInitialLiquidity();
+            }
+
+            // Initial LP tokens = sqrt(amount0 * amount1)
+            // This formula ensures that the initial deposit sets the price
+            // and subsequent deposits must match this ratio
+            liquidity = Math.sqrt(amount0 * amount1);
+        } else {
+            // Subsequent liquidity provisions
+
+            // Calculate the optimal ratio based on current reserves
+            uint256 amount1Optimal = (amount0 * _reserve1) / _reserve0;
+
+            // Check if provided amounts maintain the price ratio within tolerance
+            // We allow a small deviation (e.g., 1%) to account for rounding
+            uint256 difference = amount1 > amount1Optimal ? amount1 - amount1Optimal : amount1Optimal - amount1;
+
+            if (difference * 100 > amount1Optimal) {
+                revert Pair_InvalidPairRatio();
+            }
+
+            // Calculate LP tokens to mint
+            // We use the minimum of both ratios to ensure fair distribution
+            // and maintain the constant product formula
+            liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
+        }
+    }
 
     /**
      * @notice This is an internal function to add liquidity to the pool.
