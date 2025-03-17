@@ -18,8 +18,6 @@ contract Pair is IPair, ERC20 {
     uint256 private reserve1;
 
     uint256 internal constant MINIMUM_LIQUIDITY = 10 ** 3;
-    bytes4 internal constant SELECTOR = bytes4(keccak256(bytes("transfer(address,uint256)")));
-
     uint256 internal constant FEE_NUMERATOR = 997;
     uint256 internal constant FEE_DENOMINATOR = 1000;
     uint8 internal unlocked = 1;
@@ -36,7 +34,7 @@ contract Pair is IPair, ERC20 {
         token1 = _token1;
     }
 
-    function addLiquidity(uint256 amount0, uint256 amount1) external lock {
+    function addLiquidity(uint256 amount0, uint256 amount1) external {
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
         (uint256 _reserve0, uint256 _reserve1) = getReserves();
@@ -80,7 +78,7 @@ contract Pair is IPair, ERC20 {
         }
     }
 
-    function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal {
+    function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal lock {
         IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
         IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
 
@@ -101,10 +99,6 @@ contract Pair is IPair, ERC20 {
 
         if (liquidity < amount) revert Pair_InsufficientBalance();
 
-        // Check the amount do not exceed 50% of the total supply
-        if ((amount * 10000) / _totalSupply > 5000) {
-            revert Pair_ExceededMaxLiquidityRemoval();
-        }
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
@@ -148,7 +142,7 @@ contract Pair is IPair, ERC20 {
 
     /* ========== VIEWS ========== */
 
-    function getReserveFromToken(address token) private view returns (uint256 reserve) {
+    function _getReserveFromToken(address token) internal view returns (uint256 reserve) {
         if (token == token0) {
             return reserve0;
         } else if (token == token1) {
@@ -172,8 +166,8 @@ contract Pair is IPair, ERC20 {
         view
         returns (uint256 amountOut)
     {
-        uint256 reserveIn = getReserveFromToken(fromToken);
-        uint256 reserveOut = getReserveFromToken(targetToken);
+        uint256 reserveIn = _getReserveFromToken(fromToken);
+        uint256 reserveOut = _getReserveFromToken(targetToken);
 
         uint256 amountInWithoutFee = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
         uint256 numerator = amountInWithoutFee * reserveOut;
