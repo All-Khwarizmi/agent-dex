@@ -13,9 +13,7 @@ contract DeployFactory is ScaffoldETHDeploy {
     }
 
     function deployFactory() public returns (address) {
-        vm.startBroadcast();
         Factory factory = new Factory();
-        vm.stopBroadcast();
         console.log("Factory deployed to:", address(factory));
         return address(factory);
     }
