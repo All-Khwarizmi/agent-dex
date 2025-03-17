@@ -1,6 +1,28 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.26;
 
+// Layout of Contract:
+// version
+// imports
+// errors
+// interfaces, libraries, contracts
+// Type declarations
+// State variables
+// Events
+// Modifiers
+// Functions
+
+// Layout of Functions:
+// constructor
+// receive function (if exists)
+// fallback function (if exists)
+// external
+// public
+// internal
+// private
+// internal & private view & pure functions
+// external & public view & pure functions
+
 import { IFactory } from "./interfaces/IFactory.sol";
 import { IPair } from "./interfaces/IPair.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
@@ -8,6 +30,13 @@ import { ERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { console } from "forge-std/console.sol";
 
+/**
+ * @title Pair
+ * @author Jason Suárez
+ * @notice This contract is inspired by UniswapV2Pair.sol and should be deployed from the Factory contract.
+ * @notice Being an AMM that allows users to swap tokens with each other and provide liquidity to the pool for earning fees, it collects 0.3% of all swaps.
+ * @dev  The main invariant of the pair is the constant product of the reserves of both tokens.
+ */
 contract Pair is IPair, ERC20 {
     using SafeERC20 for IERC20;
 
@@ -33,7 +62,15 @@ contract Pair is IPair, ERC20 {
         token0 = _token0;
         token1 = _token1;
     }
+    /*//////////////////////////////////////////////////////////////
+                                EXTERNAL & PUBLIC
+    //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice This function is used to add liquidity to the pair. It takes two parameters:
+     * @param amount0  the amount of `token0` in the pair.
+     * @param amount1  the amount of `token1` in the pair.
+     */
     function addLiquidity(uint256 amount0, uint256 amount1) external {
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
@@ -74,20 +111,9 @@ contract Pair is IPair, ERC20 {
             uint256 liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
 
             if (liquidity == 0) revert Pair_InsufficientLiquidityMinted();
+
             _addLiquidity(amount0, amount1, liquidity);
         }
-    }
-
-    function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal lock {
-        IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
-        IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
-
-        reserve0 += amount0;
-        reserve1 += amount1;
-
-        _mint(msg.sender, liquidity);
-
-        emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
     }
 
     function removeLiquidity(uint256 amount) external lock {
@@ -98,7 +124,6 @@ contract Pair is IPair, ERC20 {
         uint256 liquidity = balanceOf(msg.sender);
 
         if (liquidity < amount) revert Pair_InsufficientBalance();
-
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
@@ -117,6 +142,13 @@ contract Pair is IPair, ERC20 {
         emit Pair_Burn(msg.sender, amount0, amount1, msg.sender, amount);
     }
 
+    /**
+     * @notice This function swaps tokens from one token to another.
+     * @dev The core logic of the amountOut calculation is in the `getAmountOut` function which is responsible for maintaining the invariant.
+     * @param targetToken address of the token to send
+     * @param fromToken address of the token to receive
+     * @param amountIn amount of tokens to be swapped
+     */
     function swap(address targetToken, address fromToken, uint256 amountIn) external lock {
         if (amountIn == 0) revert Pair_InsufficientInput();
 
@@ -139,28 +171,15 @@ contract Pair is IPair, ERC20 {
 
         emit Pair_Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
     }
-
-    /* ========== VIEWS ========== */
-
-    function _getReserveFromToken(address token) internal view returns (uint256 reserve) {
-        if (token == token0) {
-            return reserve0;
-        } else if (token == token1) {
-            return reserve1;
-        }
-    }
-
-    /* *
-     * @notice getAmountOut
-     * @description This function calculates the amount of tokens that will be received when swapping
+    /**
+     * @notice This function calculates the amount of tokens that will be received when swapping
      * from the `fromToken` to the `targetToken` using the current reserves.
-     * @dev This normalizes the amounts to 18 decimals before performing the calculations. And then
-     * normalizes the result back to the original decimals.
-     * @param targetToken
-     * @param fromToken
-     * @param amountIn the normalized (18 decimals) amount of tokens to be swapped
-     * @return amountOut the denormalized (original token decimals) amount of tokens that will be received
+     * @param targetToken address of the token to send
+     * @param fromToken address of the token to receive
+     * @param amountIn  amount of tokens to be swapped
+     * @return amountOut amount of tokens that will be received
      */
+
     function getAmountOut(address targetToken, address fromToken, uint256 amountIn)
         public
         view
@@ -174,6 +193,44 @@ contract Pair is IPair, ERC20 {
         uint256 denominator = reserveIn + amountInWithoutFee;
         amountOut = numerator / denominator;
     }
+
+    /*//////////////////////////////////////////////////////////////
+                                INTERNAL
+    //////////////////////////////////////////////////////////////*/
+
+    /**
+     * @notice This is an internal function to add liquidity to the pool.
+     * @param amount0 It correspond to token0
+     * @param amount1 It correspond to token1
+     * @param liquidity The amount of liquidity provided by the sender that will be minted on its behalf.
+     */
+    function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal lock {
+        IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
+        IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
+
+        reserve0 += amount0;
+        reserve1 += amount1;
+
+        _mint(msg.sender, liquidity);
+
+        emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
+    }
+
+    /**
+     * @notice This is an internal utility function to get the reserve of a given token.
+     * @param token address of the token to get the reserve from
+     * @return reserve the reserve of the token
+     */
+    function _getReserveFromToken(address token) internal view returns (uint256 reserve) {
+        if (token == token0) {
+            return reserve0;
+        } else if (token == token1) {
+            return reserve1;
+        }
+    }
+    /*//////////////////////////////////////////////////////////////
+                                GETTERS
+    //////////////////////////////////////////////////////////////*/
 
     function getReserves() public view returns (uint256 _reserve0, uint256 _reserve1) {
         return (reserve0, reserve1);
