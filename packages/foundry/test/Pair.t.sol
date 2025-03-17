@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.26;
 
-import { Pair, IPair } from "../contracts/Pair.sol";
-import { Test } from "@forge-std/Test.sol";
+import { Test, console } from "@forge-std/Test.sol";
 import { ERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { console } from "forge-std/console.sol";
 import { ERC20Mock } from "../lib/openzeppelin-contracts/contracts/mocks/token/ERC20Mock.sol";
+import { Pair, IPair } from "../contracts/Pair.sol";
 
 contract PairTest is Test {
     using SafeERC20 for IERC20;
@@ -70,7 +69,9 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
-    // Add Liquidity
+    /*//////////////////////////////////////////////////////////////
+                             ADD LIQUIDITY
+    //////////////////////////////////////////////////////////////*/
     function testPairAddLiquidity() public {
         vm.startPrank(alice);
 
@@ -168,8 +169,10 @@ contract PairTest is Test {
         vm.expectRevert(IPair.Pair_InsufficientInitialLiquidity.selector);
         pair.addLiquidity(100, 100); // 100 < MINIMUM_LIQUIDITY so this should revert
     }
+    /*//////////////////////////////////////////////////////////////
+                            REMOVE LIQUIDITY
+    //////////////////////////////////////////////////////////////*/
 
-    // Remove Liquidity
     function testPairRemoveLiquiditySucceeds() public {
         vm.startPrank(alice);
 
@@ -393,7 +396,9 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
-    // Swap
+    /*//////////////////////////////////////////////////////////////
+                                  SWAP
+    //////////////////////////////////////////////////////////////*/
     function testPairSwapEmitsSwapEvent() public {
         vm.startPrank(alice);
 
@@ -468,7 +473,9 @@ contract PairTest is Test {
         pair.addLiquidity(usdcLiquidity, wethLiquidity);
     }
 
-    // Get Reserves
+    /*//////////////////////////////////////////////////////////////
+                              GET RESERVES
+    //////////////////////////////////////////////////////////////*/
     function testGetReserves() public {
         vm.startPrank(alice);
 
@@ -500,7 +507,9 @@ contract PairTest is Test {
         vm.stopPrank();
     }
 
-    // Pool Balance
+    /*//////////////////////////////////////////////////////////////
+                              POOL BALANCE
+    //////////////////////////////////////////////////////////////*/
     function testPoolBalanceAfterAddingLiquidityOneTime() public {
         vm.startPrank(alice);
 
