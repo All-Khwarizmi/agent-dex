@@ -19,8 +19,7 @@ interface IPair {
 
     event Pair_Mint(address indexed sender, uint256 amount0, uint256 amount1, uint256 mintedLiquidity);
     event Pair_Burn(
-        address indexed sender, uint256 amount0, uint256 amount1, address indexed to, uint256 burntLiquidity
+        address indexed sender, uint256 amount0, uint256 amount1, uint256 burntLiquidity
     );
     event Pair_Swap(address indexed sender, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
-    event Pair_SwapForwarded(address user, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 }

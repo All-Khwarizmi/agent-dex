@@ -40,7 +40,7 @@ contract PairTest is Test {
     }
 
     function _setupTokens() internal {
-        uint256 usdcAmount = 25_000_000_000_000_000;
+        uint256 usdcAmount = 25_000_000_000_000_000 * 1e6;
         uint256 wethAmount = 8_000_000_000_000 * 1e18;
 
         deal(address(usdc), alice, usdcAmount);
@@ -207,7 +207,7 @@ contract PairTest is Test {
         (uint256 usdcLiquidity, uint256 wethLiquidity) = _setLiquidity();
 
         vm.expectEmit(true, true, true, false);
-        emit IPair.Pair_Burn(alice, usdcLiquidity, wethLiquidity, alice, Math.sqrt(usdcLiquidity * wethLiquidity));
+        emit IPair.Pair_Burn(alice, usdcLiquidity, wethLiquidity, Math.sqrt(usdcLiquidity * wethLiquidity));
 
         pair.removeLiquidity((ERC20(pair).balanceOf(alice) * 50) / 1000);
 
@@ -367,18 +367,6 @@ contract PairTest is Test {
         assertGt(bobWethFinal, expectedWethWithoutFees, "Bob should get extra WETH from fees");
     }
 
-    function testPairRemoveLiquidityRevertsWhenZeroAmount() public {
-        vm.startPrank(alice);
-
-        _setLiquidity();
-
-        // Try to remove zero liquidity
-        vm.expectRevert(IPair.Pair_InsufficientInput.selector);
-        pair.removeLiquidity(0);
-
-        vm.stopPrank();
-    }
-
     function testPairRemoveLiquidityRevertsWhenMoreThanAvailable() public {
         vm.startPrank(alice);
 
@@ -404,9 +392,9 @@ contract PairTest is Test {
 
         _setUniswapLiquidity();
 
-        uint256 amountIn = 100 * 1e6;
+        uint256 amountIn = 1000 * 1e6;
         vm.expectEmit(true, true, true, false);
-        emit IPair.Pair_Swap(alice, address(usdc), address(weth), amountIn, 100 * 1e18);
+        emit IPair.Pair_Swap(alice, address(usdc), address(weth), amountIn, 1000 * 1e16);
 
         pair.swap(address(weth), address(usdc), amountIn);
 
@@ -424,7 +412,7 @@ contract PairTest is Test {
         uint256 wethBeforeSwap = weth.balanceOf(alice);
 
         // Swap
-        pair.swap(address(weth), address(usdc), amountIn);
+        pair.swap(address(usdc), address(weth), amountIn);
 
         // Get post-swap balances
         uint256 usdcAfterSwap = usdc.balanceOf(alice);
@@ -450,7 +438,7 @@ contract PairTest is Test {
         uint256 wethBeforeSwap = weth.balanceOf(alice);
 
         // Swap
-        pair.swap(address(usdc), address(weth), amountIn);
+        pair.swap(address(weth), address(usdc), amountIn);
 
         // Get post-swap balances
         uint256 usdcAfterSwap = usdc.balanceOf(alice);

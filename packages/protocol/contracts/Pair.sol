@@ -59,8 +59,6 @@ contract Pair is IPair, ERC20 {
     }
 
     function removeLiquidity(uint256 amount) external lock {
-        if (amount == 0) revert Pair_InsufficientInput();
-
         uint256 _totalSupply = totalSupply();
 
         uint256 liquidity = balanceOf(msg.sender);
@@ -81,7 +79,7 @@ contract Pair is IPair, ERC20 {
         reserve0 -= amount0;
         reserve1 -= amount1;
 
-        emit Pair_Burn(msg.sender, amount0, amount1, msg.sender, amount);
+        emit Pair_Burn(msg.sender, amount0, amount1, amount);
     }
 
     /**
@@ -91,7 +89,7 @@ contract Pair is IPair, ERC20 {
      * @param fromToken address of the token to receive
      * @param amountIn amount of tokens to be swapped
      */
-    function swap(address targetToken, address fromToken, uint256 amountIn) external lock {
+    function swap(address fromToken, address targetToken, uint256 amountIn) external lock {
         if (amountIn == 0) revert Pair_InsufficientInput();
 
         uint256 amountOut = getAmountOut(targetToken, fromToken, amountIn);
@@ -113,6 +111,7 @@ contract Pair is IPair, ERC20 {
 
         emit Pair_Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
     }
+
     /**
      * @notice This function calculates the amount of tokens that will be received when swapping
      * from the `fromToken` to the `targetToken` using the current reserves.
@@ -121,7 +120,6 @@ contract Pair is IPair, ERC20 {
      * @param amountIn  amount of tokens to be swapped
      * @return amountOut amount of tokens that will be received
      */
-
     function getAmountOut(address targetToken, address fromToken, uint256 amountIn)
         public
         view
