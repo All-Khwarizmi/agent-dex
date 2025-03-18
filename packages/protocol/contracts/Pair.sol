@@ -51,7 +51,7 @@ contract Pair is IPair, ERC20 {
     function addLiquidity(uint256 amount0, uint256 amount1) external {
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
-        uint256 liquidity = _getLiquidityToMint(amount0, amount1);
+        uint256 liquidity = getLiquidityToMint(amount0, amount1);
 
         if (liquidity == 0) revert Pair_InsufficientLiquidityMinted();
 
@@ -138,49 +138,6 @@ contract Pair is IPair, ERC20 {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice This is an internal function to calculate the liquidity to mint.
-     * @param amount0 the amount of `token0` in the pair.
-     * @param amount1 the amount of `token1` in the pair.
-     * @return liquidity the amount of liquidity to mint
-     */
-    function _getLiquidityToMint(uint256 amount0, uint256 amount1) internal view returns (uint256 liquidity) {
-        (uint256 _reserve0, uint256 _reserve1) = getReserves();
-
-        uint256 _totalSupply = totalSupply();
-
-        if (_totalSupply == 0) {
-            // First liquidity provision
-            // Require minimum amounts to prevent dust attacks
-            if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY) {
-                revert Pair_InsufficientInitialLiquidity();
-            }
-
-            // Initial LP tokens = sqrt(amount0 * amount1)
-            // This formula ensures that the initial deposit sets the price
-            // and subsequent deposits must match this ratio
-            liquidity = Math.sqrt(amount0 * amount1);
-        } else {
-            // Subsequent liquidity provisions
-
-            // Calculate the optimal ratio based on current reserves
-            uint256 amount1Optimal = (amount0 * _reserve1) / _reserve0;
-
-            // Check if provided amounts maintain the price ratio within tolerance
-            // We allow a small deviation (e.g., 1%) to account for rounding
-            uint256 difference = amount1 > amount1Optimal ? amount1 - amount1Optimal : amount1Optimal - amount1;
-
-            if (difference * 100 > amount1Optimal) {
-                revert Pair_InvalidPairRatio();
-            }
-
-            // Calculate LP tokens to mint
-            // We use the minimum of both ratios to ensure fair distribution
-            // and maintain the constant product formula
-            liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
-        }
-    }
-
-    /**
      * @notice This is an internal function to add liquidity to the pool.
      * @param amount0 It correspond to token0
      * @param amount1 It correspond to token1
@@ -216,6 +173,38 @@ contract Pair is IPair, ERC20 {
 
     function getReserves() public view returns (uint256 _reserve0, uint256 _reserve1) {
         return (reserve0, reserve1);
+    }
+    /**
+     * @notice This is an internal function to calculate the liquidity to mint.
+     * @param amount0 the amount of `token0` in the pair.
+     * @param amount1 the amount of `token1` in the pair.
+     * @return liquidity the amount of liquidity to mint
+     */
+
+    function getLiquidityToMint(uint256 amount0, uint256 amount1) public view returns (uint256 liquidity) {
+        (uint256 _reserve0, uint256 _reserve1) = getReserves();
+
+        uint256 _totalSupply = totalSupply();
+
+        if (_totalSupply == 0) {
+            // First liquidity provision
+            // Require minimum amounts to prevent dust attacks
+            if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY) {
+                revert Pair_InsufficientInitialLiquidity();
+            }
+
+            // Initial LP tokens = sqrt(amount0 * amount1)
+            // This formula ensures that the initial deposit sets the price
+            // and subsequent deposits must match this ratio
+            liquidity = Math.sqrt(amount0 * amount1);
+        } else {
+            // Subsequent liquidity provisions
+
+            // Calculate LP tokens to mint
+            // We use the minimum of both ratios to ensure fair distribution
+            // and maintain the constant product formula
+            liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
+        }
     }
 
     function poolBalance() external view returns (uint256) {
