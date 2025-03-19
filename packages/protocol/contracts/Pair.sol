@@ -10,9 +10,10 @@ import { IPair } from "./interfaces/IPair.sol";
 /**
  * @title Pair
  * @author Jason Suárez
- * @notice This contract is inspired by UniswapV2Pair.sol and should be deployed from the Factory contract.
- * @notice Being an AMM that allows users to swap tokens with each other and provide liquidity to the pool for earning fees, it collects 0.3% of all swaps.
- * @dev  The main invariant of the pair is the constant product of the reserves of both tokens.
+ * @notice Automated Market Maker (AMM) contract for a token pair
+ * @dev Implements constant product formula (x * y = k) with a 0.3% swap fee
+ *      Issues ERC20 LP tokens representing shares of the pool
+ *      Uses reentrancy protection for all state-changing operations
  */
 contract Pair is IPair, ERC20 {
     using SafeERC20 for IERC20;
@@ -44,9 +45,10 @@ contract Pair is IPair, ERC20 {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice This function is used to add liquidity to the pair. It takes two parameters:
-     * @param amount0  the amount of `token0` in the pair.
-     * @param amount1  the amount of `token1` in the pair.
+     * @notice Adds liquidity to the pool by depositing token0 and token1
+     * @dev Mints LP tokens proportional to the contribution relative to current reserves
+     * @param amount0 Amount of token0 to add
+     * @param amount1 Amount of token1 to add
      */
     function addLiquidity(uint256 amount0, uint256 amount1) external {
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
@@ -58,6 +60,11 @@ contract Pair is IPair, ERC20 {
         _addLiquidity(amount0, amount1, liquidity);
     }
 
+    /**
+     * @notice Removes liquidity from the pool and burns LP tokens
+     * @dev Returns token0 and token1 proportional to the LP amount burned
+     * @param amount Amount of LP tokens to burn
+     */
     function removeLiquidity(uint256 amount) external lock {
         uint256 _totalSupply = totalSupply();
 
@@ -85,11 +92,11 @@ contract Pair is IPair, ERC20 {
     }
 
     /**
-     * @notice This function swaps tokens from one token to another.
-     * @dev The core logic of the amountOut calculation is in the `getAmountOut` function which is responsible for maintaining the invariant.
-     * @param targetToken address of the token to send
-     * @param fromToken address of the token to receive
-     * @param amountIn amount of tokens to be swapped
+     * @notice Swaps one token for another using the constant product formula
+     * @dev Takes a 0.3% fee that remains in the pool as additional reserves
+     * @param fromToken Token sent by the user (must be token0 or token1)
+     * @param targetToken Token received by the user (must be token0 or token1)
+     * @param amountIn Amount of fromToken to swap
      */
     function swap(address fromToken, address targetToken, uint256 amountIn) external lock {
         uint256 amountOut = getAmountOut(fromToken, targetToken, amountIn);
@@ -106,28 +113,6 @@ contract Pair is IPair, ERC20 {
         reserve1 = IERC20(token1).balanceOf(address(this));
 
         emit Pair_Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
-    }
-
-    /**
-     * @notice This function calculates the amount of tokens that will be received when swapping
-     * from the `fromToken` to the `targetToken` using the current reserves.
-     * @param targetToken address of the token to send
-     * @param fromToken address of the token to receive
-     * @param amountIn  amount of tokens to be swapped
-     * @return amountOut amount of tokens that will be received
-     */
-    function getAmountOut(address fromToken, address targetToken, uint256 amountIn)
-        public
-        view
-        returns (uint256 amountOut)
-    {
-        uint256 reserveIn = _getReserveFromToken(fromToken);
-        uint256 reserveOut = _getReserveFromToken(targetToken);
-
-        uint256 amountInWithoutFee = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
-        uint256 numerator = amountInWithoutFee * reserveOut;
-        uint256 denominator = reserveIn + amountInWithoutFee;
-        amountOut = numerator / denominator;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -168,14 +153,21 @@ contract Pair is IPair, ERC20 {
                                 GETTERS
     //////////////////////////////////////////////////////////////*/
 
+    /**
+     * @notice Returns the current reserves of both tokens in the pair
+     * @return _reserve0 Current reserve of token0
+     * @return _reserve1 Current reserve of token1
+     */
     function getReserves() public view returns (uint256 _reserve0, uint256 _reserve1) {
         return (reserve0, reserve1);
     }
     /**
-     * @notice This is an internal function to calculate the liquidity to mint.
-     * @param amount0 the amount of `token0` in the pair.
-     * @param amount1 the amount of `token1` in the pair.
-     * @return liquidity the amount of liquidity to mint
+     * @notice Calculates the amount of LP tokens to mint for a given deposit
+     * @dev For initial deposit: sqrt(amount0 * amount1)
+     *      For subsequent deposits: min((amount0 * totalSupply) / reserve0, (amount1 * totalSupply) / reserve1)
+     * @param amount0 Amount of token0 to deposit
+     * @param amount1 Amount of token1 to deposit
+     * @return liquidity Amount of LP tokens to mint
      */
 
     function getLiquidityToMint(uint256 amount0, uint256 amount1) public view returns (uint256 liquidity) {
@@ -202,5 +194,27 @@ contract Pair is IPair, ERC20 {
             // and maintain the constant product formula
             liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
         }
+    }
+
+    /**
+     * @notice Calculates the expected output amount for a swap
+     * @dev Uses constant product formula with a 0.3% fee: (x * y = k)
+     * @param fromToken Token to swap from
+     * @param targetToken Token to swap to
+     * @param amountIn Amount of fromToken to swap
+     * @return amountOut Expected amount of targetToken to receive
+     */
+    function getAmountOut(address fromToken, address targetToken, uint256 amountIn)
+        public
+        view
+        returns (uint256 amountOut)
+    {
+        uint256 reserveIn = _getReserveFromToken(fromToken);
+        uint256 reserveOut = _getReserveFromToken(targetToken);
+
+        uint256 amountInWithoutFee = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
+        uint256 numerator = amountInWithoutFee * reserveOut;
+        uint256 denominator = reserveIn + amountInWithoutFee;
+        amountOut = numerator / denominator;
     }
 }

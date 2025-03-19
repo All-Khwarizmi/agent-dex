@@ -7,16 +7,19 @@ import { Pair } from "./Pair.sol";
 /**
  * @title Factory
  * @author Jason Suárez
- * @notice Contract responsible for creating and getting pairs addresses
+ * @notice Creates and tracks liquidity pairs for the AgentDEX protocol
+ * @dev Maintains a registry of all created pairs and prevents duplicate pair creation
+ *      Each pair is an instance of the Pair contract
  */
 contract Factory is IFactory {
     address[] public allPairs;
     mapping(address => mapping(address => address)) private pairs;
 
     /**
-     * @notice Function to create a pair (pool)
-     * @param token0 address of the first token
-     * @param token1 address of the second token
+     * @notice Creates a new liquidity pool for a token pair
+     * @dev Deploys a new Pair contract and records its address
+     * @param token0 Address of the first token
+     * @param token1 Address of the second token
      */
     function createPair(address token0, address token1) external {
         if (token0 == address(0) || token1 == address(0)) {
@@ -36,18 +39,19 @@ contract Factory is IFactory {
     }
 
     /**
-     * @notice Function to get the amount of pairs that have been created
-     * @return poolCount the amount of pairs that have been created
+     * @notice Returns the total number of pairs created through the factory
+     * @return poolCount Number of pairs created
      */
     function getPairCount() external view returns (uint256 poolCount) {
         poolCount = allPairs.length;
     }
 
     /**
-     * @notice Function to get the address of a pair
-     * @param token0 address of the first token
-     * @param token1 address of the second token
-     * @return pairAddress address of the pair
+     * @notice Returns the address of the pair for the given tokens
+     * @dev Returns address(0) if pair doesn't exist
+     * @param token0 Address of the first token
+     * @param token1 Address of the second token
+     * @return pairAddress Address of the pair
      */
     function getPair(address token0, address token1) external view returns (address pairAddress) {
         pairAddress = pairs[token0][token1];

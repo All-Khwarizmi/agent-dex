@@ -5,7 +5,11 @@
 - Starts: May 15, 2025 Noon UTC
 - Ends: May 22, 2025 Noon UTC
 
-- nSLOC: 283
+- nSLOC: 152
+- Complexity score: 129
+- commit hash: f2ba3fd06184757a92f322de3d4132b7caa3fed9
+- repository: https://github.com/All-Khwarizmi/agent-dex.git
+- solc version: 0.8.29
 
 ## About the Project
 
@@ -100,7 +104,8 @@ Compatibilities:
 This is a standard Foundry project, to run it use:
 
 ```shell
-$ forge install
+$ make install
+
 ```
 
 ```shell
@@ -122,8 +127,9 @@ $ forge coverage
 For local testing with Anvil:
 
 ```shell
-$ anvil
-$ forge script script/DeployFactory.s.sol --rpc-url http://localhost:8545 --broadcast
+$ make chain
+
+$ yarn deploy
 ```
 
 [//]: # "getting-started-close"
