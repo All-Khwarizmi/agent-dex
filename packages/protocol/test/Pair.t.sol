@@ -511,7 +511,7 @@ contract PairTest is Test {
         (uint256 reserve0, uint256 reserve1) = pair.getReserves();
 
         // Get pool balance
-        uint256 poolBalance = pair.poolBalance();
+        uint256 poolBalance = pair.totalSupply();
 
         // Verify pool balance
         assertApproxEqRel(poolBalance, Math.sqrt(reserve0 * reserve1), 1e5, "Incorrect pool balance");

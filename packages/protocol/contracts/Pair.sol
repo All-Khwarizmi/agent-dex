@@ -92,9 +92,7 @@ contract Pair is IPair, ERC20 {
      * @param amountIn amount of tokens to be swapped
      */
     function swap(address fromToken, address targetToken, uint256 amountIn) external lock {
-        if (amountIn == 0) revert Pair_InsufficientInput();
-
-        uint256 amountOut = getAmountOut(targetToken, fromToken, amountIn);
+        uint256 amountOut = getAmountOut(fromToken, targetToken, amountIn);
 
         if (amountOut == 0) revert Pair_InsufficientOutput();
 
@@ -104,11 +102,8 @@ contract Pair is IPair, ERC20 {
         IERC20(targetToken).safeTransfer(msg.sender, amountOut);
 
         // Update reserves based on final balances
-        uint256 balance0 = IERC20(token0).balanceOf(address(this));
-        uint256 balance1 = IERC20(token1).balanceOf(address(this));
-
-        reserve0 = balance0;
-        reserve1 = balance1;
+        reserve0 = IERC20(token0).balanceOf(address(this));
+        reserve1 = IERC20(token1).balanceOf(address(this));
 
         emit Pair_Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
     }
@@ -121,7 +116,7 @@ contract Pair is IPair, ERC20 {
      * @param amountIn  amount of tokens to be swapped
      * @return amountOut amount of tokens that will be received
      */
-    function getAmountOut(address targetToken, address fromToken, uint256 amountIn)
+    function getAmountOut(address fromToken, address targetToken, uint256 amountIn)
         public
         view
         returns (uint256 amountOut)
@@ -207,9 +202,5 @@ contract Pair is IPair, ERC20 {
             // and maintain the constant product formula
             liquidity = Math.min((amount0 * _totalSupply) / _reserve0, (amount1 * _totalSupply) / _reserve1);
         }
-    }
-
-    function poolBalance() external view returns (uint256) {
-        return totalSupply();
     }
 }

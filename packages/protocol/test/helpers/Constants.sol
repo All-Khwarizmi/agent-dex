@@ -10,6 +10,8 @@ contract Constants {
 
     address internal immutable USER_1 = address(0x1);
     address internal immutable USER_2 = address(0x2);
+    address internal immutable USER_3 = address(0x3);
+    address internal immutable USER_4 = address(0x4);
     address internal immutable OWNER = address(this);
 
     uint256 internal constant TOKEN_0_AMOUNT = 100_000_000 * 1e6;

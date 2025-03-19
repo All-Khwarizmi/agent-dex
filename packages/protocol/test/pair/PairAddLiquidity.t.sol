@@ -48,7 +48,7 @@ contract PairAddLiquidityTest is Test, Constants {
 
         pair.addLiquidity(TOKEN_0_AMOUNT, TOKEN_1_AMOUNT);
 
-        uint256 poolBalance = pair.poolBalance();
+        uint256 poolBalance = pair.totalSupply();
         uint256 userBalance = pair.balanceOf(USER_1);
 
         vm.stopPrank();
