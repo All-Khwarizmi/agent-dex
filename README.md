@@ -87,8 +87,8 @@ yarn compile
 yarn deploy
 
 
-# Add factory contract address to .env.local in nest package
-# You can find the address in packages/nextjs/contracts/deployedContracts.ts (after deployment) 
+# Add factory contract address to .env.local in backend package
+# You can find the address in packages/protocol/contracts/deployedContracts.ts (after deployment)
 # Be careful to select the right chain!
 # AND
 # on the frontend under /debug
@@ -104,9 +104,6 @@ yarn backend:start
 
 # Start frontend
 yarn start
-
-# Fund user wallet with ETH - DAI - USDC - WETH
-cd packages/foundry && make fund USER_ADDRESS=xDcc4E41072017A20101B68B9500630A3ab6fE2fF # Use your own address
 
 ```
 

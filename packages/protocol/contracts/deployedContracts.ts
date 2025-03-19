@@ -128,12 +128,12 @@ const deployedContracts = {
           name: "getAmountOut",
           inputs: [
             {
-              name: "targetToken",
+              name: "fromToken",
               type: "address",
               internalType: "address",
             },
             {
-              name: "fromToken",
+              name: "targetToken",
               type: "address",
               internalType: "address",
             },
@@ -146,6 +146,30 @@ const deployedContracts = {
           outputs: [
             {
               name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getLiquidityToMint",
+          inputs: [
+            {
+              name: "amount0",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "amount1",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "liquidity",
               type: "uint256",
               internalType: "uint256",
             },
@@ -185,19 +209,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "poolBalance",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "removeLiquidity",
           inputs: [
             {
@@ -214,12 +225,12 @@ const deployedContracts = {
           name: "swap",
           inputs: [
             {
-              name: "targetToken",
+              name: "fromToken",
               type: "address",
               internalType: "address",
             },
             {
-              name: "fromToken",
+              name: "targetToken",
               type: "address",
               internalType: "address",
             },
@@ -385,12 +396,6 @@ const deployedContracts = {
               internalType: "uint256",
             },
             {
-              name: "to",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
               name: "burntLiquidity",
               type: "uint256",
               indexed: false,
@@ -438,43 +443,6 @@ const deployedContracts = {
               name: "sender",
               type: "address",
               indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "tokenIn",
-              type: "address",
-              indexed: false,
-              internalType: "address",
-            },
-            {
-              name: "tokenOut",
-              type: "address",
-              indexed: false,
-              internalType: "address",
-            },
-            {
-              name: "amountIn",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "amountOut",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Pair_SwapForwarded",
-          inputs: [
-            {
-              name: "user",
-              type: "address",
-              indexed: false,
               internalType: "address",
             },
             {
@@ -1069,12 +1037,12 @@ const deployedContracts = {
           name: "getAmountOut",
           inputs: [
             {
-              name: "targetToken",
+              name: "fromToken",
               type: "address",
               internalType: "address",
             },
             {
-              name: "fromToken",
+              name: "targetToken",
               type: "address",
               internalType: "address",
             },
@@ -1087,6 +1055,30 @@ const deployedContracts = {
           outputs: [
             {
               name: "amountOut",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getLiquidityToMint",
+          inputs: [
+            {
+              name: "amount0",
+              type: "uint256",
+              internalType: "uint256",
+            },
+            {
+              name: "amount1",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "liquidity",
               type: "uint256",
               internalType: "uint256",
             },
@@ -1126,19 +1118,6 @@ const deployedContracts = {
         },
         {
           type: "function",
-          name: "poolBalance",
-          inputs: [],
-          outputs: [
-            {
-              name: "",
-              type: "uint256",
-              internalType: "uint256",
-            },
-          ],
-          stateMutability: "view",
-        },
-        {
-          type: "function",
           name: "removeLiquidity",
           inputs: [
             {
@@ -1155,12 +1134,12 @@ const deployedContracts = {
           name: "swap",
           inputs: [
             {
-              name: "targetToken",
+              name: "fromToken",
               type: "address",
               internalType: "address",
             },
             {
-              name: "fromToken",
+              name: "targetToken",
               type: "address",
               internalType: "address",
             },
@@ -1326,12 +1305,6 @@ const deployedContracts = {
               internalType: "uint256",
             },
             {
-              name: "to",
-              type: "address",
-              indexed: true,
-              internalType: "address",
-            },
-            {
               name: "burntLiquidity",
               type: "uint256",
               indexed: false,
@@ -1379,43 +1352,6 @@ const deployedContracts = {
               name: "sender",
               type: "address",
               indexed: true,
-              internalType: "address",
-            },
-            {
-              name: "tokenIn",
-              type: "address",
-              indexed: false,
-              internalType: "address",
-            },
-            {
-              name: "tokenOut",
-              type: "address",
-              indexed: false,
-              internalType: "address",
-            },
-            {
-              name: "amountIn",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-            {
-              name: "amountOut",
-              type: "uint256",
-              indexed: false,
-              internalType: "uint256",
-            },
-          ],
-          anonymous: false,
-        },
-        {
-          type: "event",
-          name: "Pair_SwapForwarded",
-          inputs: [
-            {
-              name: "user",
-              type: "address",
-              indexed: false,
               internalType: "address",
             },
             {
@@ -1645,7 +1581,7 @@ const deployedContracts = {
   },
   31337: {
     Factory: {
-      address: "0x683979e390ae456f2c2956503946ad9b0331706b",
+      address: "0xd8a79bf2c4f0e47f299123d68f201291b7774056",
       abi: [
         {
           type: "function",
@@ -1763,7 +1699,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1742208065.json",
+      deploymentFile: "run-1742382358.json",
       deploymentScript: "DeployFactory.s.sol",
     },
   },
