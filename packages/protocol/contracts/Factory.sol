@@ -7,7 +7,7 @@ import { Pair } from "./Pair.sol";
 /**
  * @title Factory
  * @author Jason Suárez
- * @notice Contract responsible for creating and getting pairs
+ * @notice Contract responsible for creating and getting pairs addresses
  */
 contract Factory is IFactory {
     address[] public allPairs;
