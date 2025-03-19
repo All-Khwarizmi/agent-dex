@@ -63,7 +63,9 @@ contract Pair is IPair, ERC20 {
 
         uint256 liquidity = balanceOf(msg.sender);
 
-        if (liquidity < amount) revert Pair_InsufficientBalance();
+        if (liquidity < amount) {
+            revert Pair_InsufficientBalance();
+        }
 
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
