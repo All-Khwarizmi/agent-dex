@@ -12,7 +12,7 @@ import { Pair } from "./Pair.sol";
  *      Each pair is an instance of the Pair contract
  */
 contract Factory is IFactory {
-    address[] public allPairs;
+    address[] public allPairs;  
     mapping(address => mapping(address => address)) private pairs;
 
     /**

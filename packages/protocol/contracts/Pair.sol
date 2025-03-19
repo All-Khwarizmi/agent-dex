@@ -18,8 +18,8 @@ import { IPair } from "./interfaces/IPair.sol";
 contract Pair is IPair, ERC20 {
     using SafeERC20 for IERC20;
 
-    address public token0;
-    address public token1;
+    address public token0; // @audit : gas optimization - should be immutable
+    address public token1; // @audit : gas optimization - should be immutable
 
     uint256 private reserve0;
     uint256 private reserve1;
@@ -30,6 +30,7 @@ contract Pair is IPair, ERC20 {
     uint8 internal unlocked = 1;
 
     modifier lock() {
+        // @audit : check this assertion : Uses reentrancy protection for all state-changing operations
         if (unlocked == 0) revert Pair_Locked();
         unlocked = 0;
         _;
@@ -37,12 +38,14 @@ contract Pair is IPair, ERC20 {
     }
 
     constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") IPair() {
+        // @audit : unnecessary constructor for interface
         token0 = _token0;
         token1 = _token1;
     }
     /*//////////////////////////////////////////////////////////////
                                 EXTERNAL & PUBLIC
     //////////////////////////////////////////////////////////////*/
+    // @audit : missing fallback function. Users can send ether to the contract and lose their funds
 
     /**
      * @notice Adds liquidity to the pool by depositing token0 and token1
@@ -51,6 +54,7 @@ contract Pair is IPair, ERC20 {
      * @param amount1 Amount of token1 to add
      */
     function addLiquidity(uint256 amount0, uint256 amount1) external {
+        // @audit : reentrancy guard set on the `_addLiquidity` helper function instead of the `addLiquidity` function
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
         uint256 liquidity = getLiquidityToMint(amount0, amount1);
@@ -80,6 +84,7 @@ contract Pair is IPair, ERC20 {
         if (amount0 == 0 || amount1 == 0) {
             revert Pair_InsufficientLiquidityBurnt();
         }
+        // @audit : CEI pattern
 
         IERC20(token0).safeTransfer(msg.sender, amount0);
         IERC20(token1).safeTransfer(msg.sender, amount1);
@@ -99,6 +104,7 @@ contract Pair is IPair, ERC20 {
      * @param amountIn Amount of fromToken to swap
      */
     function swap(address fromToken, address targetToken, uint256 amountIn) external lock {
+        // @audit : no check that the token addresses match the pair tokens
         uint256 amountOut = getAmountOut(fromToken, targetToken, amountIn);
 
         if (amountOut == 0) revert Pair_InsufficientOutput();
@@ -107,6 +113,9 @@ contract Pair is IPair, ERC20 {
         IERC20(fromToken).safeTransferFrom(msg.sender, address(this), amountIn);
         // Then transfer FROM pair TO user
         IERC20(targetToken).safeTransfer(msg.sender, amountOut);
+
+        // @audit : update reserves based on final balances making an external call to the token contract. This contrast with the way of way of updating reserves in the `addLiquidity` and `removeLiquidity` functions where the reserves are updated in the contract itself by adding or removing the amount of tokens from the balance of the contract.
+        // @audit : gas optimization: update the reserves in the same function instead of making an external call to the token contract
 
         // Update reserves based on final balances
         reserve0 = IERC20(token0).balanceOf(address(this));
@@ -126,6 +135,7 @@ contract Pair is IPair, ERC20 {
      * @param liquidity The amount of liquidity provided by the sender that will be minted on its behalf.
      */
     function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal lock {
+        // @audit : CEI pattern
         IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
         IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
 
@@ -177,7 +187,7 @@ contract Pair is IPair, ERC20 {
 
         if (_totalSupply == 0) {
             // First liquidity provision
-            // Require minimum amounts to prevent dust attacks
+            // Require minimum amounts to prevent dust attacks // @audit : how effective is this check ?
             if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY) {
                 revert Pair_InsufficientInitialLiquidity();
             }
@@ -209,6 +219,9 @@ contract Pair is IPair, ERC20 {
         view
         returns (uint256 amountOut)
     {
+        // @audit : no check that the token addresses match the pair tokens
+        // @audit : no check that the amountIn is not 0
+
         uint256 reserveIn = _getReserveFromToken(fromToken);
         uint256 reserveOut = _getReserveFromToken(targetToken);
 
