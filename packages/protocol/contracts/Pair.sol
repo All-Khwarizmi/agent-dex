@@ -23,7 +23,7 @@ contract Pair is IPair, ERC20 {
 
     uint256 private reserve0;
     uint256 private reserve1;
-
+    // @audit : Price manipulation I
     uint256 internal constant MINIMUM_LIQUIDITY = 10 ** 3;
     uint256 internal constant FEE_NUMERATOR = 997;
     uint256 internal constant FEE_DENOMINATOR = 1000;
