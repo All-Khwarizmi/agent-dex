@@ -1,4 +1,4 @@
-### [M-3] Violation of Checks-Effects-Interactions pattern in multiple functions
+### [M-1] Violation of Checks-Effects-Interactions pattern in multiple functions
 
 **Description:**
 Multiple functions in the Pair contract violate the Checks-Effects-Interactions (CEI) pattern by performing external calls before updating the contract's state. The CEI pattern is a best practice in smart contract development to prevent reentrancy attacks.
