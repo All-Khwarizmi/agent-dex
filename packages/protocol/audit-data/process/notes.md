@@ -29,19 +29,36 @@
 ### Swapping
 
 - The lack of token address validation might lead to overflows/underflows:
+
   > [!WARNING]
   > uint256 amountOut = getAmountOut(fromToken, targetToken, amountIn);
   > uint256 reserveIn = \_getReserveFromToken(fromToken); // 0
   > function \_getReserveFromToken(address token) internal view returns (uint256 reserve) {
+
         if (token == token0) {
             return reserve0;
         } else if (token == token1) {
             return reserve1;
         }
+
   }
 
-  **Mitigation:** 
-  - Add token address validation to prevent overflows/underflows. 
+  **Mitigation:**
+
+  - Add token address validation to prevent overflows/underflows.
   - revert if the token address is not valid.
 
 ## Reporting
+
+## Remediation
+
+- check the token
+- problem de slippage pour
+- modifier lock, vraiment utile ?
+  - CEI ne suffit pas?
+  - ERC 20 only
+  - Et si c'est utile, utiliser transient storage
+- uint8 (casting pour couter plus cher)
+- Utiliser une variable bool
+- packing ? tester dans le state
+- mis a jour des valeurs reserves ? utiliser un balanceOf pour chaque token plutot que de les enregistrer dans le state

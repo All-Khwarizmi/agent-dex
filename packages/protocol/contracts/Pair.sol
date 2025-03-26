@@ -105,6 +105,7 @@ contract Pair is IPair, ERC20 {
      */
     function swap(address fromToken, address targetToken, uint256 amountIn) external lock {
         // @audit : no check that the token addresses match the pair tokens
+
         uint256 amountOut = getAmountOut(fromToken, targetToken, amountIn);
 
         if (amountOut == 0) revert Pair_InsufficientOutput();
@@ -148,6 +149,22 @@ contract Pair is IPair, ERC20 {
     }
 
     /**
+     * @notice This is an internal utility function to validate the token address.
+     * @param fromToken Token to swap from
+     * @param targetToken Token to swap to
+     * @dev Reverts if the token address is not valid.
+     */
+    function _validateTokens(address fromToken, address targetToken) internal view {
+        if (fromToken != token0 && fromToken != token1 || targetToken != token0 && targetToken != token1) {
+            revert Pair_InvalidToken();
+        }
+
+        if (fromToken == targetToken) {
+            revert Pair_IdenticalTokens();
+        }
+    }
+
+    /**
      * @notice This is an internal utility function to get the reserve of a given token.
      * @param token address of the token to get the reserve from
      * @return reserve the reserve of the token
@@ -157,6 +174,8 @@ contract Pair is IPair, ERC20 {
             return reserve0;
         } else if (token == token1) {
             return reserve1;
+        } else {
+            revert Pair_InvalidToken();
         }
     }
     /*//////////////////////////////////////////////////////////////
@@ -221,6 +240,7 @@ contract Pair is IPair, ERC20 {
     {
         // @audit : no check that the token addresses match the pair tokens
         // @audit : no check that the amountIn is not 0
+        _validateTokens(fromToken, targetToken);
 
         uint256 reserveIn = _getReserveFromToken(fromToken);
         uint256 reserveOut = _getReserveFromToken(targetToken);
