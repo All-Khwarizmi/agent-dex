@@ -5,6 +5,7 @@ interface IPair {
     error Pair_ZeroAddress();
     error Pair_IdenticalAddress();
     error Pair_InvalidToken();
+    error Pair_SlippageExceeded(uint256 amountOut, uint256 amountOutMin);
     error Pair_IdenticalTokens();
     error Pair_Locked();
     error Pair_InsufficientLiquidity();

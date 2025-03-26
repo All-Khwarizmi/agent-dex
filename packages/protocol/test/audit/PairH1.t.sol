@@ -34,12 +34,12 @@ contract PairH1Test is Test, Constants {
         uint256 attackerWethPreBalance = IERC20(weth).balanceOf(ATTACKER);
         assertEq(attackerWethPreBalance, 0);
 
-        vm.expectRevert(IPair.Pair_InvalidToken.selector); // This should revert but doesn't
-        pair.getAmountOut(invalidToken, weth, TOKEN_1_AMOUNT);
+        vm.expectRevert(IPair.Pair_InvalidToken.selector);
+        uint256 amountOut = pair.getAmountOut(invalidToken, weth, TOKEN_1_AMOUNT);
 
         // Try to swap an invalid token
         vm.prank(ATTACKER);
-        vm.expectRevert(IPair.Pair_InvalidToken.selector); // This should revert but doesn't
-        pair.swap(invalidToken, weth, TOKEN_1_AMOUNT);
+        vm.expectRevert(IPair.Pair_InvalidToken.selector);
+        pair.swap(invalidToken, weth, TOKEN_1_AMOUNT, amountOut);
     }
 }

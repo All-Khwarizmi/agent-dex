@@ -52,13 +52,6 @@
 
 ## Remediation
 
-
 - problem de slippage pour
-- modifier lock, vraiment utile ?
-  - CEI ne suffit pas?
-  - ERC 20 only
-  - Et si c'est utile, utiliser transient storage
-- uint8 (casting pour couter plus cher)
-- Utiliser une variable bool
+
 - packing ? tester dans le state
-- mis a jour des valeurs reserves ? utiliser un balanceOf pour chaque token plutot que de les enregistrer dans le state

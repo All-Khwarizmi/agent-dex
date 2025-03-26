@@ -20,10 +20,10 @@ contract Pair is IPair, ERC20 {
     address public immutable token0;
     address public immutable token1;
 
-    // @audit : Price manipulation I
     uint256 internal constant MINIMUM_LIQUIDITY = 10 ** 3;
     uint256 internal constant FEE_NUMERATOR = 997;
     uint256 internal constant FEE_DENOMINATOR = 1000;
+
     constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") {
         // @audit : unnecessary constructor for interface
         token0 = _token0;
@@ -32,7 +32,6 @@ contract Pair is IPair, ERC20 {
     /*//////////////////////////////////////////////////////////////
                                 EXTERNAL & PUBLIC
     //////////////////////////////////////////////////////////////*/
-    // @audit : missing fallback function. Users can send ether to the contract and lose their funds
 
     /**
      * @notice Adds liquidity to the pool by depositing token0 and token1
@@ -41,7 +40,6 @@ contract Pair is IPair, ERC20 {
      * @param amount1 Amount of token1 to add
      */
     function addLiquidity(uint256 amount0, uint256 amount1) external {
-        // @audit : reentrancy guard set on the `_addLiquidity` helper function instead of the `addLiquidity` function
         if (amount0 == 0 || amount1 == 0) revert Pair_InsufficientInput();
 
         uint256 liquidity = getLiquidityToMint(amount0, amount1);
@@ -88,8 +86,11 @@ contract Pair is IPair, ERC20 {
      * @param targetToken Token received by the user (must be token0 or token1)
      * @param amountIn Amount of fromToken to swap
      */
-    function swap(address fromToken, address targetToken, uint256 amountIn) external {
+    function swap(address fromToken, address targetToken, uint256 amountIn, uint256 amountOutMin) external {
         uint256 amountOut = getAmountOut(fromToken, targetToken, amountIn);
+        if (amountOut < amountOutMin) {
+            revert Pair_SlippageExceeded(amountOut, amountOutMin);
+        }
 
         if (amountOut == 0) revert Pair_InsufficientOutput();
 
@@ -206,8 +207,7 @@ contract Pair is IPair, ERC20 {
         view
         returns (uint256 amountOut)
     {
-        // @audit : no check that the token addresses match the pair tokens
-        // @audit : no check that the amountIn is not 0
+     
         _validateTokens(fromToken, targetToken);
 
         uint256 reserveIn = _getReserveFromToken(fromToken);
