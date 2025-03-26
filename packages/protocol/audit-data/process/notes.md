@@ -52,7 +52,7 @@
 
 ## Remediation
 
-- check the token
+
 - problem de slippage pour
 - modifier lock, vraiment utile ?
   - CEI ne suffit pas?
