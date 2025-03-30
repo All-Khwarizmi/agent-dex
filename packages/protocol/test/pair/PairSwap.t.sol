@@ -67,11 +67,19 @@ contract PairSwapTest is Test, Constants {
     function _executeSwaps(uint256 amount0, uint256 amount1, uint16 rounds) internal {
         for (uint16 i = 0; i < rounds; i++) {
             _setupBalancesAndAllowances();
-            vm.prank(USER_3);
-            pair.swap(usdc, weth, amount0);
+            vm.startPrank(USER_3);
+            ERC20Mock(usdc).mint(USER_3, amount0);
+            IERC20(usdc).approve(address(pair), amount0);
+            uint256 amountOut = pair.getAmountOut(usdc, weth, amount0);
+            pair.swap(usdc, weth, amount0, amountOut);
+            vm.stopPrank();
 
-            vm.prank(USER_4);
-            pair.swap(weth, usdc, amount1);
+            vm.startPrank(USER_4);
+            ERC20Mock(weth).mint(USER_4, amount1);
+            IERC20(weth).approve(address(pair), amount1);
+            amountOut = pair.getAmountOut(weth, usdc, amount1);
+            pair.swap(weth, usdc, amount1, amountOut);
+            vm.stopPrank();
         }
     }
 
@@ -84,7 +92,8 @@ contract PairSwapTest is Test, Constants {
 
         vm.startPrank(USER_3);
         IERC20(usdc).approve(address(pair), TOKEN_0_AMOUNT);
-        pair.swap(usdc, weth, TOKEN_0_AMOUNT);
+        uint256 amountOut = pair.getAmountOut(usdc, weth, TOKEN_0_AMOUNT);
+        pair.swap(usdc, weth, TOKEN_0_AMOUNT, amountOut);
         vm.stopPrank();
 
         assertEq(IERC20(weth).balanceOf(USER_3), expectedWethReceived);
@@ -96,7 +105,8 @@ contract PairSwapTest is Test, Constants {
 
         vm.startPrank(USER_3);
         IERC20(weth).approve(address(pair), TOKEN_1_AMOUNT);
-        pair.swap(weth, usdc, TOKEN_1_AMOUNT);
+        uint256 amountOut = pair.getAmountOut(weth, usdc, TOKEN_1_AMOUNT);
+        pair.swap(weth, usdc, TOKEN_1_AMOUNT, amountOut);
         vm.stopPrank();
 
         assertEq(IERC20(usdc).balanceOf(USER_3), expectedUsdcReceived);
@@ -124,9 +134,10 @@ contract PairSwapTest is Test, Constants {
         vm.startPrank(USER_3);
         IERC20(usdc).approve(address(pair), TOKEN_0_AMOUNT);
 
+        uint256 amountOut = pair.getAmountOut(usdc, weth, TOKEN_0_AMOUNT);
         vm.expectEmit(true, true, true, true);
         emit IPair.Pair_Swap(USER_3, usdc, weth, TOKEN_0_AMOUNT, expectedWethReceived);
-        pair.swap(usdc, weth, TOKEN_0_AMOUNT);
+        pair.swap(usdc, weth, TOKEN_0_AMOUNT, amountOut);
         vm.stopPrank();
     }
     /*//////////////////////////////////////////////////////////////
@@ -135,8 +146,9 @@ contract PairSwapTest is Test, Constants {
 
     function test_shouldRevert_whenPassingZeroValue() public {
         vm.startPrank(USER_3);
+        uint256 amountOut = pair.getAmountOut(usdc, weth, 0);
         vm.expectRevert(IPair.Pair_InsufficientOutput.selector);
-        pair.swap(usdc, weth, 0);
+        pair.swap(usdc, weth, 0, amountOut);
         vm.stopPrank();
     }
 
@@ -154,13 +166,13 @@ contract PairSwapTest is Test, Constants {
         IERC20(weth).approve(address(pair), TOKEN_1_AMOUNT);
 
         uint256 expectedWethReceived1 = pair.getAmountOut(usdc, weth, TOKEN_0_AMOUNT / 2);
-        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2);
+        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2, expectedWethReceived1);
 
         uint256 expectedUsdcReceived1 = pair.getAmountOut(weth, usdc, TOKEN_1_AMOUNT / 2);
-        pair.swap(weth, usdc, TOKEN_1_AMOUNT / 2);
+        pair.swap(weth, usdc, TOKEN_1_AMOUNT / 2, expectedUsdcReceived1);
 
         uint256 expectedWethReceived2 = pair.getAmountOut(usdc, weth, TOKEN_0_AMOUNT / 2);
-        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2);
+        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2, expectedWethReceived2);
 
         assertEq(
             IERC20(weth).balanceOf(USER_3),
@@ -186,19 +198,19 @@ contract PairSwapTest is Test, Constants {
 
         uint256 expectedWethReceived1 = pair.getAmountOut(usdc, weth, TOKEN_0_AMOUNT / 2);
         vm.prank(USER_3);
-        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2);
+        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2, expectedWethReceived1);
 
         uint256 expectedUsdcReceived2 = pair.getAmountOut(weth, usdc, TOKEN_1_AMOUNT / 2);
         vm.prank(USER_4);
-        pair.swap(weth, usdc, TOKEN_1_AMOUNT / 2);
+        pair.swap(weth, usdc, TOKEN_1_AMOUNT / 2, expectedUsdcReceived2);
 
         uint256 expectedUsdcReceived3 = pair.getAmountOut(weth, usdc, TOKEN_1_AMOUNT / 2);
         vm.prank(USER_3);
-        pair.swap(weth, usdc, TOKEN_1_AMOUNT / 2);
+        pair.swap(weth, usdc, TOKEN_1_AMOUNT / 2, expectedUsdcReceived3);
 
         uint256 expectedWethReceived4 = pair.getAmountOut(usdc, weth, TOKEN_0_AMOUNT / 2);
         vm.prank(USER_4);
-        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2);
+        pair.swap(usdc, weth, TOKEN_0_AMOUNT / 2, expectedWethReceived4);
 
         assertEq(
             IERC20(weth).balanceOf(USER_3),
@@ -242,11 +254,11 @@ contract PairSwapTest is Test, Constants {
         IERC20(weth).approve(address(pair), amount1);
 
         uint256 expectedWethReceived = pair.getAmountOut(usdc, weth, amount0);
-        pair.swap(usdc, weth, amount0);
+        pair.swap(usdc, weth, amount0, expectedWethReceived);
         assertEq(IERC20(weth).balanceOf(user1), amount1 + expectedWethReceived);
 
         uint256 expectedUsdcReceived = pair.getAmountOut(weth, usdc, amount1);
-        pair.swap(weth, usdc, amount1);
+        pair.swap(weth, usdc, amount1, expectedUsdcReceived);
         vm.stopPrank();
         assertEq(IERC20(usdc).balanceOf(user1), expectedUsdcReceived);
     }

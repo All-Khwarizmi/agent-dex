@@ -4,6 +4,9 @@ pragma solidity 0.8.26;
 interface IPair {
     error Pair_ZeroAddress();
     error Pair_IdenticalAddress();
+    error Pair_InvalidToken();
+    error Pair_SlippageExceeded(uint256 amountOut, uint256 amountOutMin);
+    error Pair_IdenticalTokens();
     error Pair_Locked();
     error Pair_InsufficientLiquidity();
     error Pair_InsufficientBalance();
@@ -18,8 +21,6 @@ interface IPair {
     error Pair_TransferFailed();
 
     event Pair_Mint(address indexed sender, uint256 amount0, uint256 amount1, uint256 mintedLiquidity);
-    event Pair_Burn(
-        address indexed sender, uint256 amount0, uint256 amount1, uint256 burntLiquidity
-    );
+    event Pair_Burn(address indexed sender, uint256 amount0, uint256 amount1, uint256 burntLiquidity);
     event Pair_Swap(address indexed sender, address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
 }

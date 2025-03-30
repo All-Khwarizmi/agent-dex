@@ -4,7 +4,6 @@ pragma solidity 0.8.26;
 import { Math } from "@openzeppelin/contracts/utils/math/Math.sol";
 import { ERC20, IERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import { IFactory } from "./interfaces/IFactory.sol";
 import { IPair } from "./interfaces/IPair.sol";
 
 /**
@@ -18,25 +17,15 @@ import { IPair } from "./interfaces/IPair.sol";
 contract Pair is IPair, ERC20 {
     using SafeERC20 for IERC20;
 
-    address public token0;
-    address public token1;
-
-    uint256 private reserve0;
-    uint256 private reserve1;
+    address public immutable token0;
+    address public immutable token1;
 
     uint256 internal constant MINIMUM_LIQUIDITY = 10 ** 3;
     uint256 internal constant FEE_NUMERATOR = 997;
     uint256 internal constant FEE_DENOMINATOR = 1000;
-    uint8 internal unlocked = 1;
 
-    modifier lock() {
-        if (unlocked == 0) revert Pair_Locked();
-        unlocked = 0;
-        _;
-        unlocked = 1;
-    }
-
-    constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") IPair() {
+    constructor(address _token0, address _token1) ERC20("AgentDEX LP", "LP") {
+        // @audit : unnecessary constructor for interface
         token0 = _token0;
         token1 = _token1;
     }
@@ -65,7 +54,7 @@ contract Pair is IPair, ERC20 {
      * @dev Returns token0 and token1 proportional to the LP amount burned
      * @param amount Amount of LP tokens to burn
      */
-    function removeLiquidity(uint256 amount) external lock {
+    function removeLiquidity(uint256 amount) external {
         uint256 _totalSupply = totalSupply();
 
         uint256 liquidity = balanceOf(msg.sender);
@@ -74,6 +63,8 @@ contract Pair is IPair, ERC20 {
             revert Pair_InsufficientBalance();
         }
 
+        (uint256 reserve0, uint256 reserve1) = getReserves();
+
         uint256 amount0 = (amount * reserve0) / _totalSupply;
         uint256 amount1 = (amount * reserve1) / _totalSupply;
 
@@ -81,14 +72,11 @@ contract Pair is IPair, ERC20 {
             revert Pair_InsufficientLiquidityBurnt();
         }
 
+        _burn(msg.sender, amount);
+        emit Pair_Burn(msg.sender, amount0, amount1, amount);
+
         IERC20(token0).safeTransfer(msg.sender, amount0);
         IERC20(token1).safeTransfer(msg.sender, amount1);
-        _burn(msg.sender, amount);
-
-        reserve0 -= amount0;
-        reserve1 -= amount1;
-
-        emit Pair_Burn(msg.sender, amount0, amount1, amount);
     }
 
     /**
@@ -98,21 +86,18 @@ contract Pair is IPair, ERC20 {
      * @param targetToken Token received by the user (must be token0 or token1)
      * @param amountIn Amount of fromToken to swap
      */
-    function swap(address fromToken, address targetToken, uint256 amountIn) external lock {
+    function swap(address fromToken, address targetToken, uint256 amountIn, uint256 amountOutMin) external {
         uint256 amountOut = getAmountOut(fromToken, targetToken, amountIn);
+        if (amountOut < amountOutMin) {
+            revert Pair_SlippageExceeded(amountOut, amountOutMin);
+        }
 
         if (amountOut == 0) revert Pair_InsufficientOutput();
 
-        // First transfer FROM user TO pair
-        IERC20(fromToken).safeTransferFrom(msg.sender, address(this), amountIn);
-        // Then transfer FROM pair TO user
-        IERC20(targetToken).safeTransfer(msg.sender, amountOut);
-
-        // Update reserves based on final balances
-        reserve0 = IERC20(token0).balanceOf(address(this));
-        reserve1 = IERC20(token1).balanceOf(address(this));
-
         emit Pair_Swap(msg.sender, fromToken, targetToken, amountIn, amountOut);
+
+        IERC20(fromToken).safeTransferFrom(msg.sender, address(this), amountIn);
+        IERC20(targetToken).safeTransfer(msg.sender, amountOut);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -125,16 +110,27 @@ contract Pair is IPair, ERC20 {
      * @param amount1 It correspond to token1
      * @param liquidity The amount of liquidity provided by the sender that will be minted on its behalf.
      */
-    function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal lock {
+    function _addLiquidity(uint256 amount0, uint256 amount1, uint256 liquidity) internal {
+        _mint(msg.sender, liquidity);
+        emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
         IERC20(token0).safeTransferFrom(msg.sender, address(this), amount0);
         IERC20(token1).safeTransferFrom(msg.sender, address(this), amount1);
+    }
 
-        reserve0 += amount0;
-        reserve1 += amount1;
+    /**
+     * @notice This is an internal utility function to validate the token address.
+     * @param fromToken Token to swap from
+     * @param targetToken Token to swap to
+     * @dev Reverts if the token address is not valid.
+     */
+    function _validateTokens(address fromToken, address targetToken) internal view {
+        if (fromToken != token0 && fromToken != token1 || targetToken != token0 && targetToken != token1) {
+            revert Pair_InvalidToken();
+        }
 
-        _mint(msg.sender, liquidity);
-
-        emit Pair_Mint(msg.sender, amount0, amount1, liquidity);
+        if (fromToken == targetToken) {
+            revert Pair_IdenticalTokens();
+        }
     }
 
     /**
@@ -144,9 +140,11 @@ contract Pair is IPair, ERC20 {
      */
     function _getReserveFromToken(address token) internal view returns (uint256 reserve) {
         if (token == token0) {
-            return reserve0;
+            return IERC20(token0).balanceOf(address(this));
         } else if (token == token1) {
-            return reserve1;
+            return IERC20(token1).balanceOf(address(this));
+        } else {
+            revert Pair_InvalidToken();
         }
     }
     /*//////////////////////////////////////////////////////////////
@@ -159,7 +157,7 @@ contract Pair is IPair, ERC20 {
      * @return _reserve1 Current reserve of token1
      */
     function getReserves() public view returns (uint256 _reserve0, uint256 _reserve1) {
-        return (reserve0, reserve1);
+        return (IERC20(token0).balanceOf(address(this)), IERC20(token1).balanceOf(address(this)));
     }
     /**
      * @notice Calculates the amount of LP tokens to mint for a given deposit
@@ -177,7 +175,7 @@ contract Pair is IPair, ERC20 {
 
         if (_totalSupply == 0) {
             // First liquidity provision
-            // Require minimum amounts to prevent dust attacks
+            // Require minimum amounts to prevent dust attacks // @audit : how effective is this check ?
             if (amount0 < MINIMUM_LIQUIDITY || amount1 < MINIMUM_LIQUIDITY) {
                 revert Pair_InsufficientInitialLiquidity();
             }
@@ -209,6 +207,9 @@ contract Pair is IPair, ERC20 {
         view
         returns (uint256 amountOut)
     {
+     
+        _validateTokens(fromToken, targetToken);
+
         uint256 reserveIn = _getReserveFromToken(fromToken);
         uint256 reserveOut = _getReserveFromToken(targetToken);
 

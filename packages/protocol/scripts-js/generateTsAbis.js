@@ -227,7 +227,7 @@ function main() {
     });
   });
 
-  const NEXTJS_TARGET_DIR = "../protocol/contracts/";
+  const NEXTJS_TARGET_DIR = "../frontend/contracts/";
 
   // Ensure target directories exist
   if (!existsSync(NEXTJS_TARGET_DIR)) {
